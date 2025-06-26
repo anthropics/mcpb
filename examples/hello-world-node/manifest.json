@@ -1,0 +1,106 @@
+{
+  "dxt_version": "0.1",
+  "name": "hello-world-node",
+  "display_name": "Hello World MCP Server (Reference Extension)",
+  "version": "0.1.0",
+  "description": "A reference MCP extension demonstrating best practices and all available features",
+  "long_description": "This is a reference implementation of a Desktop Extension (DXT). It demonstrates all available manifest features, user configuration options, and security best practices. Use this extension as a template when creating your own MCP servers. The extension includes examples of all user configuration types, proper request token verification, and comprehensive metadata fields.",
+  "author": {
+    "name": "Acme Inc",
+    "email": "support@acme.void",
+    "url": "https://www.acme.void"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acme/my-repo"
+  },
+  "homepage": "https://docs.acme.void/my-repo/extensions",
+  "documentation": "https://docs.acme.void/my-repo/extensions/hello-world",
+  "support": "https://github.com/acme/my-repo/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js",
+        "--verbose=${user_config.verbose_logging}",
+        "--max-results=${user_config.max_results}",
+        "--config=${user_config.config_file}",
+        "--workspace=${user_config.workspace_directory}"
+      ],
+      "env": {
+        "API_KEY": "${user_config.api_key}",
+        "DEBUG": "${user_config.debug_mode}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "get_current_time",
+      "description": "Get the current computer time in various formats"
+    }
+  ],
+  "keywords": [
+    "reference",
+    "example",
+    "hello-world",
+    "tutorial",
+    "mcp",
+    "time"
+  ],
+  "license": "MIT",
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Your API key for authentication (example of sensitive string)",
+      "sensitive": true,
+      "required": false
+    },
+    "verbose_logging": {
+      "type": "boolean",
+      "title": "Verbose Logging",
+      "description": "Enable detailed logging output",
+      "default": false,
+      "required": false
+    },
+    "max_results": {
+      "type": "number",
+      "title": "Maximum Results",
+      "description": "Maximum number of results to return",
+      "default": 10,
+      "min": 1,
+      "max": 100,
+      "required": false
+    },
+    "config_file": {
+      "type": "file",
+      "title": "Configuration File",
+      "description": "Path to a JSON configuration file",
+      "required": false
+    },
+    "workspace_directory": {
+      "type": "directory",
+      "title": "Workspace Directory",
+      "description": "Directory to use as workspace",
+      "default": "${HOME}/Documents",
+      "required": false
+    },
+    "debug_mode": {
+      "type": "string",
+      "title": "Debug Mode",
+      "description": "Set debug level (example of non-sensitive string)",
+      "default": "info",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  }
+}

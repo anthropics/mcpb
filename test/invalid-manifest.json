@@ -1,0 +1,13 @@
+{
+  "dxt_version": "1.0",
+  "name": "test-extension",
+  "version": "1.0.0",
+  "description": "A test DXT extension",
+  "author": {
+    "email": "not-a-valid-email"
+  },
+  "server": {
+    "type": "invalid-type",
+    "entry_point": "server/index.js"
+  }
+}

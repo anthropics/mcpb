@@ -1,0 +1,131 @@
+{
+  "env": {
+    "es6": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
+  ],
+  "plugins": ["@typescript-eslint", "import", "prettier", "simple-import-sort"],
+  "parser": "@typescript-eslint/parser",
+  "ignorePatterns": ["dist/*", "node_modules/*", "*.js"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "settings": {
+    "import/resolver": {
+      // Enables eslint-import-resolver-typescript
+      "typescript": {}
+    }
+  },
+  "rules": {
+    "prettier/prettier": "warn",
+    // Require all external imports to be declared as a dependency
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "packageDir": "./"
+      }
+    ],
+    // Imports must not cause cyclical dependencies
+    "import/no-cycle": [
+      "error",
+      { "allowUnsafeDynamicCyclicDependency": true }
+    ],
+    "import/no-named-as-default-member": "off",
+    // Imports must be ordered appropriately
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          // Side effect imports.
+          ["^\\u0000"],
+          // Node.js builtins prefixed with `node:`.
+          ["^node:"],
+          // Packages.
+          // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
+          ["^@?\\w"],
+          // Absolute imports
+          ["^@/"],
+          // Relative imports.
+          // Anything that starts with a dot.
+          ["^\\."]
+        ]
+      }
+    ],
+    "simple-import-sort/exports": "error",
+    // Imports must be placed before non-import statements
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+
+    // Require a space at the start of comments
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        "markers": ["/"]
+      }
+    ],
+
+    // Make sure switch-case doesn't accidentally fall-through https://eslint.org/docs/latest/rules/no-fallthrough
+    "no-fallthrough": "error",
+
+    "@typescript-eslint/ban-ts-comment": "warn",
+
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports"
+      }
+    ],
+
+    // Disallow annotating types where the type can be easily inferred
+    "@typescript-eslint/no-inferrable-types": [
+      "error",
+      {
+        "ignoreParameters": false,
+        "ignoreProperties": false
+      }
+    ],
+    // Allow non-null assertions
+    "@typescript-eslint/no-non-null-assertion": "off",
+    // Disallow using 'any' explicitly in annotations
+    "@typescript-eslint/no-explicit-any": "error",
+    // Require promise outcomes to be properly handled
+    "@typescript-eslint/no-floating-promises": "error",
+    // Turn off base eslint rule in favor of typescript-eslint version
+    // to avoid getting eslint errors on type signatures
+    "no-unused-vars": "off",
+    // Disallow unused variables and imports
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "args": "after-used",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true,
+        "vars": "all",
+        "args": "after-used",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+
+    // Disallow empty functions
+    // If a function is intentionally empty, adding a comment line
+    // inside the function body is enough to pass this rule
+    "@typescript-eslint/no-empty-function": "error"
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.ts"],
+      "parserOptions": {
+        "project": "./tsconfig.test.json"
+      }
+    }
+  ]
+}

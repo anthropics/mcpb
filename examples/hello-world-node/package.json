@@ -1,0 +1,11 @@
+{
+  "name": "hello-world-node",
+  "version": "0.1.0",
+  "description": "A simple MCP server that returns the current time",
+  "type": "module",
+  "main": "server/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  }
+}

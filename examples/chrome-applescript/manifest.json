@@ -1,0 +1,73 @@
+{
+  "dxt_version": "0.1",
+  "name": "chrome-applescript",
+  "display_name": "Control Chrome with AppleScript",
+  "version": "0.1.0",
+  "description": "Control Google Chrome browser tabs, windows, and navigation",
+  "long_description": "This extension allows you to control Google Chrome browser tabs, windows, and navigation through Chrome's official AppleScript API. You can open URLs, manage tabs, execute JavaScript, and retrieve page content.\n\nThis extension is meant to be a demonstration of Desktop Extensions.\n\nThis extension is not affiliated with Google or Chrome.",
+  "author": {
+    "name": "Anthropic",
+    "email": "support@anthropic.com",
+    "url": "https://github.com/anthropics"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "npx @anthropic-ai/dxt pack"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "open_url",
+      "description": "Open a URL in Chrome, either in a new tab or current tab."
+    },
+    {
+      "name": "get_current_tab",
+      "description": "Get information about the current active tab."
+    },
+    {
+      "name": "list_tabs",
+      "description": "List all open tabs in Chrome."
+    },
+    {
+      "name": "close_tab",
+      "description": "Close a specific tab."
+    },
+    {
+      "name": "switch_to_tab",
+      "description": "Switch to a specific tab."
+    },
+    {
+      "name": "reload_tab",
+      "description": "Reload a tab."
+    },
+    {
+      "name": "go_back",
+      "description": "Navigate back in browser history."
+    },
+    {
+      "name": "go_forward",
+      "description": "Navigate forward in browser history."
+    },
+    {
+      "name": "execute_javascript",
+      "description": "Execute JavaScript in the current tab."
+    },
+    {
+      "name": "get_page_content",
+      "description": "Get the text content of the current page."
+    }
+  ],
+  "compatibility": {
+    "platforms": ["darwin"]
+  },
+  "keywords": ["chrome", "browser", "remote"],
+  "license": "MIT"
+}

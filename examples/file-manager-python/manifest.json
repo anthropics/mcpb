@@ -1,0 +1,77 @@
+{
+  "dxt_version": "0.1",
+  "name": "file-manager-python",
+  "display_name": "Python File Manager MCP",
+  "version": "0.1.0",
+  "description": "A Python MCP server for file operations",
+  "long_description": "This extension provides file management capabilities through a Python MCP server. It demonstrates Python-based Desktop Extension development, including file operations, directory management, and proper MCP protocol implementation.",
+  "author": {
+    "name": "Anthropic",
+    "email": "support@anthropic.com",
+    "url": "https://github.com/anthropics"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "python",
+      "args": [
+        "${__dirname}/server/main.py",
+        "--workspace=${user_config.workspace_directory}"
+      ],
+      "env": {
+        "DEBUG": "${user_config.debug_mode}",
+        "PYTHONPATH": "${__dirname}/server/lib"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "list_files",
+      "description": "List files in a directory"
+    },
+    {
+      "name": "read_file",
+      "description": "Read file contents"
+    },
+    {
+      "name": "get_file_info",
+      "description": "Get information about a file"
+    }
+  ],
+  "keywords": [
+    "file",
+    "directory",
+    "python",
+    "management",
+    "filesystem"
+  ],
+  "license": "MIT",
+  "user_config": {
+    "workspace_directory": {
+      "type": "directory",
+      "title": "Workspace Directory",
+      "description": "Directory to use as workspace",
+      "default": "${HOME}/Documents",
+      "required": false
+    },
+    "debug_mode": {
+      "type": "boolean",
+      "title": "Debug Mode",
+      "description": "Enable debug output",
+      "default": false,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.8.0 <4"
+    }
+  }
+}
