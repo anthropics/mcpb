@@ -241,7 +241,7 @@ function createSignatureBlock(pkcs7Signature: Buffer): Buffer {
 /**
  * Extracts the signature block from a signed DXT file
  */
-function extractSignatureBlock(fileContent: Buffer): {
+export function extractSignatureBlock(fileContent: Buffer): {
   originalContent: Buffer;
   pkcs7Signature?: Buffer;
 } {
