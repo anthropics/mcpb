@@ -9,6 +9,7 @@ export const EXCLUDE_PATTERNS = [
   ".git",
   ".dxtignore",
   "*.log",
+  ".env*",
   ".npm",
   ".npmrc",
   ".yarnrc",
