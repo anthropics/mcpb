@@ -258,4 +258,60 @@ coverage/`;
       );
     });
   });
+
+  describe("Negation patterns", () => {
+    it("should include files that match negation patterns", () => {
+      const additionalPatterns = ["*.log", "!important.log"];
+
+      // debug.log should be excluded (matches *.log, no negation)
+      expect(shouldExclude("debug.log", additionalPatterns)).toBe(true);
+
+      // important.log should NOT be excluded (matches *.log, but negated by !important.log)
+      expect(shouldExclude("important.log", additionalPatterns)).toBe(false);
+
+      // Other files should not be excluded
+      expect(shouldExclude("main.js", additionalPatterns)).toBe(false);
+    });
+
+    it("should handle multiple negation patterns", () => {
+      const additionalPatterns = ["*.log", "!important.log", "!critical.log"];
+
+      expect(shouldExclude("debug.log", additionalPatterns)).toBe(true);
+      expect(shouldExclude("important.log", additionalPatterns)).toBe(false);
+      expect(shouldExclude("critical.log", additionalPatterns)).toBe(false);
+      expect(shouldExclude("other.log", additionalPatterns)).toBe(true);
+    });
+
+    it("should handle negation with glob patterns", () => {
+      const additionalPatterns = ["temp/*", "!temp/important.txt"];
+
+      expect(shouldExclude("temp/debug.txt", additionalPatterns)).toBe(true);
+      expect(shouldExclude("temp/important.txt", additionalPatterns)).toBe(
+        false,
+      );
+      expect(shouldExclude("other/file.txt", additionalPatterns)).toBe(false);
+    });
+
+    it("should handle negation with directory patterns", () => {
+      const additionalPatterns = ["tests/", "!tests/critical/"];
+
+      expect(shouldExclude("tests/unit/test.js", additionalPatterns)).toBe(
+        true,
+      );
+      expect(shouldExclude("tests/critical/test.js", additionalPatterns)).toBe(
+        false,
+      );
+      expect(shouldExclude("src/main.js", additionalPatterns)).toBe(false);
+    });
+
+    it("should not negate files that don't match exclusion patterns", () => {
+      const additionalPatterns = ["*.log", "!main.js"];
+
+      // main.js should not be excluded (doesn't match *.log, negation doesn't apply)
+      expect(shouldExclude("main.js", additionalPatterns)).toBe(false);
+
+      // debug.log should be excluded (matches *.log, no applicable negation)
+      expect(shouldExclude("debug.log", additionalPatterns)).toBe(true);
+    });
+  });
 });
