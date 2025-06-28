@@ -176,15 +176,19 @@ export function getAllFiles(
   return fileList;
 }
 
+interface FileWithPermissions {
+  data: Uint8Array;
+  mode: number;
+}
 export interface GetAllFilesResult {
-  files: Record<string, Uint8Array>;
+  files: Record<string, FileWithPermissions>;
   ignoredCount: number;
 }
 
 export function getAllFilesWithCount(
   dirPath: string,
   baseDir: string = dirPath,
-  fileList: Record<string, Uint8Array> = {},
+  fileList: Record<string, FileWithPermissions> = {},
   additionalPatterns: string[] = [],
   ignoredCount = 0,
 ): GetAllFilesResult {
@@ -213,7 +217,10 @@ export function getAllFilesWithCount(
     } else {
       // Use forward slashes in zip file paths
       const zipPath = relativePath.split(sep).join("/");
-      fileList[zipPath] = readFileSync(filePath);
+      fileList[zipPath] = {
+        data: readFileSync(filePath),
+        mode: stat.mode,
+      };
     }
   }
 

@@ -1,5 +1,6 @@
 import { confirm } from "@inquirer/prompts";
 import { createHash } from "crypto";
+import type { Zippable } from "fflate";
 import { zipSync } from "fflate";
 import {
   existsSync,
@@ -140,8 +141,9 @@ export async function packExtension({
     >();
     const shallowFiles: Array<{ path: string; size: number }> = [];
 
-    for (const [filePath, content] of fileEntries) {
+    for (const [filePath, fileData] of fileEntries) {
       const relPath = relative(resolvedPath, filePath);
+      const content = fileData.data;
       const size =
         typeof content === "string"
           ? Buffer.byteLength(content, "utf8")
@@ -184,8 +186,26 @@ export async function packExtension({
       }
     }
 
-    // Create zip
-    const zipData = zipSync(files, {
+    // Create zip with preserved file permissions
+    const zipFiles: Zippable = {};
+
+    const isUnix = process.platform !== "win32";
+
+    for (const [filePath, fileData] of Object.entries(files)) {
+      if (isUnix) {
+        // Set external file attributes to preserve Unix permissions
+        // The mode needs to be shifted to the upper 16 bits for ZIP format
+        zipFiles[filePath] = [
+          fileData.data,
+          { os: 3, attrs: (fileData.mode & 0o777) << 16 },
+        ];
+      } else {
+        // On Windows, use default ZIP attributes (no Unix permissions)
+        zipFiles[filePath] = fileData.data;
+      }
+    }
+
+    const zipData = zipSync(zipFiles, {
       level: 9, // Maximum compression
       mtime: new Date(),
     });
