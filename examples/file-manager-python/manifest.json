@@ -39,13 +39,7 @@
       "description": "Get information about a file"
     }
   ],
-  "keywords": [
-    "file",
-    "directory",
-    "python",
-    "management",
-    "filesystem"
-  ],
+  "keywords": ["file", "directory", "python", "management", "filesystem"],
   "license": "MIT",
   "user_config": {
     "workspace_directory": {
@@ -65,11 +59,7 @@
   },
   "compatibility": {
     "claude_desktop": ">=0.10.0",
-    "platforms": [
-      "darwin",
-      "win32",
-      "linux"
-    ],
+    "platforms": ["darwin", "win32", "linux"],
     "runtimes": {
       "python": ">=3.8.0 <4"
     }
