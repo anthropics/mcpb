@@ -10,6 +10,7 @@ import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../node/sign.js";
 import { validateManifest } from "../node/validate.js";
 import { initExtension } from "./init.js";
 import { packExtension } from "./pack.js";
+import { unpackExtension } from "./unpack.js";
 
 // ES modules equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -83,6 +84,27 @@ program
         const success = await packExtension({
           extensionPath: directory,
           outputPath: output,
+        });
+        process.exit(success ? 0 : 1);
+      } catch (error) {
+        console.error(
+          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+        process.exit(1);
+      }
+    })();
+  });
+
+// Unpack command
+program
+  .command("unpack <dxt-file> [output]")
+  .description("Unpack a DXT extension file")
+  .action((dxtFile: string, output?: string) => {
+    void (async () => {
+      try {
+        const success = await unpackExtension({
+          dxtPath: dxtFile,
+          outputDir: output,
         });
         process.exit(success ? 0 : 1);
       } catch (error) {
