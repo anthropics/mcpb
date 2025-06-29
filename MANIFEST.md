@@ -290,14 +290,12 @@ The `server` object defines how to run the MCP server:
 ### Server Types
 
 1. **Python**: `server.type = "python"`
-
    - Requires `entry_point` to Python file
    - All dependencies must be bundled in the DXT
    - Can use `server/lib` for packages or `server/venv` for full virtual environment
    - Python runtime version specified in `compatibility.runtimes.python`
 
 2. **Node.js**: `server.type = "node"`
-
    - Requires `entry_point` to JavaScript file
    - All dependencies must be bundled in `node_modules`
    - Node.js runtime version specified in `compatibility.runtimes.node`

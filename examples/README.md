@@ -7,18 +7,18 @@ This directory contains example Desktop Extensions that demonstrate the DXT form
 **Important:** These examples are **NOT intended for production use**. They serve as:
 
 - Demonstrations of the DXT manifest format
-- Templates for building your own extensions  
+- Templates for building your own extensions
 - Simple MCP server implementations for testing
 
-But, the MCP servers themselves are not robust secure production ready servers and should not be relied upon for production use. 
+But, the MCP servers themselves are not robust secure production ready servers and should not be relied upon for production use.
 
 ## Examples Included
 
-| Example | Type | Demonstrates |
-|---------|------|-------------|
-| `hello-world-node` | Node.js | Basic MCP server with simple time tool |
-| `chrome-applescript` | Node.js | Browser automation via AppleScript |
-| `file-manager-python` | Python | File system operations and path handling |
+| Example               | Type    | Demonstrates                             |
+| --------------------- | ------- | ---------------------------------------- |
+| `hello-world-node`    | Node.js | Basic MCP server with simple time tool   |
+| `chrome-applescript`  | Node.js | Browser automation via AppleScript       |
+| `file-manager-python` | Python  | File system operations and path handling |
 
 ## Usage
 
