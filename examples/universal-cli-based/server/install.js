@@ -59,10 +59,10 @@ async function getLatestRelease() {
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
-                try {
+                if (res.statusCode !== 200) {
+                    reject(new Error(`GitHub API returned ${res.statusCode}: ${data}`));
+                } else {
                     resolve(JSON.parse(data));
-                } catch (e) {
-                    reject(e);
                 }
             });
         }).on('error', reject);
@@ -72,12 +72,12 @@ async function getLatestRelease() {
 // Download and extract binary from URL
 async function downloadBinary(url, destPath) {
     return new Promise((resolve, reject) => {
-        console.log(`📥 Downloading from: ${url}`);
+        console.error(`📥 Downloading from: ${url}`);
         
         const isCompressed = url.endsWith('.tar.gz') || url.endsWith('.zip');
-        const tempFile = isCompressed ? destPath + '.tmp' : destPath;
+        const tempFile = destPath + '.download';
         
-        https.get(url, { 
+        https.get(url, {
             headers: { 'User-Agent': 'smart-tree-dxt-installer' },
             followRedirect: true 
         }, (res) => {
@@ -89,7 +89,7 @@ async function downloadBinary(url, destPath) {
             }
             
             if (res.statusCode !== 200) {
-                reject(new Error(`Failed to download: ${res.statusCode}`));
+                reject(new Error(`Download failed with status ${res.statusCode}`));
                 return;
             }
             
@@ -101,112 +101,156 @@ async function downloadBinary(url, destPath) {
                 
                 if (isCompressed) {
                     // Extract the binary
-                    console.log('📦 Extracting binary...');
+                    console.error('📦 Extracting binary...');
                     try {
+                        const extractDir = path.dirname(destPath);
+                        const binaryName = path.basename(destPath);
+                        
+                        // Create a temporary extraction directory
+                        const tempExtractDir = destPath + '.extract';
+                        if (!fs.existsSync(tempExtractDir)) {
+                            fs.mkdirSync(tempExtractDir, { recursive: true });
+                        }
+                        
                         if (url.endsWith('.tar.gz')) {
-                            // Extract tar.gz using built-in tar command
-                            execSync(`tar -xzf "${tempFile}" -C "${path.dirname(destPath)}"`, { stdio: 'inherit' });
+                            // Extract tar.gz to temp directory
+                            execSync(`tar -xzf "${tempFile}" -C "${tempExtractDir}"`, { 
+                                stdio: 'pipe' // Prevent output to stdout
+                            });
                         } else if (url.endsWith('.zip')) {
                             // Extract zip for Windows
-                            execSync(`unzip -o "${tempFile}" -d "${path.dirname(destPath)}"`, { stdio: 'inherit' });
+                            execSync(`unzip -o "${tempFile}" -d "${tempExtractDir}"`, { 
+                                stdio: 'pipe' // Prevent output to stdout
+                            });
                         }
                         
-                        // Clean up temp file
+                        // Clean up downloaded archive
                         fs.unlinkSync(tempFile);
                         
-                        // The binary might be in a subdirectory, try to find it
-                        const binaryName = path.basename(destPath);
-                        const extractedBinary = path.join(path.dirname(destPath), binaryName);
+                        // Find the extracted binary
+                        // The binary might be directly in the temp dir or named 'st'/'st.exe'
+                        let extractedBinary = null;
+                        const files = fs.readdirSync(tempExtractDir);
                         
-                        if (!fs.existsSync(extractedBinary)) {
-                            // Look for the binary in immediate subdirectories
-                            const files = fs.readdirSync(path.dirname(destPath));
-                            for (const file of files) {
-                                const fullPath = path.join(path.dirname(destPath), file);
-                                if (fs.statSync(fullPath).isDirectory()) {
-                                    const nestedBinary = path.join(fullPath, binaryName);
-                                    if (fs.existsSync(nestedBinary)) {
-                                        fs.renameSync(nestedBinary, destPath);
-                                        fs.rmdirSync(fullPath);
-                                        break;
-                                    }
-                                }
+                        for (const file of files) {
+                            const filePath = path.join(tempExtractDir, file);
+                            const stat = fs.statSync(filePath);
+                            
+                            if (stat.isFile() && (file === binaryName || file === 'st' || file === 'st.exe')) {
+                                extractedBinary = filePath;
+                                break;
                             }
                         }
+                        
+                        if (!extractedBinary) {
+                            throw new Error('Binary not found after extraction');
+                        }
+                        
+                        // Move the binary to its destination
+                        fs.renameSync(extractedBinary, destPath);
+                        
+                        // Clean up temp directory
+                        fs.rmSync(tempExtractDir, { recursive: true, force: true });
+                        
                     } catch (err) {
+                        // Clean up on error
+                        try {
+                            if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+                            if (fs.existsSync(destPath + '.extract')) {
+                                fs.rmSync(destPath + '.extract', { recursive: true, force: true });
+                            }
+                        } catch (e) {
+                            // Ignore cleanup errors
+                        }
                         reject(new Error(`Failed to extract: ${err.message}`));
                         return;
                     }
+                } else {
+                    // Move downloaded file to destination
+                    fs.renameSync(tempFile, destPath);
                 }
                 
                 // Make executable on Unix-like systems
                 if (process.platform !== 'win32') {
                     fs.chmodSync(destPath, '755');
                 }
+                
+                // Verify it's actually executable
+                try {
+                    const fileInfo = execSync(`file "${destPath}"`, { encoding: 'utf8' });
+                    console.error(`📋 File type: ${fileInfo.trim()}`);
+                } catch (e) {
+                    // file command might not exist on all systems
+                }
+                
                 resolve();
             });
         }).on('error', reject);
     });
 }
 
-// Main installation function
+// Main installer function
 async function install() {
+    console.error('🌳 Smart Tree Binary Installer');
+    console.error('===============================\n');
+    
     try {
-        console.log('🌳 Smart Tree Binary Installer');
-        console.log('==============================\n');
-        
         const platformInfo = getPlatformInfo();
-        console.log(`📍 Platform: ${platformInfo.platform} ${platformInfo.arch}`);
-        console.log(`🎯 Target: ${platformInfo.rustTarget}\n`);
+        console.error(`📍 Platform: ${platformInfo.platform} (${platformInfo.arch})`);
+        console.error(`🎯 Target: ${platformInfo.rustTarget}`);
         
         // Check if binary already exists
         const binaryPath = path.join(__dirname, platformInfo.binaryName);
         if (fs.existsSync(binaryPath)) {
-            console.log('✅ Binary already exists. Checking version...');
+            console.error('✅ Binary already exists. Checking version...');
             try {
-                const version = execSync(`${binaryPath} --version`, { encoding: 'utf8' }).trim();
-                console.log(`📌 Current version: ${version}`);
+                const version = execSync(`"${binaryPath}" --version`, { encoding: 'utf8' }).trim();
+                console.error(`📌 Current version: ${version}`);
+                
+                // If we can get the version, the binary is working
+                console.error('✨ Binary is working correctly!');
+                return;
             } catch (e) {
-                console.log('⚠️  Could not determine current version');
+                console.error('⚠️  Binary exists but not working, will reinstall...');
+                // Continue with installation
             }
         }
         
-        console.log('\n🔍 Fetching latest release info...');
+        // Fetch latest release
+        console.error('\n🔍 Fetching latest release info...');
         const release = await getLatestRelease();
-        console.log(`📦 Latest version: ${release.tag_name}`);
+        console.error(`📦 Latest version: ${release.tag_name}`);
         
-        // Find the asset for our platform
-        const asset = release.assets.find(a => 
-            a.name === platformInfo.assetName || 
-            a.name === `${BINARY_NAME}-${platformInfo.rustTarget}.tar.gz`
-        );
+        // Find the appropriate asset
+        const assetName = `${platformInfo.assetName}${platformInfo.platform === 'win32' ? '.zip' : '.tar.gz'}`;
+        const asset = release.assets.find(a => a.name === assetName);
         
         if (!asset) {
             throw new Error(`No binary found for ${platformInfo.rustTarget} in latest release`);
         }
         
-        console.log(`\n📥 Downloading ${asset.name}...`);
+        console.error(`\n📥 Downloading ${asset.name}...`);
         await downloadBinary(asset.browser_download_url, binaryPath);
         
         // Verify installation
-        console.log('\n🔧 Verifying installation...');
-        const version = execSync(`${binaryPath} --version`, { encoding: 'utf8' }).trim();
-        console.log(`✅ Successfully installed: ${version}`);
+        console.error('\n🔧 Verifying installation...');
+        const version = execSync(`"${binaryPath}" --version`, { encoding: 'utf8' }).trim();
+        console.error(`✅ Successfully installed: ${version}`);
         
         // Test MCP functionality
-        console.log('\n🧪 Testing MCP server...');
+        console.error('\n🧪 Testing MCP server...');
         const testResult = execSync(
-            `echo '{"jsonrpc":"2.0","method":"initialize","params":{},"id":1}' | ${binaryPath} --mcp 2>&1 | head -2`,
+            `echo '{"jsonrpc":"2.0","method":"initialize","params":{},"id":1}' | "${binaryPath}" --mcp 2>&1 | head -2`,
             { encoding: 'utf8' }
         );
         
         if (testResult.includes('MCP server started')) {
-            console.log('✅ MCP server test passed!');
+            console.error('✅ MCP server test passed!');
         } else {
-            console.log('⚠️  MCP server test inconclusive');
+            console.error('⚠️  MCP server test inconclusive');
         }
         
-        console.log('\n🎉 Installation complete!');
+        console.error('\n🎉 Installation complete!');
         
     } catch (error) {
         console.error('\n❌ Installation failed:', error.message);
@@ -223,4 +267,4 @@ if (require.main === module) {
     install();
 }
 
-module.exports = { install, getPlatformInfo }; 
+module.exports = { install, getPlatformInfo };
