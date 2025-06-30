@@ -1,0 +1,14 @@
+{
+  "name": "smart-tree-dxt",
+  "version": "1.1.1",
+  "description": "Smart Tree MCP Server for Claude Desktop",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "8b-is",
+  "license": "MIT"
+}

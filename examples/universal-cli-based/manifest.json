@@ -1,0 +1,212 @@
+{
+  "dxt_version": "0.1",
+  "id": "com.example.smart-tree-universal",
+  "name": "smart-tree-universal",
+  "display_name": "Smart Tree Universal",
+  "version": "1.1.1",
+  "description": "A blazingly fast, AI-friendly directory tree visualization tool",
+  "long_description": "Smart Tree (st) is a powerful directory visualization tool that goes beyond traditional tree commands. It provides intelligent filtering, multiple output formats, and optimization for both human and AI consumption.\n\nFeatures include:\n- Multiple output formats (hex, json, csv, tsv, ai-optimized)\n- Smart filtering by file type, size, date, and content\n- Built-in compression for large outputs\n- MCP server integration for AI assistants\n- Blazingly fast performance with Rust implementation\n- 20+ specialized tools for comprehensive file system analysis",
+  "author": {
+    "name": "8b-is",
+    "email": "st@8b.is",
+    "url": "https://8b.is/?r=st"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/8b-is/smart-tree"
+  },
+  "homepage": "https://8b.is/#free-tools?r=st",
+  "documentation": "https://github.com/8b-is/smart-tree/blob/main/README.md",
+  "support": "https://github.com/8b-is/smart-tree/issues",
+  "icon": "icon.png",
+  "files": [
+    "manifest.json",
+    "icon.png",
+    "server/index.js",
+    "server/install.js",
+    "README.md"
+  ],
+  "tools": [
+    {
+      "name": "analyze_directory",
+      "description": "Analyze a directory structure with smart filtering and output formatting"
+    },
+    {
+      "name": "find_files",
+      "description": "Find files matching specific criteria (name, type, size, date)"
+    },
+    {
+      "name": "get_file_stats",
+      "description": "Get detailed statistics about files and directories"
+    },
+    {
+      "name": "generate_digest",
+      "description": "Generate a digest of directory contents with checksums"
+    },
+    {
+      "name": "quick_tree",
+      "description": "Get a quick tree view of a directory (optimized for AI, compressed by default)"
+    },
+    {
+      "name": "project_overview",
+      "description": "Get a comprehensive project overview with context, structure, and key files"
+    },
+    {
+      "name": "find_code_files",
+      "description": "Find all code files in a project by common programming languages"
+    },
+    {
+      "name": "find_config_files",
+      "description": "Find all configuration files (json, yaml, toml, ini, env, etc.)"
+    },
+    {
+      "name": "find_documentation",
+      "description": "Find all documentation files (README, markdown, rst, txt docs)"
+    },
+    {
+      "name": "search_in_files",
+      "description": "Search for content within files (like grep but AI-friendly output)"
+    },
+    {
+      "name": "find_large_files",
+      "description": "Find files larger than a specified size"
+    },
+    {
+      "name": "find_recent_changes",
+      "description": "Find recently modified files"
+    },
+    {
+      "name": "compare_directories",
+      "description": "Compare two directories and show differences"
+    },
+    {
+      "name": "get_git_status",
+      "description": "Get git repository status and structure (if directory is a git repo)"
+    },
+    {
+      "name": "find_duplicates",
+      "description": "Find duplicate files based on size and name patterns"
+    },
+    {
+      "name": "analyze_workspace",
+      "description": "Analyze a development workspace and identify project structure, build files, dependencies"
+    },
+    {
+      "name": "find_tests",
+      "description": "Find all test files in a project"
+    },
+    {
+      "name": "find_build_files",
+      "description": "Find build configuration files (Makefile, CMake, Cargo.toml, package.json, etc.)"
+    },
+    {
+      "name": "directory_size_breakdown",
+      "description": "Get size breakdown of subdirectories to identify space usage"
+    },
+    {
+      "name": "find_empty_directories",
+      "description": "Find all empty directories"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "find_recent_document",
+      "description": "Help find a document worked on recently",
+      "arguments": ["timeframe", "document_type"],
+      "text": "Please help me find ${arguments.document_type} documents I was working on ${arguments.timeframe}. Use find_recent_changes to search for recently modified files, then filter by document types like .doc, .docx, .txt, .md, or .pdf."
+    },
+    {
+      "name": "analyze_disk_usage",
+      "description": "Find what files are using disk space",
+      "arguments": [],
+      "text": "What files are eating up my hard drive space? Please use directory_size_breakdown to analyze the current directory and subdirectories, then use find_large_files to identify the biggest space consumers. Provide a summary of where space is being used."
+    },
+    {
+      "name": "compare_duplicate_folders",
+      "description": "Compare duplicate folders to find the most recent",
+      "arguments": ["folder_type"],
+      "text": "Could you see which of these duplicate ${arguments.folder_type} folders have the latest files? First use find_duplicates to identify potential duplicate directories, then use compare_directories and find_recent_changes to determine which has the most recent updates."
+    },
+    {
+      "name": "organize_project",
+      "description": "Analyze and organize a project directory",
+      "arguments": ["project_path"],
+      "text": "Please analyze the project at ${arguments.project_path} using analyze_workspace. Identify the project type, find all code files, configuration files, and documentation. Suggest an organization structure based on best practices."
+    },
+    {
+      "name": "cleanup_empty_dirs",
+      "description": "Find and suggest removal of empty directories",
+      "arguments": [],
+      "text": "Can you help me clean up empty directories? Use find_empty_directories to identify all empty folders, then provide a list organized by location. Suggest which ones are safe to remove."
+    },
+    {
+      "name": "find_all_code",
+      "description": "Find all code files in a directory",
+      "arguments": ["languages"],
+      "text": "Find all ${arguments.languages} code files in the current directory. Use find_code_files with the specified languages and provide a summary organized by file type and location."
+    },
+    {
+      "name": "search_content",
+      "description": "Search for specific content in files",
+      "arguments": ["search_term", "file_types"],
+      "text": "Search for '${arguments.search_term}' in ${arguments.file_types} files. Use search_in_files to find all occurrences and show me which files contain this term with line numbers."
+    },
+    {
+      "name": "project_health_check",
+      "description": "Comprehensive project health analysis",
+      "arguments": [],
+      "text": "Perform a comprehensive health check on this project. Use project_overview for the structure, find_tests to check test coverage, find_documentation to verify docs, and get_statistics for overall metrics. Provide insights and recommendations."
+    }
+  ],
+  "install": {
+    "type": "node",
+    "script": "server/install.js"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "ST_MCP_ALLOWED_PATHS": "${user_config.allowed_directories}",
+        "ST_MCP_BLOCKED_PATHS": ""
+      }
+    }
+  },
+  "tools_generated": true,
+  "keywords": [
+    "filesystem",
+    "directory",
+    "tree",
+    "visualization",
+    "ai",
+    "mcp",
+    "file-search",
+    "disk-usage",
+    "project-analysis",
+    "code-search",
+    "duplicate-finder",
+    "workspace-analyzer"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  },
+  "user_config": {
+    "allowed_directories": {
+      "type": "directory",
+      "title": "Allowed Directories",
+      "description": "Select directories that Smart Tree can analyze",
+      "multiple": true,
+      "required": true,
+      "default": ["${HOME}/Desktop"]
+    }
+  }
+} 
