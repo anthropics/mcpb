@@ -17,7 +17,7 @@ async function checkForUpdates() {
         const binaryPath = path.join(__dirname, platformInfo.binaryName);
         
         // Get current version
-        const currentVersion = execSync(`${binaryPath} --version`, { encoding: 'utf8' })
+        const currentVersion = execSync(`"${binaryPath}" --version`, { encoding: 'utf8' })
             .trim()
             .replace(/^st\s+/, '');
         
@@ -56,14 +56,18 @@ async function checkForUpdates() {
     }
 }
 
-async function main() {
-    try {
-        const platformInfo = getPlatformInfo();
-        const binaryPath = path.join(__dirname, platformInfo.binaryName);
+// Pre-flight check: ensure binary is installed BEFORE MCP starts
+async function ensureBinaryInstalled() {
+    const platformInfo = getPlatformInfo();
+    const binaryPath = path.join(__dirname, platformInfo.binaryName);
+    const updateMarker = path.join(__dirname, '.update-available');
+    
+    if (!fs.existsSync(binaryPath) || fs.existsSync(updateMarker)) {
+        // Redirect stdout to stderr during installation to prevent MCP protocol issues
+        const originalWrite = process.stdout.write;
+        process.stdout.write = process.stderr.write.bind(process.stderr);
         
-        // Check if binary exists or update is available
-        const updateMarker = path.join(__dirname, '.update-available');
-        if (!fs.existsSync(binaryPath) || fs.existsSync(updateMarker)) {
+        try {
             if (fs.existsSync(updateMarker)) {
                 console.error('Smart Tree update available. Installing...');
                 fs.unlinkSync(updateMarker); // Remove marker
@@ -71,21 +75,33 @@ async function main() {
                 console.error('Smart Tree binary not found. Installing...');
             }
             await install();
-        } else {
-            // Check for updates on startup (non-blocking)
-            checkForUpdates().catch(err => {
-                // Silently log update check failures
-                if (process.env.DEBUG) {
-                    console.error('Update check failed:', err.message);
-                }
-            });
+        } finally {
+            // Restore stdout
+            process.stdout.write = originalWrite;
         }
+    }
+    
+    return binaryPath;
+}
+
+async function main() {
+    try {
+        // Ensure binary is installed BEFORE starting MCP
+        const binaryPath = await ensureBinaryInstalled();
         
-        // Spawn the actual MCP server
+        // Check for updates on startup (non-blocking)
+        checkForUpdates().catch(err => {
+            if (process.env.DEBUG) {
+                console.error('Update check failed:', err.message);
+            }
+        });
+        
+        // Now spawn the actual MCP server with clean stdio
         const args = process.argv.slice(2);
         const child = spawn(binaryPath, ['--mcp', ...args], {
             stdio: 'inherit',
-            env: process.env
+            env: process.env,
+            shell: false
         });
         
         // Forward signals
@@ -103,4 +119,4 @@ async function main() {
     }
 }
 
-main(); 
+main();

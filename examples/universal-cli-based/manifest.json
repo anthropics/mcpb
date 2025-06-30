@@ -1,11 +1,11 @@
 {
   "dxt_version": "0.1",
-  "id": "com.example.smart-tree-universal",
-  "name": "smart-tree-universal",
-  "display_name": "Smart Tree Universal",
-  "version": "1.1.1",
-  "description": "A blazingly fast, AI-friendly directory tree visualization tool",
-  "long_description": "Smart Tree (st) is a powerful directory visualization tool that goes beyond traditional tree commands. It provides intelligent filtering, multiple output formats, and optimization for both human and AI consumption.\n\nFeatures include:\n- Multiple output formats (hex, json, csv, tsv, ai-optimized)\n- Smart filtering by file type, size, date, and content\n- Built-in compression for large outputs\n- MCP server integration for AI assistants\n- Blazingly fast performance with Rust implementation\n- 20+ specialized tools for comprehensive file system analysis",
+  "id": "is.8b.smart-tree",
+  "name": "smart-tree",
+  "display_name": "Smart Tree",
+  "version": "2.0.1",
+  "description": "Revolutionary AI-optimized directory tree with MEM|8 Quantum compression - 99% token reduction",
+  "long_description": "Smart Tree v2.0 revolutionizes directory visualization with MEM|8 Quantum compression, reducing output by 99% and saving thousands in AI token costs.\n\nKey Features:\n- **MEM|8 Quantum Format**: 99% size reduction (487MB → 4.1MB for Chromium)\n- **Cost Savings**: $1,270 saved per large directory analysis\n- **10-24x Faster**: Than traditional tree command\n- **Native Quantum Output**: Zero conversion overhead\n- Multiple output formats (quantum, hex, json, csv, tsv, ai-optimized)\n- Smart filtering by file type, size, date, and content\n- Built-in compression for all formats\n- MCP server integration with 20+ specialized tools\n- Cross-platform support (Windows, macOS, Linux)",
   "author": {
     "name": "8b-is",
     "email": "st@8b.is",

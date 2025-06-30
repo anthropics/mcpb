@@ -20,7 +20,10 @@ done
 
 # Create the DXT package (zip file with .dxt extension)
 echo "📦 Creating smart-tree.dxt..."
-zip -r smart-tree.dxt manifest.json server/ icon.png README.md
+# Remove old package if exists
+rm -f smart-tree.dxt
+# Create new package without storing directory entries
+zip -r smart-tree.dxt manifest.json icon.png README.md server/index.js server/install.js server/package.json server/.gitignore
 
 echo "✅ Successfully created smart-tree.dxt"
 echo ""
