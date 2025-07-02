@@ -88,6 +88,7 @@ async function main() {
     try {
         // Ensure binary is installed BEFORE starting MCP
         const binaryPath = await ensureBinaryInstalled();
+        const platformInfo = getPlatformInfo();
         
         // Check for updates on startup (non-blocking)
         checkForUpdates().catch(err => {
@@ -96,11 +97,20 @@ async function main() {
             }
         });
         
+        // Log startup info to stderr (safe for MCP protocol)
+        console.error(`Smart Tree MCP server v2.0.4 started`);
+        console.error(`  Build: ${platformInfo.binaryName} (${platformInfo.rustTarget})`);
+        console.error(`  Protocol: MCP v1.0`);
+        console.error(`  Features: tools, resources, prompts, caching`);
+        
         // Now spawn the actual MCP server with clean stdio
         const args = process.argv.slice(2);
         const child = spawn(binaryPath, ['--mcp', ...args], {
             stdio: 'inherit',
-            env: process.env,
+            env: {
+                ...process.env,
+                RUST_LOG: process.env.RUST_LOG || 'info'
+            },
             shell: false
         });
         

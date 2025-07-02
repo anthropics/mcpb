@@ -4,6 +4,10 @@
   "description": "A simple MCP server that returns the current time",
   "type": "module",
   "main": "server/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "Acme Inc",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1"

@@ -3,9 +3,9 @@
   "id": "is.8b.smart-tree",
   "name": "smart-tree",
   "display_name": "Smart Tree",
-  "version": "2.0.1",
+  "version": "2.0.7",
   "description": "Revolutionary AI-optimized directory tree with MEM|8 Quantum compression - 99% token reduction",
-  "long_description": "Smart Tree v2.0 revolutionizes directory visualization with MEM|8 Quantum compression, reducing output by 99% and saving thousands in AI token costs.\n\nKey Features:\n- **MEM|8 Quantum Format**: 99% size reduction (487MB → 4.1MB for Chromium)\n- **Cost Savings**: $1,270 saved per large directory analysis\n- **10-24x Faster**: Than traditional tree command\n- **Native Quantum Output**: Zero conversion overhead\n- Multiple output formats (quantum, hex, json, csv, tsv, ai-optimized)\n- Smart filtering by file type, size, date, and content\n- Built-in compression for all formats\n- MCP server integration with 20+ specialized tools\n- Cross-platform support (Windows, macOS, Linux)",
+  "long_description": "Smart Tree v2.0 revolutionizes directory visualization with MEM|8 Quantum compression, reducing output by 99% and saving thousands in AI token costs.\n\nKey Features:\n- **MEM|8 Quantum Format**: 99% size reduction (487MB → 4.1MB for Chromium)\n- **Claude Mode Default**: MCP tools now use maximum compression by default\n- **Semantic Analysis**: Group files by conceptual waves (inspired by Omni!)\n- **Mermaid Diagrams**: Generate directory diagrams for documentation\n- **Cost Savings**: $1,270 saved per large directory analysis\n- **10-24x Faster**: Than traditional tree command\n- **Native Streaming**: Constant memory usage for massive directories\n- Multiple output formats (quantum, claude, mermaid, semantic, hex, json, csv, tsv)\n- Smart filtering by file type, size, date, and content\n- Built-in compression for all formats\n- MCP server with 22 specialized tools\n- Cross-platform support (Windows, macOS, Linux)",
   "author": {
     "name": "8b-is",
     "email": "st@8b.is",
@@ -28,20 +28,24 @@
   ],
   "tools": [
     {
+      "name": "server_info",
+      "description": "Get information about the Smart Tree MCP server"
+    },
+    {
       "name": "analyze_directory",
-      "description": "Analyze a directory structure with smart filtering and output formatting"
+      "description": "Analyze a directory with smart compression. Use mode='claude' for MAXIMUM compression (10x reduction!)"
     },
     {
       "name": "find_files",
       "description": "Find files matching specific criteria (name, type, size, date)"
     },
     {
-      "name": "get_file_stats",
-      "description": "Get detailed statistics about files and directories"
+      "name": "get_statistics",
+      "description": "Get detailed statistics about a directory"
     },
     {
-      "name": "generate_digest",
-      "description": "Generate a digest of directory contents with checksums"
+      "name": "get_digest",
+      "description": "Get SHA256 digest of directory structure"
     },
     {
       "name": "quick_tree",
@@ -106,13 +110,20 @@
     {
       "name": "find_empty_directories",
       "description": "Find all empty directories"
+    },
+    {
+      "name": "semantic_analysis",
+      "description": "Group files by semantic similarity using wave-based analysis (inspired by Omni!)"
     }
   ],
   "prompts": [
     {
       "name": "find_recent_document",
       "description": "Help find a document worked on recently",
-      "arguments": ["timeframe", "document_type"],
+      "arguments": [
+        "timeframe",
+        "document_type"
+      ],
       "text": "Please help me find ${arguments.document_type} documents I was working on ${arguments.timeframe}. Use find_recent_changes to search for recently modified files, then filter by document types like .doc, .docx, .txt, .md, or .pdf."
     },
     {
@@ -124,13 +135,17 @@
     {
       "name": "compare_duplicate_folders",
       "description": "Compare duplicate folders to find the most recent",
-      "arguments": ["folder_type"],
+      "arguments": [
+        "folder_type"
+      ],
       "text": "Could you see which of these duplicate ${arguments.folder_type} folders have the latest files? First use find_duplicates to identify potential duplicate directories, then use compare_directories and find_recent_changes to determine which has the most recent updates."
     },
     {
       "name": "organize_project",
       "description": "Analyze and organize a project directory",
-      "arguments": ["project_path"],
+      "arguments": [
+        "project_path"
+      ],
       "text": "Please analyze the project at ${arguments.project_path} using analyze_workspace. Identify the project type, find all code files, configuration files, and documentation. Suggest an organization structure based on best practices."
     },
     {
@@ -142,13 +157,18 @@
     {
       "name": "find_all_code",
       "description": "Find all code files in a directory",
-      "arguments": ["languages"],
+      "arguments": [
+        "languages"
+      ],
       "text": "Find all ${arguments.languages} code files in the current directory. Use find_code_files with the specified languages and provide a summary organized by file type and location."
     },
     {
       "name": "search_content",
       "description": "Search for specific content in files",
-      "arguments": ["search_term", "file_types"],
+      "arguments": [
+        "search_term",
+        "file_types"
+      ],
       "text": "Search for '${arguments.search_term}' in ${arguments.file_types} files. Use search_in_files to find all occurrences and show me which files contain this term with line numbers."
     },
     {
@@ -194,7 +214,11 @@
   "license": "MIT",
   "compatibility": {
     "claude_desktop": ">=0.10.0",
-    "platforms": ["darwin", "win32", "linux"],
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
     "runtimes": {
       "node": ">=16.0.0"
     }
@@ -206,7 +230,9 @@
       "description": "Select directories that Smart Tree can analyze",
       "multiple": true,
       "required": true,
-      "default": ["${HOME}/Desktop"]
+      "default": [
+        "${HOME}/Desktop"
+      ]
     }
   }
-} 
+}
