@@ -1,4 +1,5 @@
 {
+  "$schema": "../../dist/dxt-manifest.schema.json",
   "dxt_version": "0.1",
   "name": "file-manager-python",
   "display_name": "Python File Manager MCP",

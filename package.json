@@ -35,7 +35,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "yarn run build:code && yarn run build:schema",
+    "build:code": "tsc",
+    "build:schema": "node --experimental-strip-types ./scripts/build-dxt-schema.js",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -68,7 +70,7 @@
     "commander": "^13.1.0",
     "fflate": "^0.8.2",
     "node-forge": "^1.3.1",
-    "zod": "^3.24.4"
+    "zod": "^3.25.67"
   },
   "resolutions": {
     "@babel/helpers": "7.27.1",

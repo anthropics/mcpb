@@ -1,4 +1,5 @@
 {
+  "$schema": "../../dist/dxt-manifest.schema.json",
   "dxt_version": "0.1",
   "name": "chrome-applescript",
   "display_name": "Control Chrome with AppleScript",
