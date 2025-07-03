@@ -1,9 +1,9 @@
-import { z } from "zod";
+import * as z from "zod/v4";
 
 export const McpServerConfigSchema = z.object({
   command: z.string(),
   args: z.array(z.string()).optional(),
-  env: z.record(z.string()).optional(),
+  env: z.record(z.string(), z.string()).optional(),
 });
 
 export const DxtManifestAuthorSchema = z.object({
@@ -72,10 +72,12 @@ export const DxtUserConfigurationOptionSchema = z.object({
 });
 
 export const DxtUserConfigValuesSchema = z.record(
+  z.string(),
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
 export const DxtManifestSchema = z.object({
+  $schema: z.string().optional(),
   dxt_version: z.string(),
   name: z.string(),
   display_name: z.string().optional(),
@@ -97,5 +99,7 @@ export const DxtManifestSchema = z.object({
   keywords: z.array(z.string()).optional(),
   license: z.string().optional(),
   compatibility: DxtManifestCompatibilitySchema.optional(),
-  user_config: z.record(DxtUserConfigurationOptionSchema).optional(),
+  user_config: z
+    .record(z.string(), DxtUserConfigurationOptionSchema)
+    .optional(),
 });

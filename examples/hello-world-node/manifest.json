@@ -1,4 +1,5 @@
 {
+  "$schema": "../../dist/dxt-manifest.schema.json",
   "dxt_version": "0.1",
   "name": "hello-world-node",
   "display_name": "Hello World MCP Server (Reference Extension)",
