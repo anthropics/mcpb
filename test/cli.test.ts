@@ -171,5 +171,83 @@ describe("DXT CLI", () => {
       );
       expect(originalFile2).toEqual(unpackedFile2);
     });
+
+    it("should preserve executable file permissions after packing and unpacking", () => {
+      // Skip this test on Windows since it doesn't support Unix permissions
+      if (process.platform === "win32") {
+        return;
+      }
+
+      const tempExecDir = join(__dirname, "temp-exec-test");
+      const execPackedFilePath = join(__dirname, "test-exec-extension.dxt");
+      const execUnpackedDir = join(__dirname, "temp-exec-unpack-test");
+
+      try {
+        // Create a temporary directory with an executable file
+        fs.mkdirSync(tempExecDir, { recursive: true });
+        fs.writeFileSync(
+          join(tempExecDir, "manifest.json"),
+          JSON.stringify({
+            dxt_version: "1.0",
+            name: "Test Executable Extension",
+            version: "1.0.0",
+            description: "A test extension with executable files",
+            author: {
+              name: "DXT",
+            },
+            server: {
+              type: "node",
+              entry_point: "server/index.js",
+              mcp_config: {
+                command: "node",
+              },
+            },
+          }),
+        );
+        
+        // Create an executable script
+        const executableScript = join(tempExecDir, "run-script.sh");
+        fs.writeFileSync(executableScript, "#!/bin/bash\necho 'Hello from executable'");
+        fs.chmodSync(executableScript, 0o755); // Make it executable
+
+        // Create a regular file for comparison
+        const regularFile = join(tempExecDir, "regular-file.txt");
+        fs.writeFileSync(regularFile, "regular content");
+        fs.chmodSync(regularFile, 0o644); // Regular file permissions
+
+        // Pack the extension
+        execSync(`node ${cliPath} pack ${tempExecDir} ${execPackedFilePath}`, {
+          encoding: "utf-8",
+        });
+
+        // Unpack the extension
+        execSync(`node ${cliPath} unpack ${execPackedFilePath} ${execUnpackedDir}`, {
+          encoding: "utf-8",
+        });
+
+        // Check that the executable file preserved its permissions
+        const originalStats = fs.statSync(executableScript);
+        const unpackedStats = fs.statSync(join(execUnpackedDir, "run-script.sh"));
+        
+        // Check that executable permissions are preserved (0o755)
+        expect(unpackedStats.mode & 0o777).toBe(0o755);
+        expect(originalStats.mode & 0o777).toBe(unpackedStats.mode & 0o777);
+
+        // Check that regular file permissions are preserved (0o644)
+        const originalRegularStats = fs.statSync(regularFile);
+        const unpackedRegularStats = fs.statSync(join(execUnpackedDir, "regular-file.txt"));
+        
+        expect(unpackedRegularStats.mode & 0o777).toBe(0o644);
+        expect(originalRegularStats.mode & 0o777).toBe(unpackedRegularStats.mode & 0o777);
+
+      } finally {
+        // Clean up
+        fs.rmSync(tempExecDir, { recursive: true, force: true });
+        fs.rmSync(execUnpackedDir, { recursive: true, force: true });
+        if (fs.existsSync(execPackedFilePath)) {
+          fs.unlinkSync(execPackedFilePath);
+        }
+      }
+    });
   });
 });
