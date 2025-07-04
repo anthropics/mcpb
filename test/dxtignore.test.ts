@@ -73,15 +73,10 @@ temp/`;
     });
 
     it("should return empty array if file cannot be read", () => {
-      const content = "*.log";
-      fs.writeFileSync(dxtIgnorePath, content);
-      fs.chmodSync(dxtIgnorePath, 0); // Make file unreadable
+      fs.mkdirSync(dxtIgnorePath); // Make a dir so readFile fails
 
       const patterns = readDxtIgnorePatterns(tempDir);
       expect(patterns).toEqual([]);
-
-      // Restore permissions for cleanup
-      fs.chmodSync(dxtIgnorePath, 0o644);
     });
   });
 
