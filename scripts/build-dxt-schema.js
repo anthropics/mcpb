@@ -1,14 +1,23 @@
-import { DxtManifestSchema } from "../src/schemas.ts";
+import { DxtManifestSchema, DxtSignatureInfoSchema } from "../src/schemas.ts";
 import * as z from "zod/v4";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const schema = z.toJSONSchema(DxtManifestSchema);
+const schemasToWrite = {
+  'dxt-manifest': DxtManifestSchema,
+  'dxt-signature-info': DxtSignatureInfoSchema
+}
+
 await fs.mkdir(path.join(import.meta.dirname, "../dist"), { recursive: true });
-await fs.writeFile(
-  path.join(import.meta.dirname, "../dist", "dxt-manifest.schema.json"),
-  JSON.stringify(schema, null, 2),
-  {
-    encoding: "utf8",
-  },
-);
+
+for (const key in schemasToWrite) {
+  const schema = z.toJSONSchema(schemasToWrite[key]);
+  await fs.writeFile(
+    path.join(import.meta.dirname, "../dist", `${key}.schema.json`),
+    JSON.stringify(schema, null, 2),
+    {
+      encoding: "utf8",
+    },
+  );
+}
+
