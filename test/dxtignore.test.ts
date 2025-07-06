@@ -293,7 +293,7 @@ coverage/`;
     });
 
     it("should handle negation with directory patterns", () => {
-      const additionalPatterns = ["tests/", "!tests/critical/"];
+      const additionalPatterns = ["tests/*", "!tests/critical/"];
 
       expect(shouldExclude("tests/unit/test.js", additionalPatterns)).toBe(
         true,

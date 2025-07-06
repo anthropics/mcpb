@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "fs";
-import { basename, join, relative, sep } from "path";
+import ignore from "ignore";
+import { join, relative, sep } from "path";
 
 // Files/patterns to exclude from the package
 export const EXCLUDE_PATTERNS = [
@@ -115,35 +116,18 @@ function matchesPattern(
   return false;
 }
 
+function buildIgnoreChecker(additionalPatterns: string[]) {
+  return ignore().add(EXCLUDE_PATTERNS).add(additionalPatterns);
+}
+
+/**
+ * Used for testing, calls the same methods as the other ignore checks
+ */
 export function shouldExclude(
   filePath: string,
   additionalPatterns: string[] = [],
 ): boolean {
-  const fileName = basename(filePath);
-  const allPatterns = [...EXCLUDE_PATTERNS, ...additionalPatterns];
-  const negationPatterns = allPatterns.filter((p) => p.startsWith("!"));
-  const exclusionPatterns = allPatterns.filter((p) => !p.startsWith("!"));
-
-  let shouldExcludeFile = false;
-  for (const pattern of exclusionPatterns) {
-    if (matchesPattern(pattern, filePath, fileName)) {
-      shouldExcludeFile = true;
-      break;
-    }
-  }
-
-  // If excluded, check if any negation pattern un-excludes it
-  if (shouldExcludeFile) {
-    for (const pattern of negationPatterns) {
-      const negatedPattern = pattern.slice(1);
-      if (matchesPattern(negatedPattern, filePath, fileName)) {
-        // File should not be excluded (negation pattern matched)
-        return false;
-      }
-    }
-  }
-
-  return shouldExcludeFile;
+  return buildIgnoreChecker(additionalPatterns).ignores(filePath);
 }
 
 export function getAllFiles(
@@ -154,11 +138,13 @@ export function getAllFiles(
 ): Record<string, Uint8Array> {
   const files = readdirSync(dirPath);
 
+  const ignoreChecker = buildIgnoreChecker(additionalPatterns);
+
   for (const file of files) {
     const filePath = join(dirPath, file);
     const relativePath = relative(baseDir, filePath);
 
-    if (shouldExclude(relativePath, additionalPatterns)) {
+    if (ignoreChecker.ignores(relativePath)) {
       continue;
     }
 
@@ -194,11 +180,13 @@ export function getAllFilesWithCount(
 ): GetAllFilesResult {
   const files = readdirSync(dirPath);
 
+  const ignoreChecker = buildIgnoreChecker(additionalPatterns);
+
   for (const file of files) {
     const filePath = join(dirPath, file);
     const relativePath = relative(baseDir, filePath);
 
-    if (shouldExclude(relativePath, additionalPatterns)) {
+    if (ignoreChecker.ignores(relativePath)) {
       ignoredCount++;
       continue;
     }
