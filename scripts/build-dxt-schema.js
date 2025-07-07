@@ -1,4 +1,4 @@
-import { DxtManifestSchema, DxtSignatureInfoSchema } from "../src/schemas.ts";
+import { DxtManifestSchema, DxtSignatureInfoSchema } from "../dist/schemas.js";
 import * as z from "zod/v4";
 import fs from "node:fs/promises";
 import path from "node:path";
