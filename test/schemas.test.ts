@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { DxtManifestSchema } from "../src/schemas";
+import { DxtManifestSchema } from "../src/schemas.js";
 
 describe("DxtManifestSchema", () => {
   it("should validate a valid manifest", () => {

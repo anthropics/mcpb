@@ -5,8 +5,8 @@
     "target": "es2024",
     "lib": ["ES2023"],
 
-    "module": "es2022",
-    "moduleResolution": "node",
+    "module": "node18",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
 
     // Path settings
@@ -29,7 +29,7 @@
     "resolveJsonModule": true,
     "incremental": true,
     "preserveWatchOutput": true,
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/*.ts"],
   "exclude": ["node_modules", "dist"]

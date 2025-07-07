@@ -13,7 +13,7 @@ import * as fs from "fs";
 import forge from "node-forge";
 import * as path from "path";
 
-import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../src/node/sign";
+import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../src/node/sign.js";
 
 // Test directory
 const TEST_DIR = path.join(__dirname, "test-output");

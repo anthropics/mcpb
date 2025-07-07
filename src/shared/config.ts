@@ -3,7 +3,7 @@ import type {
   DxtUserConfigValues,
   Logger,
   McpServerConfig,
-} from "../types";
+} from "../types.js";
 
 /**
  * This file contains utility functions for handling DXT configuration,
