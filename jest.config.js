@@ -8,12 +8,7 @@ export default {
     "^.+\\.ts$": [
       "ts-jest",
       {
-        tsconfig: {
-          module: "es2022",
-          esModuleInterop: true,
-          allowJs: true,
-          target: "es2020",
-        },
+        tsConfig: 'tsconfig.test.json'
       },
     ],
   },
