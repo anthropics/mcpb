@@ -1,0 +1,10 @@
+{
+  "name": "ant.dir.ant.anthropic.filesystem",
+  "version": "0.1.3",
+  "type": "module",
+  "private": true,
+  "main": "server/index.js",
+  "dependencies": {
+    "@modelcontextprotocol/server-filesystem": "2025.1.14"
+  }
+}

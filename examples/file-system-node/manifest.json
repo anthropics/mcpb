@@ -1,0 +1,97 @@
+{
+  "dxt_version": "0.1",
+  "id": "anthropic.demo.filesystem",
+  "name": "Filesystem",
+  "display_name": "Filesystem",
+  "version": "0.1.3",
+  "description": "Let Claude access your filesystem to read and write files.",
+  "long_description": "This extension allows Claude to interact with your local filesystem, enabling it to read and write files directly. This can be useful for tasks such as file management, data processing, and automation of repetitive tasks. The extension provides a set of tools that can be used to navigate directories, read file contents, and write new files or modify existing ones.\n\nUnderneath the hood, it uses @modelcontextprotocol/server-filesystem.",
+  "author": {
+    "name": "Anthropic",
+    "url": "https://www.claude.ai"
+  },
+  "homepage": "https://www.claude.ai",
+  "documentation": "https://support.anthropic.com/en/collections/4078531-claude-ai",
+  "support": "https://support.anthropic.com/en/collections/4078531-claude-ai",
+  "icon": "icon.png",
+  "tools": [
+    {
+      "name": "read_file",
+      "description": "Read the contents of a file"
+    },
+    {
+      "name": "read_multiple_files",
+      "description": "Read the contents of multiple files"
+    },
+    {
+      "name": "write_file",
+      "description": "Write content to a file"
+    },
+    {
+      "name": "edit_file",
+      "description": "Edit the contents of a file"
+    },
+    {
+      "name": "create_directory",
+      "description": "Create a new directory"
+    },
+    {
+      "name": "list_directory",
+      "description": "List contents of a directory"
+    },
+    {
+      "name": "directory_tree",
+      "description": "Display directory structure as a tree"
+    },
+    {
+      "name": "move_file",
+      "description": "Move or rename a file"
+    },
+    {
+      "name": "search_files",
+      "description": "Search for files by name or content"
+    },
+    {
+      "name": "get_file_info",
+      "description": "Get information about a file"
+    },
+    {
+      "name": "list_allowed_directories",
+      "description": "List directories that can be accessed"
+    }
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js",
+        "${user_config.allowed_directories}"
+      ]
+    }
+  },
+  "keywords": [
+    "api",
+    "automation",
+    "productivity"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  },
+  "user_config": {
+    "allowed_directories": {
+      "type": "directory",
+      "title": "Allowed Directories",
+      "description": "Select directories the filesystem server can access",
+      "multiple": true,
+      "required": true,
+      "default": []
+    }
+  }
+}
