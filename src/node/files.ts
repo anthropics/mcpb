@@ -62,60 +62,6 @@ export function readDxtIgnorePatterns(baseDir: string): string[] {
   }
 }
 
-/**
- * Tests if a file path matches a given pattern
- */
-function matchesPattern(
-  pattern: string,
-  filePath: string,
-  fileName: string,
-): boolean {
-  if (pattern.includes("*")) {
-    // Enhanced glob matching to handle directory paths like "temp/*"
-    let patternToMatch = pattern;
-
-    // Handle patterns like "dir/" by converting to "dir/**"
-    if (pattern.endsWith("/")) {
-      patternToMatch = pattern + "**";
-    }
-
-    // Convert glob pattern to regex, with case sensitivity
-    const regexPattern =
-      "^" +
-      patternToMatch
-        .replace(/\./g, "\\.") // Escape dots
-        .replace(/\*\*/g, ".*") // ** matches anything including /
-        .replace(/\*/g, "[^/]*") + // * matches anything except /
-      "$";
-
-    const regex = new RegExp(regexPattern);
-
-    // Test full path
-    if (regex.test(filePath)) return true;
-
-    // Test filename
-    if (regex.test(fileName)) return true;
-
-    // Check if any part of the path matches for patterns like "node_modules"
-    const pathParts = filePath.split(sep);
-    for (const part of pathParts) {
-      if (regex.test(part)) return true;
-    }
-  } else {
-    // Exact match
-    if (fileName === pattern) return true;
-
-    // Check if any part of the path matches
-    if (filePath.includes(pattern)) return true;
-
-    // Handle directory patterns like "tests/"
-    if (pattern.endsWith("/") && filePath.startsWith(pattern)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function buildIgnoreChecker(additionalPatterns: string[]) {
   return ignore().add(EXCLUDE_PATTERNS).add(additionalPatterns);
 }
