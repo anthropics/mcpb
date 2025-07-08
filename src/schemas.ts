@@ -73,7 +73,7 @@ export const DxtUserConfigurationOptionSchema = z.object({
 
 export const DxtUserConfigValuesSchema = z.record(
   z.string(),
-  z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])
+  z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
 export const DxtManifestSchema = z.object({
