@@ -408,6 +408,27 @@ describe("hasRequiredConfigMissing", () => {
     expect(result).toBe(true);
   });
 
+  it("should return true when required config is array with invalid values", () => {
+    const manifest: DxtManifest = {
+      ...baseManifest,
+      user_config: {
+        paths: {
+          type: "string",
+          title: "Paths",
+          description: "File paths",
+          required: true,
+          multiple: true,
+        },
+      },
+    };
+
+    const result = hasRequiredConfigMissing({
+      manifest,
+      userConfig: { paths: [""] },
+    });
+    expect(result).toBe(true);
+  });
+
   it("should return true when required config is empty array", () => {
     const manifest: DxtManifest = {
       ...baseManifest,
