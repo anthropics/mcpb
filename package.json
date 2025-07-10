@@ -35,7 +35,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "yarn run build:code && yarn run build:schema",
+    "build": "yarn run build:code",
     "build:code": "tsc",
     "build:schema": "node ./scripts/build-dxt-schema.js",
     "dev": "tsc --watch",
