@@ -78,7 +78,7 @@ program
 program
   .command("clean <dxt>")
   .description(
-    "Cleans a DXT file, validates the manifest and minimizes bundle size",
+    "Cleans a DXT file, validates the manifest, and minimizes bundle size",
   )
   .action(async (dxtFile: string) => {
     await cleanDxt(dxtFile);
