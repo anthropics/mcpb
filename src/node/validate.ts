@@ -1,7 +1,13 @@
 import { existsSync, readFileSync, statSync } from "fs";
+import * as fs from "fs/promises";
+import { DestroyerOfModules } from "galactus";
+import * as os from "os";
 import { join, resolve } from "path";
+import prettyBytes from "pretty-bytes";
 
+import { unpackExtension } from "../cli/unpack.js";
 import { DxtManifestSchema } from "../schemas.js";
+import { DxtManifestSchema as LooseDxtManifestSchema } from "../schemas-loose.js";
 
 export function validateManifest(inputPath: string): boolean {
   try {
@@ -48,5 +54,75 @@ export function validateManifest(inputPath: string): boolean {
       console.error("ERROR: Unknown error occurred");
     }
     return false;
+  }
+}
+
+export async function cleanDxt(inputPath: string) {
+  const tmpDir = await fs.mkdtemp(resolve(os.tmpdir(), "dxt-clean-"));
+  const dxtPath = resolve(tmpDir, "in.dxt");
+  const unpackPath = resolve(tmpDir, "out");
+
+  console.log(" -- Cleaning DXT...");
+
+  try {
+    await fs.copyFile(inputPath, dxtPath);
+    console.log(" -- Unpacking DXT...");
+    await unpackExtension({ dxtPath, silent: true, outputDir: unpackPath });
+
+    const manifestPath = resolve(unpackPath, "manifest.json");
+
+    const originalManifest = await fs.readFile(manifestPath, "utf-8");
+    const manifestData = JSON.parse(originalManifest);
+
+    const result = LooseDxtManifestSchema.safeParse(manifestData);
+
+    if (!result.success) {
+      throw new Error(
+        `Unrecoverable manifest issues, please run "dxt validate"`,
+      );
+    }
+    await fs.writeFile(manifestPath, JSON.stringify(result.data, null, 2));
+
+    if (
+      originalManifest.trim() !==
+      (await fs.readFile(manifestPath, "utf8")).trim()
+    ) {
+      console.log(" -- Update manifest to be valid per DXT schema");
+    } else {
+      console.log(" -- Manifest already valid per DXT schema");
+    }
+
+    const nodeModulesPath = resolve(unpackPath, "node_modules");
+    if (existsSync(nodeModulesPath)) {
+      console.log(" -- node_modules found, running galactus");
+
+      const destroyer = new DestroyerOfModules({
+        rootDirectory: unpackPath,
+      });
+      await destroyer.destroy();
+
+      console.log(" -- Galactus pruned node_modules");
+    } else {
+      console.log(" -- No node_modules, not pruning");
+    }
+
+    const before = await fs.stat(inputPath);
+    const { packExtension } = await import("../cli/pack.js");
+    await packExtension({
+      extensionPath: unpackPath,
+      outputPath: inputPath,
+      silent: true,
+    });
+
+    const after = await fs.stat(inputPath);
+
+    console.log("\nClean Complete:");
+    console.log("Before:", prettyBytes(before.size));
+    console.log("After:", prettyBytes(after.size));
+  } finally {
+    await fs.rm(tmpDir, {
+      recursive: true,
+      force: true,
+    });
   }
 }

@@ -7,7 +7,7 @@ import { basename, dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../node/sign.js";
-import { validateManifest } from "../node/validate.js";
+import { cleanDxt, validateManifest } from "../node/validate.js";
 import { initExtension } from "./init.js";
 import { packExtension } from "./pack.js";
 import { unpackExtension } from "./unpack.js";
@@ -72,6 +72,16 @@ program
   .action((manifestPath: string) => {
     const success = validateManifest(manifestPath);
     process.exit(success ? 0 : 1);
+  });
+
+// Clean command
+program
+  .command("clean <dxt>")
+  .description(
+    "Cleans a DXT file, validates the manifest, and minimizes bundle size",
+  )
+  .action(async (dxtFile: string) => {
+    await cleanDxt(dxtFile);
   });
 
 // Pack command
