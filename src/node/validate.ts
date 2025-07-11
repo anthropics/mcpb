@@ -5,7 +5,6 @@ import * as os from "os";
 import { join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
-import { packExtension } from "../cli.js";
 import { unpackExtension } from "../cli/unpack.js";
 import { DxtManifestSchema } from "../schemas.js";
 import { DxtManifestSchema as LooseDxtManifestSchema } from "../schemas-loose.js";
@@ -108,6 +107,7 @@ export async function cleanDxt(inputPath: string) {
     }
 
     const before = await fs.stat(inputPath);
+    const { packExtension } = await import("../cli/pack.js");
     await packExtension({
       extensionPath: unpackPath,
       outputPath: inputPath,
