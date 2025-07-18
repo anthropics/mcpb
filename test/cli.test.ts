@@ -204,10 +204,13 @@ describe("DXT CLI", () => {
             },
           }),
         );
-        
+
         // Create an executable script
         const executableScript = join(tempExecDir, "run-script.sh");
-        fs.writeFileSync(executableScript, "#!/bin/bash\necho 'Hello from executable'");
+        fs.writeFileSync(
+          executableScript,
+          "#!/bin/bash\necho 'Hello from executable'",
+        );
         fs.chmodSync(executableScript, 0o755); // Make it executable
 
         // Create a regular file for comparison
@@ -221,25 +224,33 @@ describe("DXT CLI", () => {
         });
 
         // Unpack the extension
-        execSync(`node ${cliPath} unpack ${execPackedFilePath} ${execUnpackedDir}`, {
-          encoding: "utf-8",
-        });
+        execSync(
+          `node ${cliPath} unpack ${execPackedFilePath} ${execUnpackedDir}`,
+          {
+            encoding: "utf-8",
+          },
+        );
 
         // Check that the executable file preserved its permissions
         const originalStats = fs.statSync(executableScript);
-        const unpackedStats = fs.statSync(join(execUnpackedDir, "run-script.sh"));
-        
+        const unpackedStats = fs.statSync(
+          join(execUnpackedDir, "run-script.sh"),
+        );
+
         // Check that executable permissions are preserved (0o755)
         expect(unpackedStats.mode & 0o777).toBe(0o755);
         expect(originalStats.mode & 0o777).toBe(unpackedStats.mode & 0o777);
 
         // Check that regular file permissions are preserved (0o644)
         const originalRegularStats = fs.statSync(regularFile);
-        const unpackedRegularStats = fs.statSync(join(execUnpackedDir, "regular-file.txt"));
-        
-        expect(unpackedRegularStats.mode & 0o777).toBe(0o644);
-        expect(originalRegularStats.mode & 0o777).toBe(unpackedRegularStats.mode & 0o777);
+        const unpackedRegularStats = fs.statSync(
+          join(execUnpackedDir, "regular-file.txt"),
+        );
 
+        expect(unpackedRegularStats.mode & 0o777).toBe(0o644);
+        expect(originalRegularStats.mode & 0o777).toBe(
+          unpackedRegularStats.mode & 0o777,
+        );
       } finally {
         // Clean up
         fs.rmSync(tempExecDir, { recursive: true, force: true });

@@ -1,5 +1,11 @@
 import { unzipSync } from "fflate";
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "fs";
 import { join, resolve, sep } from "path";
 
 import { extractSignatureBlock } from "../node/sign.js";
@@ -41,7 +47,7 @@ export async function unpackExtension({
     if (isUnix) {
       // Parse ZIP central directory to extract file attributes
       const zipBuffer = originalContent;
-      
+
       // Find end of central directory record
       let eocdOffset = -1;
       for (let i = zipBuffer.length - 22; i >= 0; i--) {
@@ -54,21 +60,25 @@ export async function unpackExtension({
       if (eocdOffset !== -1) {
         const centralDirOffset = zipBuffer.readUInt32LE(eocdOffset + 16);
         const centralDirEntries = zipBuffer.readUInt16LE(eocdOffset + 8);
-        
+
         let offset = centralDirOffset;
-        
+
         for (let i = 0; i < centralDirEntries; i++) {
           if (zipBuffer.readUInt32LE(offset) === 0x02014b50) {
             const externalAttrs = zipBuffer.readUInt32LE(offset + 38);
             const filenameLength = zipBuffer.readUInt16LE(offset + 28);
-            const filename = zipBuffer.toString('utf8', offset + 46, offset + 46 + filenameLength);
-            
+            const filename = zipBuffer.toString(
+              "utf8",
+              offset + 46,
+              offset + 46 + filenameLength,
+            );
+
             // Extract Unix permissions from external attributes (upper 16 bits)
             const mode = (externalAttrs >> 16) & 0o777;
             if (mode > 0) {
               fileAttributes.set(filename, mode);
             }
-            
+
             const extraFieldLength = zipBuffer.readUInt16LE(offset + 30);
             const commentLength = zipBuffer.readUInt16LE(offset + 32);
             offset += 46 + filenameLength + extraFieldLength + commentLength;

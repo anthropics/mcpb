@@ -13,17 +13,20 @@ const loadServer = async () => {
   try {
     // Save original argv
     const originalArgv = process.argv;
-    
+
     // The filesystem server expects directories as command line arguments
     process.argv = [process.argv[0], process.argv[1], ...args];
-    
+
     // Dynamically import the ESM module
-    await import('@modelcontextprotocol/server-filesystem/dist/index.js');
-    
+    await import("@modelcontextprotocol/server-filesystem/dist/index.js");
+
     // Restore original argv
     process.argv = originalArgv;
   } catch (error) {
-    console.error('Failed to load @modelcontextprotocol/server-filesystem:', error);
+    console.error(
+      "Failed to load @modelcontextprotocol/server-filesystem:",
+      error,
+    );
     process.exit(1);
   }
 };

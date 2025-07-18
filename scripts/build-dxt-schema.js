@@ -4,9 +4,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const schemasToWrite = {
-  'dxt-manifest': DxtManifestSchema,
-  'dxt-signature-info': DxtSignatureInfoSchema
-}
+  "dxt-manifest": DxtManifestSchema,
+  "dxt-signature-info": DxtSignatureInfoSchema,
+};
 
 await fs.mkdir(path.join(import.meta.dirname, "../dist"), { recursive: true });
 
@@ -20,4 +20,3 @@ for (const key in schemasToWrite) {
     },
   );
 }
-

@@ -71,11 +71,7 @@
       ]
     }
   },
-  "keywords": [
-    "api",
-    "automation",
-    "productivity"
-  ],
+  "keywords": ["api", "automation", "productivity"],
   "license": "MIT",
   "compatibility": {
     "claude_desktop": ">=0.10.0",
