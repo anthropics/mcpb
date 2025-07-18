@@ -1,6 +1,6 @@
 import { unzipSync } from "fflate";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { join, resolve } from "path";
+import { join, resolve, sep } from "path";
 
 import { extractSignatureBlock } from "../node/sign.js";
 import { getLogger } from "../shared/log.js";
@@ -85,6 +85,17 @@ export async function unpackExtension({
       if (Object.prototype.hasOwnProperty.call(decompressed, relativePath)) {
         const data = decompressed[relativePath];
         const fullPath = join(finalOutputDir, relativePath);
+
+        // Prevent zip slip attacks by validating the resolved path
+        const normalizedPath = resolve(fullPath);
+        const normalizedOutputDir = resolve(finalOutputDir);
+        if (
+          !normalizedPath.startsWith(normalizedOutputDir + sep) &&
+          normalizedPath !== normalizedOutputDir
+        ) {
+          throw new Error(`Path traversal attempt detected: ${relativePath}`);
+        }
+
         const dir = join(fullPath, "..");
         if (!existsSync(dir)) {
           mkdirSync(dir, { recursive: true });

@@ -157,10 +157,12 @@ dxt unsign my-extension.dxt
 For signing extensions, you need:
 
 1. **Certificate**: X.509 certificate in PEM format
+
    - Should have Code Signing extended key usage
    - Can be self-signed (for development) or CA-issued (for production)
 
 2. **Private Key**: Corresponding private key in PEM format
+
    - Must match the certificate's public key
 
 3. **Intermediate Certificates** (optional): For CA-issued certificates
