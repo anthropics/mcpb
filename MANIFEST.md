@@ -315,9 +315,9 @@ The `mcp_config` object in the server configuration defines how the implementing
 ```json
 "mcp_config": {
   "command": "python",
-  "args": ["server/main.py"],
+  "args": ["${__dirname}/server/main.py"],
   "env": {
-    "PYTHONPATH": "server/lib"
+    "PYTHONPATH": "${__dirname}/server/lib"
   }
 }
 ```

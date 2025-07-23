@@ -142,7 +142,7 @@ describe("init functions", () => {
         command: "python",
         args: ["${__dirname}/server/main.py"],
         env: {
-          PYTHONPATH: "server/lib",
+          PYTHONPATH: "${__dirname}/server/lib",
         },
       });
     });
@@ -264,8 +264,8 @@ describe("init functions", () => {
           entryPoint: "server/main.py",
           mcp_config: {
             command: "python",
-            args: ["server/main.py"],
-            env: { PYTHONPATH: "server/lib" },
+            args: ["${__dirname}/server/main.py"],
+            env: { PYTHONPATH: "${__dirname}/server/lib" },
           },
         },
         [
@@ -325,8 +325,8 @@ describe("init functions", () => {
           entry_point: "server/main.py",
           mcp_config: {
             command: "python",
-            args: ["server/main.py"],
-            env: { PYTHONPATH: "server/lib" },
+            args: ["${__dirname}/server/main.py"],
+            env: { PYTHONPATH: "${__dirname}/server/lib" },
           },
         },
         tools: [
