@@ -110,7 +110,7 @@ export function createMcpConfig(
         command: "python",
         args: ["${__dirname}/" + entryPoint],
         env: {
-          PYTHONPATH: "server/lib",
+          PYTHONPATH: "${__dirname}/server/lib",
         },
       };
     case "binary":
