@@ -70,10 +70,8 @@ export async function cleanDxt(inputPath: string) {
     await unpackExtension({ dxtPath, silent: true, outputDir: unpackPath });
 
     const manifestPath = resolve(unpackPath, "manifest.json");
-
     const originalManifest = await fs.readFile(manifestPath, "utf-8");
     const manifestData = JSON.parse(originalManifest);
-
     const result = LooseDxtManifestSchema.safeParse(manifestData);
 
     if (!result.success) {
@@ -94,14 +92,31 @@ export async function cleanDxt(inputPath: string) {
 
     const nodeModulesPath = resolve(unpackPath, "node_modules");
     if (existsSync(nodeModulesPath)) {
-      console.log(" -- node_modules found, running galactus");
+      console.log(" -- node_modules found, deleting development dependencies");
 
       const destroyer = new DestroyerOfModules({
         rootDirectory: unpackPath,
       });
-      await destroyer.destroy();
 
-      console.log(" -- Galactus pruned node_modules");
+      try {
+        await destroyer.destroy();
+      } catch (error) {
+        // If modules have already been deleted in a previous clean, the walker
+        // will fail when it can't find required dependencies. This is expected
+        // and safe to ignore.
+        if (
+          error instanceof Error &&
+          error.message.includes("Failed to locate module")
+        ) {
+          console.log(
+            " -- Some modules already removed, skipping remaining cleanup",
+          );
+        } else {
+          throw error;
+        }
+      }
+
+      console.log(" -- Removed development dependencies from node_modules");
     } else {
       console.log(" -- No node_modules, not pruning");
     }
