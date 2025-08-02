@@ -11,6 +11,7 @@ import type { DxtSignatureInfo } from "../types.js";
 // Signature block markers
 const SIGNATURE_HEADER = "DXT_SIG_V1";
 const SIGNATURE_FOOTER = "DXT_SIG_END";
+const MINIMUM_RSA_KEY_SIZE = 2048;
 
 const execFileAsync = promisify(execFile);
 
@@ -47,6 +48,16 @@ export function signDxtFile(
   // Parse and add certificates
   const signingCert = forge.pki.certificateFromPem(certificatePem);
   const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+
+  // Validate RSA key size (require >= 2048 bits for security)
+  if ("n" in privateKey && privateKey.n) {
+    const keySize = privateKey.n.bitLength();
+    if (keySize < MINIMUM_RSA_KEY_SIZE) {
+      throw new Error(
+        `RSA key size ${keySize} bits is too small. Minimum required is 2048 bits.`,
+      );
+    }
+  }
 
   p7.addCertificate(signingCert);
 
@@ -145,6 +156,15 @@ export async function verifyDxtFile(
     // Get the signing certificate (first one)
     const signingCert = certificates[0];
 
+    // Validate RSA key size (require >= 2048 bits for security)
+    const publicKey = signingCert.publicKey;
+    if ("n" in publicKey && publicKey.n) {
+      const keySize = publicKey.n.bitLength();
+      if (keySize < MINIMUM_RSA_KEY_SIZE) {
+        return { status: "unsigned" };
+      }
+    }
+
     // Verify PKCS#7 signature
     const contentBuf = forge.util.createBuffer(originalContent);
 
@@ -240,6 +260,11 @@ function createSignatureBlock(pkcs7Signature: Buffer): Buffer {
 
 /**
  * Extracts the signature block from a signed DXT file
+ *
+ * SECURITY NOTE: This function defines the boundary between content that gets
+ * signature-verified and the signature itself. It is critical that this function
+ * is implemented correctly scanning backwards from the end of the file to extract
+ * the last signature block.
  */
 export function extractSignatureBlock(fileContent: Buffer): {
   originalContent: Buffer;
@@ -247,6 +272,8 @@ export function extractSignatureBlock(fileContent: Buffer): {
 } {
   // Look for signature footer at the end
   const footerBytes = Buffer.from(SIGNATURE_FOOTER, "utf-8");
+  // SECURITY NOTE: Using lastIndexOf to find the last footer marker is critical.
+  // Using indexOf would find the first one and could lead to vulnerabilities.
   const footerIndex = fileContent.lastIndexOf(footerBytes);
 
   if (footerIndex === -1) {
@@ -257,7 +284,8 @@ export function extractSignatureBlock(fileContent: Buffer): {
   const headerBytes = Buffer.from(SIGNATURE_HEADER, "utf-8");
   let headerIndex = -1;
 
-  // Search backwards from footer
+  // Search backwards from footer - finds FIRST header marker going backward
+  // SECURITY NOTE: It is critical to search backwards and take the first one found.
   for (let i = footerIndex - 1; i >= 0; i--) {
     if (fileContent.slice(i, i + headerBytes.length).equals(headerBytes)) {
       headerIndex = i;
@@ -270,6 +298,9 @@ export function extractSignatureBlock(fileContent: Buffer): {
   }
 
   // Extract original content (everything before signature block)
+  // SECURITY NOTE: It is critical to extract everything before the header. While zip parsers
+  // may not require that you separate this from the header, this is required from a
+  // security perspective.
   const originalContent = fileContent.slice(0, headerIndex);
 
   // Parse signature block
@@ -400,7 +431,10 @@ export async function verifyCertificateChain(
 }
 
 /**
- * Removes signature from a DXT file
+ * Removes signature from a DXT file. 
+ * 
+ * SECURITY NOTE: It is critical to call unsignDxtFile after verifying
+ * the signature. Failing to do so may lead to signature bypasses.
  */
 export function unsignDxtFile(dxtPath: string): void {
   const fileContent = readFileSync(dxtPath);
