@@ -6,33 +6,33 @@ export const McpServerConfigSchema = z.object({
   env: z.record(z.string(), z.string()).optional(),
 });
 
-export const DxtManifestAuthorSchema = z.object({
+export const McpbManifestAuthorSchema = z.object({
   name: z.string(),
   email: z.string().email().optional(),
   url: z.string().url().optional(),
 });
 
-export const DxtManifestRepositorySchema = z.object({
+export const McpbManifestRepositorySchema = z.object({
   type: z.string(),
   url: z.string().url(),
 });
 
-export const DxtManifestPlatformOverrideSchema =
+export const McpbManifestPlatformOverrideSchema =
   McpServerConfigSchema.partial();
 
-export const DxtManifestMcpConfigSchema = McpServerConfigSchema.extend({
+export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
   platform_overrides: z
-    .record(z.string(), DxtManifestPlatformOverrideSchema)
+    .record(z.string(), McpbManifestPlatformOverrideSchema)
     .optional(),
 });
 
-export const DxtManifestServerSchema = z.object({
+export const McpbManifestServerSchema = z.object({
   type: z.enum(["python", "node", "binary"]),
   entry_point: z.string(),
-  mcp_config: DxtManifestMcpConfigSchema,
+  mcp_config: McpbManifestMcpConfigSchema,
 });
 
-export const DxtManifestCompatibilitySchema = z
+export const McpbManifestCompatibilitySchema = z
   .object({
     claude_desktop: z.string().optional(),
     platforms: z.array(z.enum(["darwin", "win32", "linux"])).optional(),
@@ -45,19 +45,19 @@ export const DxtManifestCompatibilitySchema = z
   })
   .passthrough();
 
-export const DxtManifestToolSchema = z.object({
+export const McpbManifestToolSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
 });
 
-export const DxtManifestPromptSchema = z.object({
+export const McpbManifestPromptSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   arguments: z.array(z.string()).optional(),
   text: z.string(),
 });
 
-export const DxtUserConfigurationOptionSchema = z.object({
+export const McpbUserConfigurationOptionSchema = z.object({
   type: z.enum(["string", "number", "boolean", "directory", "file"]),
   title: z.string(),
   description: z.string(),
@@ -71,40 +71,40 @@ export const DxtUserConfigurationOptionSchema = z.object({
   max: z.number().optional(),
 });
 
-export const DxtUserConfigValuesSchema = z.record(
+export const McpbUserConfigValuesSchema = z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
-export const DxtManifestSchema = z.object({
+export const McpbManifestSchema = z.object({
   $schema: z.string().optional(),
-  dxt_version: z.string(),
+  mcpb_version: z.string(),
   name: z.string(),
   display_name: z.string().optional(),
   version: z.string(),
   description: z.string(),
   long_description: z.string().optional(),
-  author: DxtManifestAuthorSchema,
-  repository: DxtManifestRepositorySchema.optional(),
+  author: McpbManifestAuthorSchema,
+  repository: McpbManifestRepositorySchema.optional(),
   homepage: z.string().url().optional(),
   documentation: z.string().url().optional(),
   support: z.string().url().optional(),
   icon: z.string().optional(),
   screenshots: z.array(z.string()).optional(),
-  server: DxtManifestServerSchema,
-  tools: z.array(DxtManifestToolSchema).optional(),
+  server: McpbManifestServerSchema,
+  tools: z.array(McpbManifestToolSchema).optional(),
   tools_generated: z.boolean().optional(),
-  prompts: z.array(DxtManifestPromptSchema).optional(),
+  prompts: z.array(McpbManifestPromptSchema).optional(),
   prompts_generated: z.boolean().optional(),
   keywords: z.array(z.string()).optional(),
   license: z.string().optional(),
-  compatibility: DxtManifestCompatibilitySchema.optional(),
+  compatibility: McpbManifestCompatibilitySchema.optional(),
   user_config: z
-    .record(z.string(), DxtUserConfigurationOptionSchema)
+    .record(z.string(), McpbUserConfigurationOptionSchema)
     .optional(),
 });
 
-export const DxtSignatureInfoSchema = z.object({
+export const McpbSignatureInfoSchema = z.object({
   status: z.enum(["signed", "unsigned", "self-signed"]),
   publisher: z.string().optional(),
   issuer: z.string().optional(),

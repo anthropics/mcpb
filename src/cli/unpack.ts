@@ -12,21 +12,21 @@ import { extractSignatureBlock } from "../node/sign.js";
 import { getLogger } from "../shared/log.js";
 
 interface UnpackOptions {
-  dxtPath: string;
+  mcpbPath: string;
   outputDir?: string;
   silent?: boolean;
 }
 
 export async function unpackExtension({
-  dxtPath,
+  mcpbPath,
   outputDir,
   silent,
 }: UnpackOptions): Promise<boolean> {
   const logger = getLogger({ silent });
-  const resolvedDxtPath = resolve(dxtPath);
+  const resolvedMcpbPath = resolve(mcpbPath);
 
-  if (!existsSync(resolvedDxtPath)) {
-    logger.error(`ERROR: DXT file not found: ${dxtPath}`);
+  if (!existsSync(resolvedMcpbPath)) {
+    logger.error(`ERROR: MCPB file not found: ${mcpbPath}`);
     return false;
   }
 
@@ -37,7 +37,7 @@ export async function unpackExtension({
   }
 
   try {
-    const fileContent = readFileSync(resolvedDxtPath);
+    const fileContent = readFileSync(resolvedMcpbPath);
     const { originalContent } = extractSignatureBlock(fileContent);
 
     // Parse file attributes from ZIP central directory

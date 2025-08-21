@@ -11,9 +11,9 @@ import {
 } from "fs";
 import { basename, join, relative, resolve, sep } from "path";
 
-import { getAllFilesWithCount, readDxtIgnorePatterns } from "../node/files.js";
+import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
-import { DxtManifestSchema } from "../schemas.js";
+import { McpbManifestSchema } from "../schemas.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";
 
@@ -92,7 +92,7 @@ export async function packExtension({
   try {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
-    manifest = DxtManifestSchema.parse(manifestData);
+    manifest = McpbManifestSchema.parse(manifestData);
   } catch (error) {
     logger.error("ERROR: Failed to parse manifest.json");
     if (error instanceof Error) {
@@ -105,22 +105,22 @@ export async function packExtension({
   const extensionName = basename(resolvedPath);
   const finalOutputPath = outputPath
     ? resolve(outputPath)
-    : resolve(`${extensionName}.dxt`);
+    : resolve(`${extensionName}.mcpb`);
 
   // Ensure output directory exists
   const outputDir = join(finalOutputPath, "..");
   mkdirSync(outputDir, { recursive: true });
 
   try {
-    // Read .dxtignore patterns if present
-    const dxtIgnorePatterns = readDxtIgnorePatterns(resolvedPath);
+    // Read .mcpbignore patterns if present
+    const mcpbIgnorePatterns = readMcpbIgnorePatterns(resolvedPath);
 
     // Get all files in the extension directory
     const { files, ignoredCount } = getAllFilesWithCount(
       resolvedPath,
       resolvedPath,
       {},
-      dxtIgnorePatterns,
+      mcpbIgnorePatterns,
     );
 
     // Print package header
@@ -218,7 +218,7 @@ export async function packExtension({
 
     // Print archive details
     const sanitizedName = sanitizeNameForFilename(manifest.name);
-    const archiveName = `${sanitizedName}-${manifest.version}.dxt`;
+    const archiveName = `${sanitizedName}-${manifest.version}.mcpb`;
     logger.log("\nArchive Details");
     logger.log(`name: ${manifest.name}`);
     logger.log(`version: ${manifest.version}`);
@@ -227,7 +227,7 @@ export async function packExtension({
     logger.log(`unpacked size: ${formatFileSize(totalUnpackedSize)}`);
     logger.log(`shasum: ${shasum}`);
     logger.log(`total files: ${fileEntries.length}`);
-    logger.log(`ignored (.dxtignore) files: ${ignoredCount}`);
+    logger.log(`ignored (.mcpbignore) files: ${ignoredCount}`);
 
     logger.log(`\nOutput: ${finalOutputPath}`);
     return true;

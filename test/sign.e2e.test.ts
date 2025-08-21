@@ -1,10 +1,10 @@
 /**
- * End-to-end test for DXT signing and verification
+ * End-to-end test for MCPB signing and verification
  *
  * This test:
- * 1. Creates a test DXT file
+ * 1. Creates a test MCPB file
  * 2. Generates a self-signed certificate for testing
- * 3. Signs the DXT file
+ * 3. Signs the MCPB file
  * 4. Verifies the signature
  * 5. Tests various failure scenarios
  */
@@ -13,7 +13,7 @@ import * as fs from "fs";
 import forge from "node-forge";
 import * as path from "path";
 
-import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../src/node/sign.js";
+import { signMcpbFile, unsignMcpbFile, verifyMcpbFile } from "../src/node/sign.js";
 
 // Test directory
 const TEST_DIR = path.join(__dirname, "test-output");
@@ -24,7 +24,7 @@ if (!fs.existsSync(TEST_DIR)) {
 }
 
 // Test file paths
-const TEST_DXT = path.join(TEST_DIR, "test.dxt");
+const TEST_MCPB = path.join(TEST_DIR, "test.mcpb");
 const SELF_SIGNED_CERT = path.join(TEST_DIR, "self-signed.crt");
 const SELF_SIGNED_KEY = path.join(TEST_DIR, "self-signed.key");
 const CA_CERT = path.join(TEST_DIR, "ca.crt");
@@ -46,7 +46,7 @@ function generateSelfSignedCert() {
   cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
 
   const attrs = [
-    { name: "commonName", value: "Test DXT Publisher" },
+    { name: "commonName", value: "Test MCPB Publisher" },
     { name: "countryName", value: "US" },
     { name: "organizationName", value: "Test Org" },
   ];
@@ -168,7 +168,7 @@ function generateCASignedCert() {
 }
 
 /**
- * Create a test DXT file (just a simple ZIP)
+ * Create a test MCPB file (just a simple ZIP)
  */
 function createTestDxt() {
   // Create a simple ZIP file content
@@ -318,7 +318,7 @@ function createTestDxt() {
     0x00, // Comment length
   ]);
 
-  fs.writeFileSync(TEST_DXT, zipContent);
+  fs.writeFileSync(TEST_MCPB, zipContent);
 }
 
 /**
@@ -327,15 +327,15 @@ function createTestDxt() {
 async function testSelfSignedSigning() {
   // Create a copy for this test
   const testFile = path.join(TEST_DIR, "test-self-signed.dxt");
-  fs.copyFileSync(TEST_DXT, testFile);
+  fs.copyFileSync(TEST_MCPB, testFile);
 
   // Sign the file
   expect(() =>
-    signDxtFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY),
+    signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY),
   ).not.toThrow();
 
   // Verify the signature
-  const result = await verifyDxtFile(testFile);
+  const result = await verifyMcpbFile(testFile);
 
   // Self-signed certs may not be trusted by OS, so we accept either status
   expect(["self-signed", "unsigned"]).toContain(result.status);
@@ -350,15 +350,15 @@ async function testSelfSignedSigning() {
 async function testCASignedSigning() {
   // Create a copy for this test
   const testFile = path.join(TEST_DIR, "test-ca-signed.dxt");
-  fs.copyFileSync(TEST_DXT, testFile);
+  fs.copyFileSync(TEST_MCPB, testFile);
 
   // Sign the file with intermediate
   expect(() =>
-    signDxtFile(testFile, SIGNED_CERT, SIGNED_KEY, [CA_CERT]),
+    signMcpbFile(testFile, SIGNED_CERT, SIGNED_KEY, [CA_CERT]),
   ).not.toThrow();
 
   // Verify the signature
-  const result = await verifyDxtFile(testFile);
+  const result = await verifyMcpbFile(testFile);
 
   // CA-signed status depends on whether test CA is trusted by OS
   expect(["signed", "unsigned"]).toContain(result.status);
@@ -373,8 +373,8 @@ async function testCASignedSigning() {
 async function testTamperingDetection() {
   // Create a copy and sign it
   const testFile = path.join(TEST_DIR, "test-tampered.dxt");
-  fs.copyFileSync(TEST_DXT, testFile);
-  signDxtFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+  fs.copyFileSync(TEST_MCPB, testFile);
+  signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
 
   // Read the signed file
   const signedContent = fs.readFileSync(testFile);
@@ -385,7 +385,7 @@ async function testTamperingDetection() {
   fs.writeFileSync(testFile, tamperedContent);
 
   // Try to verify - should fail
-  const result = await verifyDxtFile(testFile);
+  const result = await verifyMcpbFile(testFile);
   expect(result.status).toBe("unsigned");
 
   // Clean up
@@ -396,7 +396,7 @@ async function testTamperingDetection() {
  * Test unsigned file verification
  */
 async function testUnsignedFile() {
-  const result = await verifyDxtFile(TEST_DXT);
+  const result = await verifyMcpbFile(TEST_MCPB);
   expect(result.status).toBe("unsigned");
 }
 
@@ -406,24 +406,24 @@ async function testUnsignedFile() {
 async function testSignatureRemoval() {
   // Create a copy and sign it
   const testFile = path.join(TEST_DIR, "test-remove-sig.dxt");
-  fs.copyFileSync(TEST_DXT, testFile);
-  signDxtFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+  fs.copyFileSync(TEST_MCPB, testFile);
+  signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
 
   // Verify it's signed (or at least has signature data)
-  await verifyDxtFile(testFile);
+  await verifyMcpbFile(testFile);
 
   // Remove signature
-  expect(() => unsignDxtFile(testFile)).not.toThrow();
+  expect(() => unsignMcpbFile(testFile)).not.toThrow();
 
   // Verify it's unsigned
-  const afterResult = await verifyDxtFile(testFile);
+  const afterResult = await verifyMcpbFile(testFile);
   expect(afterResult.status).toBe("unsigned");
 
   // Clean up
   fs.unlinkSync(testFile);
 }
 
-describe("DXT Signing E2E Tests", () => {
+describe("MCPB Signing E2E Tests", () => {
   beforeAll(() => {
     // Ensure test directory exists
     if (!fs.existsSync(TEST_DIR)) {

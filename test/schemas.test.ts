@@ -1,15 +1,15 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { DxtManifestSchema } from "../src/schemas.js";
+import { McpbManifestSchema } from "../src/schemas.js";
 
-describe("DxtManifestSchema", () => {
+describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
     const manifestPath = join(__dirname, "valid-manifest.json");
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
 
-    const result = DxtManifestSchema.safeParse(manifestData);
+    const result = McpbManifestSchema.safeParse(manifestData);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -23,11 +23,11 @@ describe("DxtManifestSchema", () => {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
 
-    const result = DxtManifestSchema.safeParse(manifestData);
+    const result = McpbManifestSchema.safeParse(manifestData);
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      const errors = result.error.issues.map((issue) => issue.path.join("."));
+      const errors = result.error.issues.map((issue: any) => issue.path.join("."));
       expect(errors).toContain("author.name");
       expect(errors).toContain("author.email");
       expect(errors).toContain("server.type");
@@ -37,7 +37,7 @@ describe("DxtManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      dxt_version: "1.0",
+      mcpb_version: "1.0",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -101,7 +101,7 @@ describe("DxtManifestSchema", () => {
       },
     };
 
-    const result = DxtManifestSchema.safeParse(fullManifest);
+    const result = McpbManifestSchema.safeParse(fullManifest);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -117,7 +117,7 @@ describe("DxtManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        dxt_version: "1.0",
+        mcpb_version: "1.0",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -132,7 +132,7 @@ describe("DxtManifestSchema", () => {
         },
       };
 
-      const result = DxtManifestSchema.safeParse(manifest);
+      const result = McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
   });

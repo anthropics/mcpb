@@ -2,7 +2,7 @@ import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
-import type { DxtManifest } from "../types.js";
+import type { McpbManifest } from "../types.js";
 
 interface PackageJson {
   name?: string;
@@ -62,7 +62,7 @@ export function getDefaultBasicInfo(
   const authorName = getDefaultAuthorName(packageData) || "Unknown Author";
   const displayName = name;
   const version = packageData.version || "1.0.0";
-  const description = packageData.description || "A DXT extension";
+  const description = packageData.description || "A MCPB bundle";
 
   return { name, authorName, displayName, version, description };
 }
@@ -766,14 +766,14 @@ export function buildManifest(
     license: string;
     repository?: { type: string; url: string };
   },
-): DxtManifest {
+): McpbManifest {
   const { name, displayName, version, description, authorName } = basicInfo;
   const { authorEmail, authorUrl } = authorInfo;
   const { serverType, entryPoint, mcp_config } = serverConfig;
   const { keywords, license, repository } = optionalFields;
 
   return {
-    dxt_version: "0.1",
+    mcpb_version: "0.1",
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }
@@ -822,7 +822,7 @@ export function printNextSteps() {
   console.log(
     `1. Ensure all your production dependencies are in this directory`,
   );
-  console.log(`2. Run 'dxt pack' to create your .dxt file`);
+  console.log(`2. Run 'mcpb pack' to create your .mcpb file`);
 }
 
 export async function initExtension(
@@ -851,7 +851,7 @@ export async function initExtension(
 
   if (!nonInteractive) {
     console.log(
-      "This utility will help you create a manifest.json file for your DXT extension.",
+      "This utility will help you create a manifest.json file for your MCPB bundle.",
     );
     console.log("Press ^C at any time to quit.\n");
   } else {

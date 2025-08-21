@@ -4,18 +4,18 @@ import * as path from "path";
 
 import {
   getAllFiles,
-  readDxtIgnorePatterns,
+  readMcpbIgnorePatterns,
   shouldExclude,
 } from "../src/node/files.js";
 
-describe("DxtIgnore functionality", () => {
+describe("McpbIgnore functionality", () => {
   let tempDir: string;
-  let dxtIgnorePath: string;
+  let mcpbIgnorePath: string;
 
   beforeEach(() => {
     // Create a temp directory for each test
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "dxt-test-"));
-    dxtIgnorePath = path.join(tempDir, ".dxtignore");
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcpb-test-"));
+    mcpbIgnorePath = path.join(tempDir, ".mcpbignore");
   });
 
   afterEach(() => {
@@ -23,20 +23,20 @@ describe("DxtIgnore functionality", () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  describe("readDxtIgnorePatterns", () => {
-    it("should return empty array when .dxtignore doesn't exist", () => {
-      const patterns = readDxtIgnorePatterns(tempDir);
+  describe("readMcpbIgnorePatterns", () => {
+    it("should return empty array when .mcpbignore doesn't exist", () => {
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual([]);
     });
 
-    it("should read patterns from .dxtignore file", () => {
+    it("should read patterns from .mcpbignore file", () => {
       const content = `*.log
 node_modules/
 temp/
 .env`;
-      fs.writeFileSync(dxtIgnorePath, content);
+      fs.writeFileSync(mcpbIgnorePath, content);
 
-      const patterns = readDxtIgnorePatterns(tempDir);
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual(["*.log", "node_modules/", "temp/", ".env"]);
     });
 
@@ -48,9 +48,9 @@ temp/
 node_modules/
 
 .env`;
-      fs.writeFileSync(dxtIgnorePath, content);
+      fs.writeFileSync(mcpbIgnorePath, content);
 
-      const patterns = readDxtIgnorePatterns(tempDir);
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual(["*.log", "node_modules/", ".env"]);
     });
 
@@ -58,24 +58,24 @@ node_modules/
       const content = `  *.log  
    node_modules/   
 temp/`;
-      fs.writeFileSync(dxtIgnorePath, content);
+      fs.writeFileSync(mcpbIgnorePath, content);
 
-      const patterns = readDxtIgnorePatterns(tempDir);
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual(["*.log", "node_modules/", "temp/"]);
     });
 
     it("should handle Windows line endings", () => {
       const content = `*.log\r\nnode_modules/\r\ntemp/`;
-      fs.writeFileSync(dxtIgnorePath, content);
+      fs.writeFileSync(mcpbIgnorePath, content);
 
-      const patterns = readDxtIgnorePatterns(tempDir);
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual(["*.log", "node_modules/", "temp/"]);
     });
 
     it("should return empty array if file cannot be read", () => {
-      fs.mkdirSync(dxtIgnorePath); // Make a dir so readFile fails
+      fs.mkdirSync(mcpbIgnorePath); // Make a dir so readFile fails
 
-      const patterns = readDxtIgnorePatterns(tempDir);
+      const patterns = readMcpbIgnorePatterns(tempDir);
       expect(patterns).toEqual([]);
     });
   });
@@ -118,7 +118,7 @@ temp/`;
     });
   });
 
-  describe("getAllFiles with .dxtignore", () => {
+  describe("getAllFiles with .mcpbignore", () => {
     let testStructure: string;
 
     beforeEach(() => {
@@ -145,17 +145,17 @@ temp/`;
       fs.writeFileSync(path.join(testStructure, "debug.log"), "log");
     });
 
-    it("should exclude files matching .dxtignore patterns", () => {
-      // Create .dxtignore
-      const dxtIgnoreContent = `*.log
+    it("should exclude files matching .mcpbignore patterns", () => {
+      // Create .mcpbignore
+      const mcpbIgnoreContent = `*.log
 tests/
 coverage/`;
       fs.writeFileSync(
-        path.join(testStructure, ".dxtignore"),
-        dxtIgnoreContent,
+        path.join(testStructure, ".mcpbignore"),
+        mcpbIgnoreContent,
       );
 
-      const patterns = readDxtIgnorePatterns(testStructure);
+      const patterns = readMcpbIgnorePatterns(testStructure);
       const files = getAllFiles(testStructure, testStructure, {}, patterns);
 
       const fileNames = Object.keys(files);
@@ -169,21 +169,21 @@ coverage/`;
       expect(fileNames).not.toContain("logs/debug.log");
       expect(fileNames).not.toContain("tests/test.js");
       expect(fileNames).not.toContain("coverage/report.txt");
-      expect(fileNames).not.toContain(".dxtignore");
+      expect(fileNames).not.toContain(".mcpbignore");
     });
 
-    it("should exclude both default patterns and .dxtignore patterns", () => {
-      // Create .dxtignore
-      const dxtIgnoreContent = `tests/`;
+    it("should exclude both default patterns and .mcpbignore patterns", () => {
+      // Create .mcpbignore
+      const mcpbIgnoreContent = `tests/`;
       fs.writeFileSync(
-        path.join(testStructure, ".dxtignore"),
-        dxtIgnoreContent,
+        path.join(testStructure, ".mcpbignore"),
+        mcpbIgnoreContent,
       );
 
       // Create a .git file (default exclusion)
       fs.writeFileSync(path.join(testStructure, ".gitignore"), "ignore");
 
-      const patterns = readDxtIgnorePatterns(testStructure);
+      const patterns = readMcpbIgnorePatterns(testStructure);
       const files = getAllFiles(testStructure, testStructure, {}, patterns);
 
       const fileNames = Object.keys(files);
@@ -192,14 +192,14 @@ coverage/`;
       expect(fileNames).toContain("manifest.json");
       expect(fileNames).toContain("src/index.js");
 
-      // Should exclude (from .dxtignore)
+      // Should exclude (from .mcpbignore)
       expect(fileNames).not.toContain("tests/test.js");
 
       // Should exclude (from default patterns)
       expect(fileNames).not.toContain(".gitignore");
     });
 
-    it("should work without .dxtignore file", () => {
+    it("should work without .mcpbignore file", () => {
       const files = getAllFiles(testStructure, testStructure, {}, []);
       const fileNames = Object.keys(files);
 

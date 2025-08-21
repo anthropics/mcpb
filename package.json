@@ -1,6 +1,6 @@
 {
-  "name": "@anthropic-ai/dxt",
-  "description": "Tools for building Desktop Extensions",
+  "name": "@anthropic-ai/mcpb",
+  "description": "Tools for building MCP Bundles",
   "version": "0.2.6",
   "type": "module",
   "main": "dist/index.js",
@@ -29,7 +29,7 @@
     }
   },
   "bin": {
-    "dxt": "dist/cli/cli.js"
+    "mcpb": "dist/cli/cli.js"
   },
   "files": [
     "dist"
@@ -37,7 +37,7 @@
   "scripts": {
     "build": "yarn run build:code",
     "build:code": "tsc",
-    "build:schema": "node ./scripts/build-dxt-schema.js",
+    "build:schema": "node ./scripts/build-mcpb-schema.js",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",

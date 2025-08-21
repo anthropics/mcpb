@@ -1,5 +1,5 @@
 {
-  "dxt_version": "1.0",
+  "mcpb_version": "1.0",
   "name": "test-extension",
   "version": "1.0.0",
   "description": "A test DXT extension",

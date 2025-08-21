@@ -1,11 +1,11 @@
 {
   "$schema": "../../dist/dxt-manifest.schema.json",
-  "dxt_version": "0.1",
+  "mcpb_version": "0.1",
   "name": "chrome-applescript",
   "display_name": "Control Chrome with AppleScript",
   "version": "0.1.0",
   "description": "Control Google Chrome browser tabs, windows, and navigation",
-  "long_description": "This extension allows you to control Google Chrome browser tabs, windows, and navigation through Chrome's official AppleScript API. You can open URLs, manage tabs, execute JavaScript, and retrieve page content.\n\nThis extension is meant to be a demonstration of Desktop Extensions.\n\nThis extension is not affiliated with Google or Chrome.",
+  "long_description": "This extension allows you to control Google Chrome browser tabs, windows, and navigation through Chrome's official AppleScript API. You can open URLs, manage tabs, execute JavaScript, and retrieve page content.\n\nThis extension is meant to be a demonstration of MCP Bundles.\n\nThis extension is not affiliated with Google or Chrome.",
   "author": {
     "name": "Anthropic",
     "email": "support@anthropic.com",

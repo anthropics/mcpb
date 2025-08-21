@@ -1,12 +1,12 @@
-# DXT Examples
+# MCPB Examples
 
-This directory contains example Desktop Extensions that demonstrate the DXT format and manifest structure. These are **reference implementations** designed to illustrate how to build DXT extensions.
+This directory contains example MCP Bundles that demonstrate the MCPB format and manifest structure. These are **reference implementations** designed to illustrate how to build MCPB extensions.
 
 ## ⚠️ Not Production Ready
 
 **Important:** These examples are **NOT intended for production use**. They serve as:
 
-- Demonstrations of the DXT manifest format
+- Demonstrations of the MCPB manifest format
 - Templates for building your own extensions
 - Simple MCP server implementations for testing
 

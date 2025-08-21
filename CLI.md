@@ -1,45 +1,45 @@
-# DXT CLI Documentation
+# MCPB CLI Documentation
 
-The DXT CLI provides tools for building Desktop Extensions.
+The MCPB CLI provides tools for building MCP Bundles.
 
 ## Installation
 
 ```bash
-npm install -g @anthropic-ai/dxt
+npm install -g @anthropic-ai/mcpb
 ```
 
 ```
-Usage: dxt [options] [command]
+Usage: mcpb [options] [command]
 
-Tools for building Desktop Extensions
+Tools for building MCP Bundles
 
 Options:
   -V, --version              output the version number
   -h, --help                 display help for command
 
 Commands:
-  init [directory]           Create a new DXT extension manifest
-  validate <manifest>        Validate a DXT manifest file
-  pack <directory> [output]  Pack a directory into a DXT extension
-  sign [options] <dxt-file>  Sign a DXT extension file
-  verify <dxt-file>          Verify the signature of a DXT extension file
-  info <dxt-file>            Display information about a DXT extension file
-  unsign <dxt-file>          Remove signature from a DXT extension file
+  init [directory]           Create a new MCPB extension manifest
+  validate <manifest>        Validate a MCPB manifest file
+  pack <directory> [output]  Pack a directory into a MCPB extension
+  sign [options] <mcpb-file>  Sign a MCPB extension file
+  verify <mcpb-file>          Verify the signature of a MCPB extension file
+  info <mcpb-file>            Display information about a MCPB extension file
+  unsign <mcpb-file>          Remove signature from a MCPB extension file
   help [command]             display help for command
 ```
 
 ## Commands
 
-### `dxt init [directory]`
+### `mcpb init [directory]`
 
-Creates a new DXT extension manifest interactively.
+Creates a new MCPB extension manifest interactively.
 
 ```bash
 # Initialize in current directory
-dxt init
+mcpb init
 
 # Initialize in a specific directory
-dxt init my-extension/
+mcpb init my-extension/
 ```
 
 The command will prompt you for:
@@ -58,53 +58,53 @@ The command will prompt you for:
 
 After creating the manifest, it provides helpful next steps based on your server type.
 
-### `dxt validate <path>`
+### `mcpb validate <path>`
 
-Validates a DXT manifest file against the schema. You can provide either a direct path to a manifest.json file or a directory containing one.
+Validates a MCPB manifest file against the schema. You can provide either a direct path to a manifest.json file or a directory containing one.
 
 ```bash
 # Validate specific manifest file
-dxt validate manifest.json
+mcpb validate manifest.json
 
 # Validate manifest in directory
-dxt validate ./my-extension
-dxt validate .
+mcpb validate ./my-extension
+mcpb validate .
 ```
 
-### `dxt pack <directory> [output]`
+### `mcpb pack <directory> [output]`
 
-Packs a directory into a DXT extension file.
+Packs a directory into a MCPB extension file.
 
 ```bash
-# Pack current directory into extension.dxt
-dxt pack .
+# Pack current directory into extension.mcpb
+mcpb pack .
 
 # Pack with custom output filename
-dxt pack my-extension/ my-extension-v1.0.dxt
+mcpb pack my-extension/ my-extension-v1.0.mcpb
 ```
 
 The command automatically:
 
 - Validates the manifest.json
 - Excludes common development files (.git, node_modules/.cache, .DS_Store, etc.)
-- Creates a compressed .dxt file (ZIP with maximum compression)
+- Creates a compressed .mcpb file (ZIP with maximum compression)
 
-### `dxt sign <dxt-file>`
+### `mcpb sign <mcpb-file>`
 
-Signs a DXT extension file with a certificate.
+Signs a MCPB extension file with a certificate.
 
 ```bash
 # Sign with default certificate paths
-dxt sign my-extension.dxt
+mcpb sign my-extension.mcpb
 
 # Sign with custom certificate and key
-dxt sign my-extension.dxt --cert /path/to/cert.pem --key /path/to/key.pem
+mcpb sign my-extension.mcpb --cert /path/to/cert.pem --key /path/to/key.pem
 
 # Sign with intermediate certificates
-dxt sign my-extension.dxt --cert cert.pem --key key.pem --intermediate intermediate1.pem intermediate2.pem
+mcpb sign my-extension.mcpb --cert cert.pem --key key.pem --intermediate intermediate1.pem intermediate2.pem
 
 # Create and use a self-signed certificate
-dxt sign my-extension.dxt --self-signed
+mcpb sign my-extension.mcpb --self-signed
 ```
 
 Options:
@@ -114,12 +114,12 @@ Options:
 - `--intermediate, -i`: Paths to intermediate certificate files
 - `--self-signed`: Create a self-signed certificate if none exists
 
-### `dxt verify <dxt-file>`
+### `mcpb verify <mcpb-file>`
 
-Verifies the signature of a signed DXT extension file.
+Verifies the signature of a signed MCPB extension file.
 
 ```bash
-dxt verify my-extension.dxt
+mcpb verify my-extension.mcpb
 ```
 
 Output includes:
@@ -130,12 +130,12 @@ Output includes:
 - Certificate fingerprint
 - Warning if self-signed
 
-### `dxt info <dxt-file>`
+### `mcpb info <mcpb-file>`
 
-Displays information about a DXT extension file.
+Displays information about a MCPB extension file.
 
 ```bash
-dxt info my-extension.dxt
+mcpb info my-extension.mcpb
 ```
 
 Shows:
@@ -144,12 +144,12 @@ Shows:
 - Signature status
 - Certificate details (if signed)
 
-### `dxt unsign <dxt-file>`
+### `mcpb unsign <mcpb-file>`
 
-Removes the signature from a DXT extension file (for development/testing).
+Removes the signature from a MCPB extension file (for development/testing).
 
 ```bash
-dxt unsign my-extension.dxt
+mcpb unsign my-extension.mcpb
 ```
 
 ## Certificate Requirements
@@ -176,7 +176,7 @@ mkdir my-awesome-extension
 cd my-awesome-extension
 
 # 2. Initialize the extension
-dxt init
+mcpb init
 
 # 3. Follow the prompts to configure your extension
 # The tool will create a manifest.json with all necessary fields
@@ -184,10 +184,10 @@ dxt init
 # 4. Create your server implementation based on the entry point you specified
 
 # 5. Pack the extension
-dxt pack .
+mcpb pack .
 
 # 6. (Optional) Sign the extension
-dxt sign my-awesome-extension.dxt --self-signed
+mcpb sign my-awesome-extension.mcpb --self-signed
 ```
 
 ### Development Workflow
@@ -197,8 +197,8 @@ dxt sign my-awesome-extension.dxt --self-signed
 mkdir my-extension
 cd my-extension
 
-# 2. Initialize with dxt init or create manifest.json manually
-dxt init
+# 2. Initialize with mcpb init or create manifest.json manually
+mcpb init
 
 # 3. Implement your server
 # For Node.js: create server/index.js
@@ -206,35 +206,35 @@ dxt init
 # For Binary: add your executable
 
 # 4. Validate manifest
-dxt validate manifest.json
+mcpb validate manifest.json
 
 # 5. Pack extension
-dxt pack . my-extension.dxt
+mcpb pack . my-extension.mcpb
 
 # 6. (Optional) Sign for testing
-dxt sign my-extension.dxt --self-signed
+mcpb sign my-extension.mcpb --self-signed
 
 # 7. Verify signature
-dxt verify my-extension.dxt
+mcpb verify my-extension.mcpb
 
 # 8. Check extension info
-dxt info my-extension.dxt
+mcpb info my-extension.mcpb
 ```
 
 ### Production Workflow
 
 ```bash
 # 1. Pack your extension
-dxt pack my-extension/
+mcpb pack my-extension/
 
 # 2. Sign with production certificate
-dxt sign my-extension.dxt \
+mcpb sign my-extension.mcpb \
   --cert production-cert.pem \
   --key production-key.pem \
   --intermediate intermediate-ca.pem root-ca.pem
 
 # 3. Verify before distribution
-dxt verify my-extension.dxt
+mcpb verify my-extension.mcpb
 ```
 
 ## Excluded Files
@@ -250,12 +250,12 @@ When packing an extension, the following files/patterns are automatically exclud
 - `.env.local`, `.env.*.local`
 - `package-lock.json`, `yarn.lock`
 
-### Custom Exclusions with .dxtignore
+### Custom Exclusions with .mcpbignore
 
-You can create a `.dxtignore` file in your extension directory to specify additional files and patterns to exclude during packing. This works similar to `.npmignore` or `.gitignore`:
+You can create a `.mcpbignore` file in your extension directory to specify additional files and patterns to exclude during packing. This works similar to `.npmignore` or `.gitignore`:
 
 ```
-# .dxtignore example
+# .mcpbignore example
 # Comments start with #
 *.test.js
 src/**/*.test.ts
@@ -266,7 +266,7 @@ temp/
 docs/
 ```
 
-The `.dxtignore` file supports:
+The `.mcpbignore` file supports:
 
 - **Exact matches**: `filename.txt`
 - **Simple globs**: `*.log`, `temp/*`
@@ -274,30 +274,30 @@ The `.dxtignore` file supports:
 - **Comments**: Lines starting with `#` are ignored
 - **Empty lines**: Blank lines are ignored
 
-When a `.dxtignore` file is found, the CLI will display the number of additional patterns being applied. These patterns are combined with the default exclusion list.
+When a `.mcpbignore` file is found, the CLI will display the number of additional patterns being applied. These patterns are combined with the default exclusion list.
 
 ## Technical Details
 
 ### Signature Format
 
-DXT uses PKCS#7 (Cryptographic Message Syntax) for digital signatures:
+MCPB uses PKCS#7 (Cryptographic Message Syntax) for digital signatures:
 
 - Signatures are stored in DER-encoded PKCS#7 SignedData format
-- The signature is appended to the DXT file with markers (`DXT_SIG_V1` and `DXT_SIG_END`)
-- The entire DXT content (excluding the signature block) is signed
+- The signature is appended to the MCPB file with markers (`MCPB_SIG_V1` and `MCPB_SIG_END`)
+- The entire MCPB content (excluding the signature block) is signed
 - Detached signature format - the original ZIP content remains unmodified
 
 ### Signature Structure
 
 ```
-[Original DXT ZIP content]
-DXT_SIG_V1
+[Original MCPB ZIP content]
+MCPB_SIG_V1
 [Base64-encoded PKCS#7 signature]
-DXT_SIG_END
+MCPB_SIG_END
 ```
 
 This approach allows:
 
-- Backward compatibility (unsigned DXT files are valid ZIP files)
+- Backward compatibility (unsigned MCPB files are valid ZIP files)
 - Easy signature verification and removal
 - Support for certificate chains with intermediate certificates
