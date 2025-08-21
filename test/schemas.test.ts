@@ -27,7 +27,7 @@ describe("McpbManifestSchema", () => {
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      const errors = result.error.issues.map((issue: any) => issue.path.join("."));
+      const errors = result.error.issues.map((issue) => issue.path.join("."));
       expect(errors).toContain("author.name");
       expect(errors).toContain("author.email");
       expect(errors).toContain("server.type");

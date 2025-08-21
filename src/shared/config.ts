@@ -1,7 +1,7 @@
 import type {
+  Logger,
   McpbManifest,
   McpbUserConfigValues,
-  Logger,
   McpServerConfig,
 } from "../types.js";
 

@@ -3,7 +3,7 @@ import {
   hasRequiredConfigMissing,
   replaceVariables,
 } from "../src/shared/config";
-import type { McpbManifest, Logger } from "../src/types";
+import type { Logger, McpbManifest } from "../src/types";
 
 describe("replaceVariables", () => {
   it("should replace variables in strings", () => {

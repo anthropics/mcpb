@@ -41,7 +41,7 @@ describe("DXT CLI", () => {
       // Commander outputs help to stderr when no command is provided
       const execError = error as ExecSyncError;
       expect(execError.stderr.toString()).toContain(
-        "Usage: dxt [options] [command]",
+        "Usage: mcpb [options] [command]",
       );
     }
   });

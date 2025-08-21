@@ -153,7 +153,7 @@ program
         key: string;
         intermediate?: string[];
         selfSigned?: boolean;
-      }
+      },
     ) => {
       void (async () => {
         try {
@@ -219,7 +219,7 @@ program
           process.exit(1);
         }
       })();
-    }
+    },
   );
 
 // Verify command

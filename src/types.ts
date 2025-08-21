@@ -20,7 +20,9 @@ export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
 
 export type McpbManifestAuthor = z.infer<typeof McpbManifestAuthorSchema>;
 
-export type McpbManifestRepository = z.infer<typeof McpbManifestRepositorySchema>;
+export type McpbManifestRepository = z.infer<
+  typeof McpbManifestRepositorySchema
+>;
 
 export type McpbManifestPlatformOverride = z.infer<
   typeof McpbManifestPlatformOverrideSchema

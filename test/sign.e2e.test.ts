@@ -13,7 +13,11 @@ import * as fs from "fs";
 import forge from "node-forge";
 import * as path from "path";
 
-import { signMcpbFile, unsignMcpbFile, verifyMcpbFile } from "../src/node/sign.js";
+import {
+  signMcpbFile,
+  unsignMcpbFile,
+  verifyMcpbFile,
+} from "../src/node/sign.js";
 
 // Test directory
 const TEST_DIR = path.join(__dirname, "test-output");
