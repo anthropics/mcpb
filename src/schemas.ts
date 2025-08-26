@@ -76,33 +76,41 @@ export const McpbUserConfigValuesSchema = z.record(
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
-export const McpbManifestSchema = z.strictObject({
-  $schema: z.string().optional(),
-  mcpb_version: z.string(),
-  name: z.string(),
-  display_name: z.string().optional(),
-  version: z.string(),
-  description: z.string(),
-  long_description: z.string().optional(),
-  author: McpbManifestAuthorSchema,
-  repository: McpbManifestRepositorySchema.optional(),
-  homepage: z.string().url().optional(),
-  documentation: z.string().url().optional(),
-  support: z.string().url().optional(),
-  icon: z.string().optional(),
-  screenshots: z.array(z.string()).optional(),
-  server: McpbManifestServerSchema,
-  tools: z.array(McpbManifestToolSchema).optional(),
-  tools_generated: z.boolean().optional(),
-  prompts: z.array(McpbManifestPromptSchema).optional(),
-  prompts_generated: z.boolean().optional(),
-  keywords: z.array(z.string()).optional(),
-  license: z.string().optional(),
-  compatibility: McpbManifestCompatibilitySchema.optional(),
-  user_config: z
-    .record(z.string(), McpbUserConfigurationOptionSchema)
-    .optional(),
-});
+export const McpbManifestSchema = z
+  .strictObject({
+    $schema: z.string().optional(),
+    dxt_version: z.string().optional().describe("@deprecated Use manifest_version instead"),
+    manifest_version: z.string().optional(),
+    name: z.string(),
+    display_name: z.string().optional(),
+    version: z.string(),
+    description: z.string(),
+    long_description: z.string().optional(),
+    author: McpbManifestAuthorSchema,
+    repository: McpbManifestRepositorySchema.optional(),
+    homepage: z.string().url().optional(),
+    documentation: z.string().url().optional(),
+    support: z.string().url().optional(),
+    icon: z.string().optional(),
+    screenshots: z.array(z.string()).optional(),
+    server: McpbManifestServerSchema,
+    tools: z.array(McpbManifestToolSchema).optional(),
+    tools_generated: z.boolean().optional(),
+    prompts: z.array(McpbManifestPromptSchema).optional(),
+    prompts_generated: z.boolean().optional(),
+    keywords: z.array(z.string()).optional(),
+    license: z.string().optional(),
+    compatibility: McpbManifestCompatibilitySchema.optional(),
+    user_config: z
+      .record(z.string(), McpbUserConfigurationOptionSchema)
+      .optional(),
+  })
+  .refine(
+    (data) => !!(data.dxt_version || data.manifest_version),
+    {
+      message: "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
+    }
+  );
 
 export const McpbSignatureInfoSchema = z.strictObject({
   status: z.enum(["signed", "unsigned", "self-signed"]),

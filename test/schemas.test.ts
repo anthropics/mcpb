@@ -37,7 +37,7 @@ describe("McpbManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      mcpb_version: "1.0",
+      manifest_version: "1.0",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -117,7 +117,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        mcpb_version: "1.0",
+        manifest_version: "1.0",
         name: "test",
         version: "1.0.0",
         description: "Test",

@@ -76,9 +76,11 @@ export const McpbUserConfigValuesSchema = z.record(
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
-export const McpbManifestSchema = z.object({
-  $schema: z.string().optional(),
-  mcpb_version: z.string(),
+export const McpbManifestSchema = z
+  .object({
+    $schema: z.string().optional(),
+    dxt_version: z.string().optional().describe("@deprecated Use manifest_version instead"),
+    manifest_version: z.string().optional(),
   name: z.string(),
   display_name: z.string().optional(),
   version: z.string(),
@@ -102,7 +104,13 @@ export const McpbManifestSchema = z.object({
   user_config: z
     .record(z.string(), McpbUserConfigurationOptionSchema)
     .optional(),
-});
+  })
+  .refine(
+    (data) => !!(data.dxt_version || data.manifest_version),
+    {
+      message: "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
+    }
+  );
 
 export const McpbSignatureInfoSchema = z.object({
   status: z.enum(["signed", "unsigned", "self-signed"]),

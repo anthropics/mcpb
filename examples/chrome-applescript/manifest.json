@@ -1,6 +1,6 @@
 {
-  "$schema": "../../dist/dxt-manifest.schema.json",
-  "mcpb_version": "0.1",
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.1",
   "name": "chrome-applescript",
   "display_name": "Control Chrome with AppleScript",
   "version": "0.1.0",

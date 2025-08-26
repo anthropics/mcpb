@@ -773,7 +773,7 @@ export function buildManifest(
   const { keywords, license, repository } = optionalFields;
 
   return {
-    mcpb_version: "0.1",
+    manifest_version: "0.1",
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }

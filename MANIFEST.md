@@ -11,7 +11,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "mcpb_version": "0.1", // MCPB spec version this manifest conforms to
+  "manifest_version": "0.1", // Manifest spec version this manifest conforms to
   "name": "my-extension", // Machine-readable name (used for CLI, APIs)
   "version": "1.0.0", // Semantic version of your extension
   "description": "A simple MCP extension", // Brief description of what the extension does
@@ -37,7 +37,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "mcpb_version": "0.1",
+  "manifest_version": "0.1",
   "name": "my-extension",
   "version": "1.0.0",
   "description": "A simple MCP extension",
@@ -71,7 +71,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ```json
 {
-  "mcpb_version": "0.1",
+  "manifest_version": "0.1",
   "name": "My MCP Extension",
   "display_name": "My Awesome MCP Extension",
   "version": "1.0.0",
@@ -162,7 +162,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ### Required Fields
 
-- **mcpb_version**: Specification version this extension conforms to
+- **manifest_version**: Specification version this extension conforms to
 - **name**: Machine-readable name (used for CLI, APIs)
 - **version**: Semantic version (semver)
 - **description**: Brief description

@@ -217,7 +217,7 @@ describe("init functions", () => {
       );
 
       expect(manifest).toEqual({
-        mcpb_version: "0.1",
+        manifest_version: "0.1",
         name: "test-extension",
         version: "1.0.0",
         description: "Test description",
@@ -303,7 +303,7 @@ describe("init functions", () => {
       );
 
       expect(manifest).toEqual({
-        mcpb_version: "0.1",
+        manifest_version: "0.1",
         name: "test-extension",
         display_name: "Test Extension",
         version: "1.0.0",
