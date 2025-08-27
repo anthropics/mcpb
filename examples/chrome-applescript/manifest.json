@@ -1,5 +1,6 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.1",
   "name": "chrome-applescript",
   "display_name": "Control Chrome with AppleScript",
   "version": "0.1.0",
