@@ -5,7 +5,7 @@
 > If you're looking for the DXT tools, they have been renamed to MCPB. Please update your dependencies and tooling:
 > - `dxt` CLI is now `mcpb`
 > - `.dxt` files are now `.mcpb` files
-> - `@anthropic-ai/dxt` package is now `@anthropic-ai/mcpb`
+> - `@anthropic-ai/dxt` package will be moved to `@anthropic-ai/mcpb`
 
 MCP Bundles (`.mcpb`) are zip archives containing a local MCP server and a `manifest.json` that describes the server and its capabilities. The format is spiritually similar to Chrome extensions (`.crx`) or VS Code extensions (`.vsix`), enabling end users to install local MCP servers with a single click.
 
