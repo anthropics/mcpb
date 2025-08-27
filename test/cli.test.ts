@@ -91,7 +91,7 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         join(tempDir, "manifest.json"),
         JSON.stringify({
-          manifest_version: "1.0",
+          $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
           name: "Test Extension",
           version: "1.0.0",
           description: "A test extension",
@@ -188,7 +188,7 @@ describe("DXT CLI", () => {
         fs.writeFileSync(
           join(tempExecDir, "manifest.json"),
           JSON.stringify({
-            manifest_version: "1.0",
+            $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
             name: "Test Executable Extension",
             version: "1.0.0",
             description: "A test extension with executable files",

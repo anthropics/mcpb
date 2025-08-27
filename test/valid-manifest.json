@@ -1,5 +1,5 @@
 {
-  "manifest_version": "1.0",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
   "name": "test-extension",
   "display_name": "Test Extension",
   "version": "1.0.0",

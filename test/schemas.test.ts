@@ -37,7 +37,7 @@ describe("McpbManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      manifest_version: "1.0",
+      $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -117,7 +117,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        manifest_version: "1.0",
+        $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -134,6 +134,75 @@ describe("McpbManifestSchema", () => {
 
       const result = McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("backward compatibility", () => {
+    it("should accept manifest with dxt_version instead of $schema", () => {
+      const legacyManifest = {
+        dxt_version: "0.1",
+        name: "legacy-extension",
+        version: "1.0.0",
+        description: "Legacy extension",
+        author: { name: "Test Author" },
+        server: {
+          type: "node",
+          entry_point: "server.js",
+          mcp_config: {
+            command: "node",
+            args: ["server.js"],
+          },
+        },
+      };
+
+      const result = McpbManifestSchema.safeParse(legacyManifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("should accept manifest with $schema", () => {
+      const modernManifest = {
+        $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
+        name: "modern-extension",
+        version: "1.0.0",
+        description: "Modern extension",
+        author: { name: "Test Author" },
+        server: {
+          type: "node",
+          entry_point: "server.js",
+          mcp_config: {
+            command: "node",
+            args: ["server.js"],
+          },
+        },
+      };
+
+      const result = McpbManifestSchema.safeParse(modernManifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject manifest without $schema or dxt_version", () => {
+      const invalidManifest = {
+        name: "invalid-extension",
+        version: "1.0.0",
+        description: "Invalid extension",
+        author: { name: "Test Author" },
+        server: {
+          type: "node",
+          entry_point: "server.js",
+          mcp_config: {
+            command: "node",
+            args: ["server.js"],
+          },
+        },
+      };
+
+      const result = McpbManifestSchema.safeParse(invalidManifest);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain(
+          "Either '$schema' or 'dxt_version' (deprecated) must be provided"
+        );
+      }
     });
   });
 });

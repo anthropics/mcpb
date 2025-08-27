@@ -1,5 +1,5 @@
 {
-  "manifest_version": "0.1",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
   "id": "anthropic.demo.filesystem",
   "name": "Filesystem",
   "display_name": "Filesystem",

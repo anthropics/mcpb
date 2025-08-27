@@ -773,7 +773,7 @@ export function buildManifest(
   const { keywords, license, repository } = optionalFields;
 
   return {
-    manifest_version: "0.1",
+    $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }

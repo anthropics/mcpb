@@ -79,8 +79,7 @@ export const McpbUserConfigValuesSchema = z.record(
 export const McpbManifestSchema = z
   .object({
     $schema: z.string().optional(),
-    dxt_version: z.string().optional().describe("@deprecated Use manifest_version instead"),
-    manifest_version: z.string().optional(),
+    dxt_version: z.string().optional().describe("@deprecated - Use $schema instead"),
   name: z.string(),
   display_name: z.string().optional(),
   version: z.string(),
@@ -106,9 +105,9 @@ export const McpbManifestSchema = z
     .optional(),
   })
   .refine(
-    (data) => !!(data.dxt_version || data.manifest_version),
+    (data) => !!(data.$schema || data.dxt_version),
     {
-      message: "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
+      message: "Either '$schema' or 'dxt_version' (deprecated) must be provided",
     }
   );
 

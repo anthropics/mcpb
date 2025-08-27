@@ -11,7 +11,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.1", // Manifest spec version this manifest conforms to
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json", // JSON Schema URL for validation
   "name": "my-extension", // Machine-readable name (used for CLI, APIs)
   "version": "1.0.0", // Semantic version of your extension
   "description": "A simple MCP extension", // Brief description of what the extension does
@@ -37,7 +37,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.1",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
   "name": "my-extension",
   "version": "1.0.0",
   "description": "A simple MCP extension",
@@ -71,7 +71,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.1",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
   "name": "My MCP Extension",
   "display_name": "My Awesome MCP Extension",
   "version": "1.0.0",
@@ -162,7 +162,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ### Required Fields
 
-- **manifest_version**: Specification version this extension conforms to
+- **$schema**: JSON Schema URL for validation (defaults to https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json)
 - **name**: Machine-readable name (used for CLI, APIs)
 - **version**: Semantic version (semver)
 - **description**: Brief description

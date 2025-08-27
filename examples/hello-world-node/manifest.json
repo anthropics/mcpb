@@ -1,6 +1,5 @@
 {
-  "$schema": "../../dist/mcpb-manifest.schema.json",
-  "manifest_version": "0.1",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
   "name": "hello-world-node",
   "display_name": "Hello World MCP Server (Reference Extension)",
   "version": "0.1.0",

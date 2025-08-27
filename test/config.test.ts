@@ -90,7 +90,7 @@ describe("getMcpConfigForManifest", () => {
   };
 
   const baseManifest: McpbManifest = {
-    manifest_version: "1.0.0",
+    $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
@@ -305,7 +305,7 @@ describe("getMcpConfigForManifest", () => {
 
 describe("hasRequiredConfigMissing", () => {
   const baseManifest: McpbManifest = {
-    manifest_version: "1.0.0",
+    $schema: "https://static.modelcontextprotocol.io/schemas/2025-08-26/mcpb.manifest.schema.json",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
