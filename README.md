@@ -1,6 +1,6 @@
 # MCP Bundles (MCPB)
 
-> **⚠️ IMPORTANT NOTICE: This project has been renamed from DXT (Desktop Extensions) to MCPB (MCP Bundles)**
+> **⚠️ IMPORTANT NOTICE: This project is being renamed from DXT (Desktop Extensions) to MCPB (MCP Bundles)**
 > 
 > If you're looking for the DXT tools, they have been renamed to MCPB. Please update your dependencies and tooling:
 > - `dxt` CLI is now `mcpb`
