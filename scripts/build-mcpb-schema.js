@@ -1,11 +1,11 @@
-import { DxtManifestSchema, DxtSignatureInfoSchema } from "../dist/schemas.js";
+import { McpbManifestSchema, McpbSignatureInfoSchema } from "../dist/schemas.js";
 import * as z from "zod/v4";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const schemasToWrite = {
-  "dxt-manifest": DxtManifestSchema,
-  "dxt-signature-info": DxtSignatureInfoSchema,
+  "mcpb-manifest": McpbManifestSchema,
+  "mcpb-signature-info": McpbSignatureInfoSchema,
 };
 
 await fs.mkdir(path.join(import.meta.dirname, "../dist"), { recursive: true });

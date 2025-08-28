@@ -1,12 +1,12 @@
 import type {
-  DxtManifest,
-  DxtUserConfigValues,
   Logger,
+  McpbManifest,
+  McpbUserConfigValues,
   McpServerConfig,
 } from "../types.js";
 
 /**
- * This file contains utility functions for handling DXT configuration,
+ * This file contains utility functions for handling MCPB configuration,
  * including variable replacement and MCP server configuration generation.
  */
 
@@ -85,10 +85,10 @@ export function replaceVariables(
 }
 
 interface GetMcpConfigForManifestOptions {
-  manifest: DxtManifest;
+  manifest: McpbManifest;
   extensionPath: string;
   systemDirs: Record<string, string>;
-  userConfig: DxtUserConfigValues;
+  userConfig: McpbUserConfigValues;
   pathSeparator: string;
   logger?: Logger;
 }
@@ -179,8 +179,8 @@ export async function getMcpConfigForManifest(
 }
 
 interface HasRequiredConfigMissingOptions {
-  manifest: DxtManifest;
-  userConfig?: DxtUserConfigValues;
+  manifest: McpbManifest;
+  userConfig?: McpbUserConfigValues;
 }
 
 function isInvalidSingleValue(value: unknown): boolean {

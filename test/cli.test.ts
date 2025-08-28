@@ -41,7 +41,7 @@ describe("DXT CLI", () => {
       // Commander outputs help to stderr when no command is provided
       const execError = error as ExecSyncError;
       expect(execError.stderr.toString()).toContain(
-        "Usage: dxt [options] [command]",
+        "Usage: mcpb [options] [command]",
       );
     }
   });
@@ -91,12 +91,12 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         join(tempDir, "manifest.json"),
         JSON.stringify({
-          dxt_version: "1.0",
+          manifest_version: "1.0",
           name: "Test Extension",
           version: "1.0.0",
           description: "A test extension",
           author: {
-            name: "DXT",
+            name: "MCPB",
           },
           server: {
             type: "node",
@@ -188,12 +188,12 @@ describe("DXT CLI", () => {
         fs.writeFileSync(
           join(tempExecDir, "manifest.json"),
           JSON.stringify({
-            dxt_version: "1.0",
+            manifest_version: "1.0",
             name: "Test Executable Extension",
             version: "1.0.0",
             description: "A test extension with executable files",
             author: {
-              name: "DXT",
+              name: "MCPB",
             },
             server: {
               type: "node",

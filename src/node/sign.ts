@@ -6,30 +6,30 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { promisify } from "util";
 
-import type { DxtSignatureInfo } from "../types.js";
+import type { McpbSignatureInfo } from "../types.js";
 
 // Signature block markers
-const SIGNATURE_HEADER = "DXT_SIG_V1";
-const SIGNATURE_FOOTER = "DXT_SIG_END";
+const SIGNATURE_HEADER = "MCPB_SIG_V1";
+const SIGNATURE_FOOTER = "MCPB_SIG_END";
 
 const execFileAsync = promisify(execFile);
 
 /**
- * Signs a DXT file with the given certificate and private key using PKCS#7
+ * Signs a MCPB file with the given certificate and private key using PKCS#7
  *
- * @param dxtPath Path to the DXT file to sign
+ * @param mcpbPath Path to the MCPB file to sign
  * @param certPath Path to the certificate file (PEM format)
  * @param keyPath Path to the private key file (PEM format)
  * @param intermediates Optional array of intermediate certificate paths
  */
-export function signDxtFile(
-  dxtPath: string,
+export function signMcpbFile(
+  mcpbPath: string,
   certPath: string,
   keyPath: string,
   intermediates?: string[],
 ): void {
-  // Read the original DXT file
-  const dxtContent = readFileSync(dxtPath);
+  // Read the original MCPB file
+  const mcpbContent = readFileSync(mcpbPath);
 
   // Read certificate and key
   const certificatePem = readFileSync(certPath, "utf-8");
@@ -42,7 +42,7 @@ export function signDxtFile(
 
   // Create PKCS#7 signed data
   const p7 = forge.pkcs7.createSignedData();
-  p7.content = forge.util.createBuffer(dxtContent);
+  p7.content = forge.util.createBuffer(mcpbContent);
 
   // Parse and add certificates
   const signingCert = forge.pki.certificateFromPem(certificatePem);
@@ -88,22 +88,22 @@ export function signDxtFile(
   // Create signature block with PKCS#7 data
   const signatureBlock = createSignatureBlock(pkcs7Signature);
 
-  // Append signature block to DXT file
-  const signedContent = Buffer.concat([dxtContent, signatureBlock]);
-  writeFileSync(dxtPath, signedContent);
+  // Append signature block to MCPB file
+  const signedContent = Buffer.concat([mcpbContent, signatureBlock]);
+  writeFileSync(mcpbPath, signedContent);
 }
 
 /**
- * Verifies a signed DXT file using OS certificate store
+ * Verifies a signed MCPB file using OS certificate store
  *
- * @param dxtPath Path to the signed DXT file
+ * @param mcpbPath Path to the signed MCPB file
  * @returns Signature information including verification status
  */
-export async function verifyDxtFile(
-  dxtPath: string,
-): Promise<DxtSignatureInfo> {
+export async function verifyMcpbFile(
+  mcpbPath: string,
+): Promise<McpbSignatureInfo> {
   try {
-    const fileContent = readFileSync(dxtPath);
+    const fileContent = readFileSync(mcpbPath);
 
     // Find and extract signature block
     const { originalContent, pkcs7Signature } =
@@ -213,7 +213,7 @@ export async function verifyDxtFile(
         .toHex(),
     };
   } catch (error) {
-    throw new Error(`Failed to verify DXT file: ${error}`);
+    throw new Error(`Failed to verify MCPB file: ${error}`);
   }
 }
 
@@ -239,7 +239,7 @@ function createSignatureBlock(pkcs7Signature: Buffer): Buffer {
 }
 
 /**
- * Extracts the signature block from a signed DXT file
+ * Extracts the signature block from a signed MCPB file
  */
 export function extractSignatureBlock(fileContent: Buffer): {
   originalContent: Buffer;
@@ -302,7 +302,7 @@ export async function verifyCertificateChain(
   let tempDir: string | null = null;
 
   try {
-    tempDir = await mkdtemp(join(tmpdir(), "dxt-verify-"));
+    tempDir = await mkdtemp(join(tmpdir(), "mcpb-verify-"));
     const certChainPath = join(tempDir, "chain.pem");
     const certChain = [certificate, ...(intermediates || [])].join("\n");
     await writeFile(certChainPath, certChain);
@@ -400,10 +400,10 @@ export async function verifyCertificateChain(
 }
 
 /**
- * Removes signature from a DXT file
+ * Removes signature from a MCPB file
  */
-export function unsignDxtFile(dxtPath: string): void {
-  const fileContent = readFileSync(dxtPath);
+export function unsignMcpbFile(mcpbPath: string): void {
+  const fileContent = readFileSync(mcpbPath);
   const { originalContent } = extractSignatureBlock(fileContent);
-  writeFileSync(dxtPath, originalContent);
+  writeFileSync(mcpbPath, originalContent);
 }

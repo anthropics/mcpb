@@ -6,8 +6,8 @@ import { join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import { DxtManifestSchema } from "../schemas.js";
-import { DxtManifestSchema as LooseDxtManifestSchema } from "../schemas-loose.js";
+import { McpbManifestSchema } from "../schemas.js";
+import { McpbManifestSchema as LooseMcpbManifestSchema } from "../schemas-loose.js";
 
 export function validateManifest(inputPath: string): boolean {
   try {
@@ -22,7 +22,7 @@ export function validateManifest(inputPath: string): boolean {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
 
-    const result = DxtManifestSchema.safeParse(manifestData);
+    const result = McpbManifestSchema.safeParse(manifestData);
 
     if (result.success) {
       console.log("Manifest is valid!");
@@ -57,26 +57,26 @@ export function validateManifest(inputPath: string): boolean {
   }
 }
 
-export async function cleanDxt(inputPath: string) {
-  const tmpDir = await fs.mkdtemp(resolve(os.tmpdir(), "dxt-clean-"));
-  const dxtPath = resolve(tmpDir, "in.dxt");
+export async function cleanMcpb(inputPath: string) {
+  const tmpDir = await fs.mkdtemp(resolve(os.tmpdir(), "mcpb-clean-"));
+  const mcpbPath = resolve(tmpDir, "in.mcpb");
   const unpackPath = resolve(tmpDir, "out");
 
-  console.log(" -- Cleaning DXT...");
+  console.log(" -- Cleaning MCPB...");
 
   try {
-    await fs.copyFile(inputPath, dxtPath);
-    console.log(" -- Unpacking DXT...");
-    await unpackExtension({ dxtPath, silent: true, outputDir: unpackPath });
+    await fs.copyFile(inputPath, mcpbPath);
+    console.log(" -- Unpacking MCPB...");
+    await unpackExtension({ mcpbPath, silent: true, outputDir: unpackPath });
 
     const manifestPath = resolve(unpackPath, "manifest.json");
     const originalManifest = await fs.readFile(manifestPath, "utf-8");
     const manifestData = JSON.parse(originalManifest);
-    const result = LooseDxtManifestSchema.safeParse(manifestData);
+    const result = LooseMcpbManifestSchema.safeParse(manifestData);
 
     if (!result.success) {
       throw new Error(
-        `Unrecoverable manifest issues, please run "dxt validate"`,
+        `Unrecoverable manifest issues, please run "mcpb validate"`,
       );
     }
     await fs.writeFile(manifestPath, JSON.stringify(result.data, null, 2));
@@ -85,9 +85,9 @@ export async function cleanDxt(inputPath: string) {
       originalManifest.trim() !==
       (await fs.readFile(manifestPath, "utf8")).trim()
     ) {
-      console.log(" -- Update manifest to be valid per DXT schema");
+      console.log(" -- Update manifest to be valid per MCPB schema");
     } else {
-      console.log(" -- Manifest already valid per DXT schema");
+      console.log(" -- Manifest already valid per MCPB schema");
     }
 
     const nodeModulesPath = resolve(unpackPath, "node_modules");

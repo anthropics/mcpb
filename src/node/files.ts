@@ -8,7 +8,7 @@ export const EXCLUDE_PATTERNS = [
   "Thumbs.db",
   ".gitignore",
   ".git",
-  ".dxtignore",
+  ".mcpbignore",
   "*.log",
   ".env*",
   ".npm",
@@ -33,30 +33,30 @@ export const EXCLUDE_PATTERNS = [
   "yarn-error.log*",
   "package-lock.json",
   "yarn.lock",
-  "*.dxt",
+  "*.mcpb",
   "*.d.ts",
   "*.tsbuildinfo",
   "tsconfig.json",
 ];
 
 /**
- * Read and parse .dxtignore file patterns
+ * Read and parse .mcpbignore file patterns
  */
-export function readDxtIgnorePatterns(baseDir: string): string[] {
-  const dxtIgnorePath = join(baseDir, ".dxtignore");
-  if (!existsSync(dxtIgnorePath)) {
+export function readMcpbIgnorePatterns(baseDir: string): string[] {
+  const mcpbIgnorePath = join(baseDir, ".mcpbignore");
+  if (!existsSync(mcpbIgnorePath)) {
     return [];
   }
 
   try {
-    const content = readFileSync(dxtIgnorePath, "utf-8");
+    const content = readFileSync(mcpbIgnorePath, "utf-8");
     return content
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter((line) => line.length > 0 && !line.startsWith("#"));
   } catch (error) {
     console.warn(
-      `Warning: Could not read .dxtignore file: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Warning: Could not read .mcpbignore file: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
     return [];
   }

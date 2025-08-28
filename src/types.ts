@@ -1,55 +1,57 @@
 import type * as z from "zod";
 
 import type {
-  DxtManifestAuthorSchema,
-  DxtManifestCompatibilitySchema,
-  DxtManifestMcpConfigSchema,
-  DxtManifestPlatformOverrideSchema,
-  DxtManifestPromptSchema,
-  DxtManifestRepositorySchema,
-  DxtManifestSchema,
-  DxtManifestServerSchema,
-  DxtManifestToolSchema,
-  DxtSignatureInfoSchema,
-  DxtUserConfigurationOptionSchema,
-  DxtUserConfigValuesSchema,
+  McpbManifestAuthorSchema,
+  McpbManifestCompatibilitySchema,
+  McpbManifestMcpConfigSchema,
+  McpbManifestPlatformOverrideSchema,
+  McpbManifestPromptSchema,
+  McpbManifestRepositorySchema,
+  McpbManifestSchema,
+  McpbManifestServerSchema,
+  McpbManifestToolSchema,
+  McpbSignatureInfoSchema,
+  McpbUserConfigurationOptionSchema,
+  McpbUserConfigValuesSchema,
   McpServerConfigSchema,
 } from "./schemas.js";
 
 export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
 
-export type DxtManifestAuthor = z.infer<typeof DxtManifestAuthorSchema>;
+export type McpbManifestAuthor = z.infer<typeof McpbManifestAuthorSchema>;
 
-export type DxtManifestRepository = z.infer<typeof DxtManifestRepositorySchema>;
-
-export type DxtManifestPlatformOverride = z.infer<
-  typeof DxtManifestPlatformOverrideSchema
+export type McpbManifestRepository = z.infer<
+  typeof McpbManifestRepositorySchema
 >;
 
-export type DxtManifestMcpConfig = z.infer<typeof DxtManifestMcpConfigSchema>;
-
-export type DxtManifestServer = z.infer<typeof DxtManifestServerSchema>;
-
-export type DxtManifestCompatibility = z.infer<
-  typeof DxtManifestCompatibilitySchema
+export type McpbManifestPlatformOverride = z.infer<
+  typeof McpbManifestPlatformOverrideSchema
 >;
 
-export type DxtManifestTool = z.infer<typeof DxtManifestToolSchema>;
+export type McpbManifestMcpConfig = z.infer<typeof McpbManifestMcpConfigSchema>;
 
-export type DxtManifestPrompt = z.infer<typeof DxtManifestPromptSchema>;
+export type McpbManifestServer = z.infer<typeof McpbManifestServerSchema>;
 
-export type DxtUserConfigurationOption = z.infer<
-  typeof DxtUserConfigurationOptionSchema
+export type McpbManifestCompatibility = z.infer<
+  typeof McpbManifestCompatibilitySchema
 >;
 
-export type DxtUserConfigValues = z.infer<typeof DxtUserConfigValuesSchema>;
+export type McpbManifestTool = z.infer<typeof McpbManifestToolSchema>;
 
-export type DxtManifest = z.infer<typeof DxtManifestSchema>;
+export type McpbManifestPrompt = z.infer<typeof McpbManifestPromptSchema>;
+
+export type McpbUserConfigurationOption = z.infer<
+  typeof McpbUserConfigurationOptionSchema
+>;
+
+export type McpbUserConfigValues = z.infer<typeof McpbUserConfigValuesSchema>;
+
+export type McpbManifest = z.infer<typeof McpbManifestSchema>;
 
 /**
- * Information about a DXT package signature
+ * Information about a MCPB package signature
  */
-export type DxtSignatureInfo = z.infer<typeof DxtSignatureInfoSchema>;
+export type McpbSignatureInfo = z.infer<typeof McpbSignatureInfoSchema>;
 
 export interface Logger {
   log: (...args: unknown[]) => void;

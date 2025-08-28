@@ -3,7 +3,7 @@ import {
   hasRequiredConfigMissing,
   replaceVariables,
 } from "../src/shared/config";
-import type { DxtManifest, Logger } from "../src/types";
+import type { Logger, McpbManifest } from "../src/types";
 
 describe("replaceVariables", () => {
   it("should replace variables in strings", () => {
@@ -89,8 +89,8 @@ describe("getMcpConfigForManifest", () => {
     data: "/data",
   };
 
-  const baseManifest: DxtManifest = {
-    dxt_version: "1.0.0",
+  const baseManifest: McpbManifest = {
+    manifest_version: "1.0.0",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
@@ -114,7 +114,7 @@ describe("getMcpConfigForManifest", () => {
     const manifest = {
       ...baseManifest,
       server: undefined,
-    } as unknown as DxtManifest;
+    } as unknown as McpbManifest;
 
     const result = await getMcpConfigForManifest({
       manifest,
@@ -129,7 +129,7 @@ describe("getMcpConfigForManifest", () => {
   });
 
   it("should return undefined when required config is missing", async () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         apiKey: {
@@ -171,7 +171,7 @@ describe("getMcpConfigForManifest", () => {
   });
 
   it("should apply platform overrides", async () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       server: {
         type: "node",
@@ -203,7 +203,7 @@ describe("getMcpConfigForManifest", () => {
   });
 
   it("should handle user config variable replacement with defaults", async () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         port: {
@@ -236,7 +236,7 @@ describe("getMcpConfigForManifest", () => {
   });
 
   it("should handle user config variable replacement with user values", async () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         paths: {
@@ -270,7 +270,7 @@ describe("getMcpConfigForManifest", () => {
   });
 
   it("should convert boolean user config values to strings", async () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         verbose: {
@@ -304,8 +304,8 @@ describe("getMcpConfigForManifest", () => {
 });
 
 describe("hasRequiredConfigMissing", () => {
-  const baseManifest: DxtManifest = {
-    dxt_version: "1.0.0",
+  const baseManifest: McpbManifest = {
+    manifest_version: "1.0.0",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
@@ -329,7 +329,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return false when no config fields are required", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         port: {
@@ -349,7 +349,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return false when required config is provided", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         apiKey: {
@@ -369,7 +369,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return true when required config is undefined", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         apiKey: {
@@ -389,7 +389,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return true when required config is empty string", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         apiKey: {
@@ -409,7 +409,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return true when required config is array with invalid values", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         paths: {
@@ -430,7 +430,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should return true when required config is empty array", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         paths: {
@@ -459,7 +459,7 @@ describe("hasRequiredConfigMissing", () => {
   });
 
   it("should handle multiple required config fields", () => {
-    const manifest: DxtManifest = {
+    const manifest: McpbManifest = {
       ...baseManifest,
       user_config: {
         apiKey: {

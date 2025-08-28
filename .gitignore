@@ -103,6 +103,6 @@ _out/
 dist
 self-signed-cert.pem
 self-signed-key.pem
-*.dxt
+*.mcpb
 invalid-json.json
 **/server/lib/**

@@ -1,11 +1,11 @@
 {
-  "$schema": "../../dist/dxt-manifest.schema.json",
-  "dxt_version": "0.1",
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.1",
   "name": "file-manager-python",
   "display_name": "Python File Manager MCP",
   "version": "0.1.0",
   "description": "A Python MCP server for file operations",
-  "long_description": "This extension provides file management capabilities through a Python MCP server. It demonstrates Python-based Desktop Extension development, including file operations, directory management, and proper MCP protocol implementation.",
+  "long_description": "This extension provides file management capabilities through a Python MCP server. It demonstrates Python-based MCP Bundle development, including file operations, directory management, and proper MCP protocol implementation.",
   "author": {
     "name": "Anthropic",
     "email": "support@anthropic.com",

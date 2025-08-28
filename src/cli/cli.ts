@@ -6,8 +6,8 @@ import { existsSync, readFileSync, statSync } from "fs";
 import { basename, dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { signDxtFile, unsignDxtFile, verifyDxtFile } from "../node/sign.js";
-import { cleanDxt, validateManifest } from "../node/validate.js";
+import { signMcpbFile, unsignMcpbFile, verifyMcpbFile } from "../node/sign.js";
+import { cleanMcpb, validateManifest } from "../node/validate.js";
 import { initExtension } from "./init.js";
 import { packExtension } from "./pack.js";
 import { unpackExtension } from "./unpack.js";
@@ -22,10 +22,10 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 const version = packageJson.version;
 
 /**
- * Create a self-signed certificate for signing DXT extensions
+ * Create a self-signed certificate for signing MCPB extensions
  */
 function createSelfSignedCertificate(certPath: string, keyPath: string): void {
-  const subject = "/CN=DXT Self-Signed Certificate/O=DXT Extensions/C=US";
+  const subject = "/CN=MCPB Self-Signed Certificate/O=MCPB Extensions/C=US";
 
   try {
     // Generate a self-signed certificate valid for 10 years, no password
@@ -42,14 +42,14 @@ function createSelfSignedCertificate(certPath: string, keyPath: string): void {
 const program = new Command();
 
 program
-  .name("dxt")
-  .description("Tools for building Desktop Extensions")
+  .name("mcpb")
+  .description("Tools for building MCP Bundles")
   .version(version);
 
 // Init command
 program
   .command("init [directory]")
-  .description("Create a new DXT extension manifest")
+  .description("Create a new MCPB extension manifest")
   .option("-y, --yes", "Accept all defaults (non-interactive mode)")
   .action((directory?: string, options?: { yes?: boolean }) => {
     void (async () => {
@@ -68,7 +68,7 @@ program
 // Validate command
 program
   .command("validate <manifest>")
-  .description("Validate a DXT manifest file")
+  .description("Validate an MCPB manifest file")
   .action((manifestPath: string) => {
     const success = validateManifest(manifestPath);
     process.exit(success ? 0 : 1);
@@ -76,18 +76,18 @@ program
 
 // Clean command
 program
-  .command("clean <dxt>")
+  .command("clean <mcpb>")
   .description(
-    "Cleans a DXT file, validates the manifest, and minimizes bundle size",
+    "Cleans an MCPB file, validates the manifest, and minimizes bundle size",
   )
-  .action(async (dxtFile: string) => {
-    await cleanDxt(dxtFile);
+  .action(async (mcpbFile: string) => {
+    await cleanMcpb(mcpbFile);
   });
 
 // Pack command
 program
   .command("pack [directory] [output]")
-  .description("Pack a directory into a DXT extension")
+  .description("Pack a directory into an MCPB extension")
   .action((directory: string = process.cwd(), output?: string) => {
     void (async () => {
       try {
@@ -107,13 +107,13 @@ program
 
 // Unpack command
 program
-  .command("unpack <dxt-file> [output]")
-  .description("Unpack a DXT extension file")
-  .action((dxtFile: string, output?: string) => {
+  .command("unpack <mcpb-file> [output]")
+  .description("Unpack an MCPB extension file")
+  .action((mcpbFile: string, output?: string) => {
     void (async () => {
       try {
         const success = await unpackExtension({
-          dxtPath: dxtFile,
+          mcpbPath: mcpbFile,
           outputDir: output,
         });
         process.exit(success ? 0 : 1);
@@ -128,8 +128,8 @@ program
 
 // Sign command
 program
-  .command("sign <dxt-file>")
-  .description("Sign a DXT extension file")
+  .command("sign <mcpb-file>")
+  .description("Sign an MCPB extension file")
   .option(
     "-c, --cert <path>",
     "Path to certificate file (PEM format)",
@@ -147,7 +147,7 @@ program
   .option("--self-signed", "Create a self-signed certificate if none exists")
   .action(
     (
-      dxtFile: string,
+      mcpbFile: string,
       options: {
         cert: string;
         key: string;
@@ -157,10 +157,10 @@ program
     ) => {
       void (async () => {
         try {
-          const dxtPath = resolve(dxtFile);
+          const mcpbPath = resolve(mcpbFile);
 
-          if (!existsSync(dxtPath)) {
-            console.error(`ERROR: DXT file not found: ${dxtFile}`);
+          if (!existsSync(mcpbPath)) {
+            console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
             process.exit(1);
           }
 
@@ -169,9 +169,9 @@ program
 
           // Create self-signed certificate if requested
           if (options.selfSigned) {
-            const dxtDir = resolve(__dirname, "..");
-            certPath = join(dxtDir, "self-signed-cert.pem");
-            keyPath = join(dxtDir, "self-signed-key.pem");
+            const mcpbDir = resolve(__dirname, "..");
+            certPath = join(mcpbDir, "self-signed-cert.pem");
+            keyPath = join(mcpbDir, "self-signed-key.pem");
 
             if (!existsSync(certPath) || !existsSync(keyPath)) {
               console.log("Creating self-signed certificate...");
@@ -196,12 +196,12 @@ program
             }
           }
 
-          console.log(`Signing ${basename(dxtPath)}...`);
-          signDxtFile(dxtPath, certPath, keyPath, options.intermediate);
-          console.log(`Successfully signed ${basename(dxtPath)}`);
+          console.log(`Signing ${basename(mcpbPath)}...`);
+          signMcpbFile(mcpbPath, certPath, keyPath, options.intermediate);
+          console.log(`Successfully signed ${basename(mcpbPath)}`);
 
           // Display certificate info
-          const signatureInfo = await verifyDxtFile(dxtPath);
+          const signatureInfo = await verifyMcpbFile(mcpbPath);
           if (
             signatureInfo.status === "signed" ||
             signatureInfo.status === "self-signed"
@@ -224,20 +224,20 @@ program
 
 // Verify command
 program
-  .command("verify <dxt-file>")
-  .description("Verify the signature of a DXT extension file")
-  .action((dxtFile: string) => {
+  .command("verify <mcpb-file>")
+  .description("Verify the signature of an MCPB extension file")
+  .action((mcpbFile: string) => {
     void (async () => {
       try {
-        const dxtPath = resolve(dxtFile);
+        const mcpbPath = resolve(mcpbFile);
 
-        if (!existsSync(dxtPath)) {
-          console.error(`ERROR: DXT file not found: ${dxtFile}`);
+        if (!existsSync(mcpbPath)) {
+          console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
           process.exit(1);
         }
 
-        console.log(`Verifying ${basename(dxtPath)}...`);
-        const result = await verifyDxtFile(dxtPath);
+        console.log(`Verifying ${basename(mcpbPath)}...`);
+        const result = await verifyMcpbFile(mcpbPath);
 
         if (result.status === "signed") {
           console.log(`Signature is valid`);
@@ -270,24 +270,24 @@ program
 
 // Info command
 program
-  .command("info <dxt-file>")
-  .description("Display information about a DXT extension file")
-  .action((dxtFile: string) => {
+  .command("info <mcpb-file>")
+  .description("Display information about an MCPB extension file")
+  .action((mcpbFile: string) => {
     void (async () => {
       try {
-        const dxtPath = resolve(dxtFile);
+        const mcpbPath = resolve(mcpbFile);
 
-        if (!existsSync(dxtPath)) {
-          console.error(`ERROR: DXT file not found: ${dxtFile}`);
+        if (!existsSync(mcpbPath)) {
+          console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
           process.exit(1);
         }
 
-        const stat = statSync(dxtPath);
-        console.log(`File: ${basename(dxtPath)}`);
+        const stat = statSync(mcpbPath);
+        console.log(`File: ${basename(mcpbPath)}`);
         console.log(`Size: ${(stat.size / 1024).toFixed(2)} KB`);
 
         // Check if signed
-        const signatureInfo = await verifyDxtFile(dxtPath);
+        const signatureInfo = await verifyMcpbFile(mcpbPath);
         if (signatureInfo.status === "signed") {
           console.log(`\nSignature Information:`);
           console.log(`  Subject: ${signatureInfo.publisher}`);
@@ -311,7 +311,7 @@ program
         }
       } catch (error) {
         console.log(
-          `ERROR: Failed to read DXT info: ${error instanceof Error ? error.message : "Unknown error"}`,
+          `ERROR: Failed to read MCPB info: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
         process.exit(1);
       }
@@ -320,19 +320,19 @@ program
 
 // Unsign command (for development/testing)
 program
-  .command("unsign <dxt-file>")
-  .description("Remove signature from a DXT extension file")
-  .action((dxtFile: string) => {
+  .command("unsign <mcpb-file>")
+  .description("Remove signature from a MCPB bundle file")
+  .action((mcpbFile: string) => {
     try {
-      const dxtPath = resolve(dxtFile);
+      const mcpbPath = resolve(mcpbFile);
 
-      if (!existsSync(dxtPath)) {
-        console.error(`ERROR: DXT file not found: ${dxtFile}`);
+      if (!existsSync(mcpbPath)) {
+        console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
         process.exit(1);
       }
 
-      console.log(`Removing signature from ${basename(dxtPath)}...`);
-      unsignDxtFile(dxtPath);
+      console.log(`Removing signature from ${basename(mcpbPath)}...`);
+      unsignMcpbFile(mcpbPath);
       console.log(`Signature removed`);
     } catch (error) {
       console.log(

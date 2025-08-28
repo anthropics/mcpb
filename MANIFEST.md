@@ -1,4 +1,4 @@
-# DXT Manifest.json Spec
+# MCPB Manifest.json Spec
 
 Current version: `0.1`
 Last updated: 2025-06-17
@@ -11,7 +11,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "dxt_version": "0.1", // DXT spec version this manifest conforms to
+  "manifest_version": "0.1", // Manifest spec version this manifest conforms to
   "name": "my-extension", // Machine-readable name (used for CLI, APIs)
   "version": "1.0.0", // Semantic version of your extension
   "description": "A simple MCP extension", // Brief description of what the extension does
@@ -37,7 +37,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "dxt_version": "0.1",
+  "manifest_version": "0.1",
   "name": "my-extension",
   "version": "1.0.0",
   "description": "A simple MCP extension",
@@ -71,7 +71,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ```json
 {
-  "dxt_version": "0.1",
+  "manifest_version": "0.1",
   "name": "My MCP Extension",
   "display_name": "My Awesome MCP Extension",
   "version": "1.0.0",
@@ -162,7 +162,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ### Required Fields
 
-- **dxt_version**: Specification version this extension conforms to
+- **manifest_version**: Specification version this extension conforms to
 - **name**: Machine-readable name (used for CLI, APIs)
 - **version**: Semantic version (semver)
 - **description**: Brief description
@@ -190,7 +190,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ## Compatibility
 
-The `compatibility` object specifies all requirements for running the extension. All fields, including the `compatibility` field itself, are optional. If you specify nothing, clients implementing DXT are encouraged to run the extension on any system.
+The `compatibility` object specifies all requirements for running the extension. All fields, including the `compatibility` field itself, are optional. If you specify nothing, clients implementing MCPB are encouraged to run the extension on any system.
 
 ```json
 {
@@ -291,7 +291,7 @@ The `server` object defines how to run the MCP server:
 
 1. **Python**: `server.type = "python"`
    - Requires `entry_point` to Python file
-   - All dependencies must be bundled in the DXT
+   - All dependencies must be bundled in the MCPB
    - Can use `server/lib` for packages or `server/venv` for full virtual environment
    - Python runtime version specified in `compatibility.runtimes.python`
 

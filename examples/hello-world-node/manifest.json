@@ -1,11 +1,11 @@
 {
-  "$schema": "../../dist/dxt-manifest.schema.json",
-  "dxt_version": "0.1",
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.1",
   "name": "hello-world-node",
   "display_name": "Hello World MCP Server (Reference Extension)",
   "version": "0.1.0",
   "description": "A reference MCP extension demonstrating best practices and all available features",
-  "long_description": "This is a reference implementation of a Desktop Extension (DXT). It demonstrates all available manifest features, user configuration options, and security best practices. Use this extension as a template when creating your own MCP servers. The extension includes examples of all user configuration types, proper request token verification, and comprehensive metadata fields.",
+  "long_description": "This is a reference implementation of a MCP Bundle (DXT). It demonstrates all available manifest features, user configuration options, and security best practices. Use this extension as a template when creating your own MCP servers. The extension includes examples of all user configuration types, proper request token verification, and comprehensive metadata fields.",
   "author": {
     "name": "Acme Inc",
     "email": "support@acme.void",
