@@ -70,5 +70,6 @@
     "platforms": ["darwin"]
   },
   "keywords": ["chrome", "browser", "remote"],
-  "license": "MIT"
+  "license": "MIT",
+  "privacy_policies": []
 }

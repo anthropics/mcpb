@@ -1,7 +1,7 @@
 # MCPB Manifest.json Spec
 
-Current version: `0.1`
-Last updated: 2025-06-17
+Current version: `0.2`
+Last updated: 2025-09-12
 
 ## Manifest Schema
 
@@ -122,6 +122,7 @@ A full `manifest.json` with most of the optional fields looks like this:
   "tools_generated": true,
   "keywords": ["api", "automation", "productivity"],
   "license": "MIT",
+  "privacy_policies": ["https://example.com/privacy"],
   "compatibility": {
     "claude_desktop": ">=1.0.0",
     "platforms": ["darwin", "win32", "linux"],
@@ -185,6 +186,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **prompts_generated**: Boolean indicating the server generates additional prompts at runtime (default: false)
 - **keywords**: Search keywords
 - **license**: License identifier
+- **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
 
