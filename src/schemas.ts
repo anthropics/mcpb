@@ -100,6 +100,7 @@ export const McpbManifestSchema = z
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
     license: z.string().optional(),
+    privacy_policies: z.array(z.string()).optional(),
     compatibility: McpbManifestCompatibilitySchema.optional(),
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)

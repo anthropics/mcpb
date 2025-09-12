@@ -103,5 +103,6 @@
     "runtimes": {
       "node": ">=16.0.0"
     }
-  }
+  },
+  "privacy_policies": []
 }

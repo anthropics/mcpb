@@ -89,5 +89,6 @@
       "required": true,
       "default": []
     }
-  }
+  },
+  "privacy_policies": []
 }
