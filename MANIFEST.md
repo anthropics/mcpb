@@ -1,7 +1,7 @@
 # MCPB Manifest.json Spec
 
-Current version: `0.1`
-Last updated: 2025-06-17
+Current version: `0.2`
+Last updated: 2025-09-12
 
 ## Manifest Schema
 
