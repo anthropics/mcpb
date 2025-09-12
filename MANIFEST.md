@@ -186,7 +186,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **prompts_generated**: Boolean indicating the server generates additional prompts at runtime (default: false)
 - **keywords**: Search keywords
 - **license**: License identifier
-- **privacy_policies**: Array of privacy policy URLs describing data handling practices
+- **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
 
