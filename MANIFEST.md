@@ -122,7 +122,7 @@ A full `manifest.json` with most of the optional fields looks like this:
   "tools_generated": true,
   "keywords": ["api", "automation", "productivity"],
   "license": "MIT",
-  "privacy_policies": [],
+  "privacy_policies": ["https://example.com/privacy"],
   "compatibility": {
     "claude_desktop": ">=1.0.0",
     "platforms": ["darwin", "win32", "linux"],
@@ -186,7 +186,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **prompts_generated**: Boolean indicating the server generates additional prompts at runtime (default: false)
 - **keywords**: Search keywords
 - **license**: License identifier
-- **privacy_policies**: Array of privacy policy statements describing data handling practices
+- **privacy_policies**: Array of privacy policy URLs describing data handling practices
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
 
