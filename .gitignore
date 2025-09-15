@@ -105,4 +105,15 @@ self-signed-cert.pem
 self-signed-key.pem
 *.mcpb
 invalid-json.json
-**/server/lib/**
+**/*/lib/**
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info
+
+# Python virtual environments
+.venv/
+
+# VS Code
+.vscode/PythonImportHelper-v2-Completion.json

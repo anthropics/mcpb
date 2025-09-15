@@ -91,6 +91,21 @@ bundle.mcpb (ZIP file)
 └── icon.png              # Optional: Bundle icon
 ```
 
+### Example: Python Package Bundle
+
+```
+bundle.mcpb (ZIP file)
+├── manifest.json         # Required: Bundle metadata and configuration
+├── server_package/       # Server files
+│   ├── __init__.py       # Package initializer
+│   ├── __main__.py       # Main entry point
+│   ├── server.py         # MCP server
+│   └── utils.py          # Additional modules
+├── lib/                  # Bundled Python packages (must server_package)
+├── pyproject.toml        # Optional: Python configuration
+└── icon.png              # Optional: Bundle icon
+```
+
 ### Example: Binary Bundle
 
 ```
