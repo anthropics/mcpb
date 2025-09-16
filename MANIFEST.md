@@ -9,7 +9,7 @@ The `manifest.json` file contains all extension metadata and configuration. Most
 
 A basic `manifest.json` with just the required fields looks like this:
 
-```json
+```jsonc
 {
   "manifest_version": "0.1", // Manifest spec version this manifest conforms to
   "name": "my-extension", // Machine-readable name (used for CLI, APIs)
