@@ -25,7 +25,7 @@ export function validateManifest(inputPath: string): boolean {
     const result = McpbManifestSchema.safeParse(manifestData);
 
     if (result.success) {
-      console.log("Manifest is valid!");
+      console.log("Manifest schema validation passes!");
       return true;
     } else {
       console.log("ERROR: Manifest validation failed:\n");

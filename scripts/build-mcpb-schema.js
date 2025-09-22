@@ -1,4 +1,7 @@
-import { McpbManifestSchema, McpbSignatureInfoSchema } from "../dist/schemas.js";
+import {
+  McpbManifestSchema,
+  McpbSignatureInfoSchema,
+} from "../dist/schemas.js";
 import * as z from "zod/v4";
 import fs from "node:fs/promises";
 import path from "node:path";

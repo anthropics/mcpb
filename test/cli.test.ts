@@ -2,6 +2,8 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import { join } from "node:path";
 
+import { CURRENT_MANIFEST_VERSION } from "../src/schemas.js";
+
 interface ExecSyncError extends Error {
   stdout: Buffer;
   stderr: Buffer;
@@ -23,7 +25,7 @@ describe("DXT CLI", () => {
     const result = execSync(`node ${cliPath} validate ${validManifestPath}`, {
       encoding: "utf-8",
     });
-    expect(result).toContain("Manifest is valid!");
+    expect(result).toContain("Manifest schema validation passes!");
   });
 
   it("should reject an invalid manifest", () => {
@@ -91,7 +93,7 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         join(tempDir, "manifest.json"),
         JSON.stringify({
-          manifest_version: "1.0",
+          manifest_version: CURRENT_MANIFEST_VERSION,
           name: "Test Extension",
           version: "1.0.0",
           description: "A test extension",
@@ -188,7 +190,7 @@ describe("DXT CLI", () => {
         fs.writeFileSync(
           join(tempExecDir, "manifest.json"),
           JSON.stringify({
-            manifest_version: "1.0",
+            manifest_version: CURRENT_MANIFEST_VERSION,
             name: "Test Executable Extension",
             version: "1.0.0",
             description: "A test extension with executable files",
