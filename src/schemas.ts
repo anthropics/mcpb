@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+export const CURRENT_MANIFEST_VERSION = "0.2";
+
 export const McpServerConfigSchema = z.strictObject({
   command: z.string(),
   args: z.array(z.string()).optional(),
@@ -79,7 +81,10 @@ export const McpbUserConfigValuesSchema = z.record(
 export const McpbManifestSchema = z
   .strictObject({
     $schema: z.string().optional(),
-    dxt_version: z.string().optional().describe("@deprecated Use manifest_version instead"),
+    dxt_version: z
+      .string()
+      .optional()
+      .describe("@deprecated Use manifest_version instead"),
     manifest_version: z.string().optional(),
     name: z.string(),
     display_name: z.string().optional(),
@@ -106,12 +111,10 @@ export const McpbManifestSchema = z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
   })
-  .refine(
-    (data) => !!(data.dxt_version || data.manifest_version),
-    {
-      message: "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
-    }
-  );
+  .refine((data) => !!(data.dxt_version || data.manifest_version), {
+    message:
+      "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
+  });
 
 export const McpbSignatureInfoSchema = z.strictObject({
   status: z.enum(["signed", "unsigned", "self-signed"]),

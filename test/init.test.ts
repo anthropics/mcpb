@@ -10,6 +10,7 @@ import {
   getDefaultRepositoryUrl,
   readPackageJson,
 } from "../src/cli/init.js";
+import { CURRENT_MANIFEST_VERSION } from "../src/schemas.js";
 
 // Mock the fs module
 jest.mock("fs", () => ({
@@ -217,7 +218,7 @@ describe("init functions", () => {
       );
 
       expect(manifest).toEqual({
-        manifest_version: "0.1",
+        manifest_version: CURRENT_MANIFEST_VERSION,
         name: "test-extension",
         version: "1.0.0",
         description: "Test description",
@@ -303,7 +304,7 @@ describe("init functions", () => {
       );
 
       expect(manifest).toEqual({
-        manifest_version: "0.1",
+        manifest_version: CURRENT_MANIFEST_VERSION,
         name: "test-extension",
         display_name: "Test Extension",
         version: "1.0.0",
