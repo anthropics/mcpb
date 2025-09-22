@@ -25,7 +25,7 @@ describe("DXT CLI", () => {
     const result = execSync(`node ${cliPath} validate ${validManifestPath}`, {
       encoding: "utf-8",
     });
-    expect(result).toContain("Manifest is valid!");
+    expect(result).toContain("Manifest schema validation passes!");
   });
 
   it("should reject an invalid manifest", () => {
