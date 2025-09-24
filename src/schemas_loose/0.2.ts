@@ -99,12 +99,13 @@ export const McpbManifestSchema = z
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
     license: z.string().optional(),
+    privacy_policies: z.array(z.string().url()).optional(),
     compatibility: McpbManifestCompatibilitySchema.optional(),
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
   })
-;
+  .passthrough();
 
 export const McpbSignatureInfoSchema = z.object({
   status: z.enum(["signed", "unsigned", "self-signed"]),
