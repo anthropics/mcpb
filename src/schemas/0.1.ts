@@ -34,18 +34,16 @@ export const McpbManifestServerSchema = z.strictObject({
   mcp_config: McpbManifestMcpConfigSchema,
 });
 
-export const McpbManifestCompatibilitySchema = z
-  .strictObject({
-    claude_desktop: z.string().optional(),
-    platforms: z.array(z.enum(["darwin", "win32", "linux"])).optional(),
-    runtimes: z
-      .strictObject({
-        python: z.string().optional(),
-        node: z.string().optional(),
-      })
-      .optional(),
-  })
-  .passthrough();
+export const McpbManifestCompatibilitySchema = z.strictObject({
+  claude_desktop: z.string().optional(),
+  platforms: z.array(z.enum(["darwin", "win32", "linux"])).optional(),
+  runtimes: z
+    .strictObject({
+      python: z.string().optional(),
+      node: z.string().optional(),
+    })
+    .optional(),
+});
 
 export const McpbManifestToolSchema = z.strictObject({
   name: z.string(),
@@ -81,11 +79,8 @@ export const McpbUserConfigValuesSchema = z.record(
 export const McpbManifestSchema = z
   .strictObject({
     $schema: z.string().optional(),
-    dxt_version: z
-      .string()
-      .optional()
-      .describe("@deprecated Use manifest_version instead"),
-    manifest_version: z.string().optional(),
+    dxt_version: z.literal("0.1").optional(),
+    manifest_version: z.literal("0.1").optional(),
     name: z.string(),
     display_name: z.string().optional(),
     version: z.string(),
@@ -105,7 +100,6 @@ export const McpbManifestSchema = z
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
     license: z.string().optional(),
-    privacy_policies: z.array(z.string()).optional(),
     compatibility: McpbManifestCompatibilitySchema.optional(),
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)
