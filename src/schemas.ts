@@ -2,22 +2,22 @@ import * as z from "zod";
 
 export const CURRENT_MANIFEST_VERSION = "0.2";
 
-export const McpServerConfigSchema = z.strictObject({
+export const McpServerConfigSchema = z.object({
   command: z.string(),
   args: z.array(z.string()).optional(),
   env: z.record(z.string(), z.string()).optional(),
-});
+}).passthrough();
 
-export const McpbManifestAuthorSchema = z.strictObject({
+export const McpbManifestAuthorSchema = z.object({
   name: z.string(),
   email: z.string().email().optional(),
   url: z.string().url().optional(),
-});
+}).passthrough();
 
-export const McpbManifestRepositorySchema = z.strictObject({
+export const McpbManifestRepositorySchema = z.object({
   type: z.string(),
   url: z.string().url(),
-});
+}).passthrough();
 
 export const McpbManifestPlatformOverrideSchema =
   McpServerConfigSchema.partial();
@@ -28,38 +28,39 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
     .optional(),
 });
 
-export const McpbManifestServerSchema = z.strictObject({
+export const McpbManifestServerSchema = z.object({
   type: z.enum(["python", "node", "binary"]),
   entry_point: z.string(),
   mcp_config: McpbManifestMcpConfigSchema,
-});
+}).passthrough();
 
 export const McpbManifestCompatibilitySchema = z
-  .strictObject({
+  .object({
     claude_desktop: z.string().optional(),
     platforms: z.array(z.enum(["darwin", "win32", "linux"])).optional(),
     runtimes: z
-      .strictObject({
+      .object({
         python: z.string().optional(),
         node: z.string().optional(),
       })
+      .passthrough()
       .optional(),
   })
   .passthrough();
 
-export const McpbManifestToolSchema = z.strictObject({
+export const McpbManifestToolSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
-});
+}).passthrough();
 
-export const McpbManifestPromptSchema = z.strictObject({
+export const McpbManifestPromptSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   arguments: z.array(z.string()).optional(),
   text: z.string(),
-});
+}).passthrough();
 
-export const McpbUserConfigurationOptionSchema = z.strictObject({
+export const McpbUserConfigurationOptionSchema = z.object({
   type: z.enum(["string", "number", "boolean", "directory", "file"]),
   title: z.string(),
   description: z.string(),
@@ -71,7 +72,7 @@ export const McpbUserConfigurationOptionSchema = z.strictObject({
   sensitive: z.boolean().optional(),
   min: z.number().optional(),
   max: z.number().optional(),
-});
+}).passthrough();
 
 export const McpbUserConfigValuesSchema = z.record(
   z.string(),
@@ -79,7 +80,7 @@ export const McpbUserConfigValuesSchema = z.record(
 );
 
 export const McpbManifestSchema = z
-  .strictObject({
+  .object({
     $schema: z.string().optional(),
     dxt_version: z
       .string()
@@ -111,6 +112,7 @@ export const McpbManifestSchema = z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
   })
+  .passthrough()
   .refine((data) => !!(data.dxt_version || data.manifest_version), {
     message:
       "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
