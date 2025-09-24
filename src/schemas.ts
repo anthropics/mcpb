@@ -1,5 +1,5 @@
 export {
-  CURRENT_MANIFEST_VERSION,
+  LATEST_MANIFEST_VERSION,
   McpbManifestSchema,
   v0_1,
   v0_2,
