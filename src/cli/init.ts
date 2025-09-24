@@ -2,7 +2,7 @@ import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
-import { MANIFEST_VERSION } from "../schemas/0.2.js";
+import { CURRENT_MANIFEST_VERSION } from "../shared/constants.js";
 import type { McpbManifest } from "../types.js";
 
 interface PackageJson {
@@ -774,7 +774,7 @@ export function buildManifest(
   const { keywords, license, repository } = optionalFields;
 
   return {
-    manifest_version: MANIFEST_VERSION,
+    manifest_version: CURRENT_MANIFEST_VERSION,
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }
