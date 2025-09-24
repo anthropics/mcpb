@@ -10,7 +10,7 @@ import {
   getDefaultRepositoryUrl,
   readPackageJson,
 } from "../src/cli/init.js";
-import { LATEST_MANIFEST_VERSION } from "../src/schemas.js";
+import { LATEST_MANIFEST_VERSION } from "../src/schemas/index.js";
 
 // Mock the fs module
 jest.mock("fs", () => ({

@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { McpbManifestSchema } from "../src/schemas.js";
+import { McpbManifestSchema } from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
