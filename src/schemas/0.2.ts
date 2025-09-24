@@ -1,6 +1,8 @@
 import * as z from "zod";
 
-export const McpServerConfigSchema = z.object({
+export const MANIFEST_VERSION = "0.2";
+
+export const McpServerConfigSchema = z.strictObject({
   command: z.string(),
   args: z.array(z.string()).optional(),
   env: z.record(z.string(), z.string()).optional(),

@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const CURRENT_MANIFEST_VERSION = "0.2";
+export const MANIFEST_VERSION = "0.1";
 
 export const McpServerConfigSchema = z.strictObject({
   command: z.string(),

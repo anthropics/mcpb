@@ -13,7 +13,7 @@ import { basename, join, relative, resolve, sep } from "path";
 
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
-import { CURRENT_MANIFEST_VERSION, McpbManifestSchema } from "../schemas/0.2.js";
+import { MANIFEST_VERSION, McpbManifestSchema } from "../schemas/0.2.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";
 
@@ -102,12 +102,12 @@ export async function packExtension({
   }
 
   const manifestVersion = manifest.manifest_version || manifest.dxt_version;
-  if (manifestVersion !== CURRENT_MANIFEST_VERSION) {
+  if (manifestVersion !== MANIFEST_VERSION) {
     logger.error(
-      `ERROR: Manifest version mismatch. Expected "${CURRENT_MANIFEST_VERSION}", found "${manifestVersion}"`,
+      `ERROR: Manifest version mismatch. Expected "${MANIFEST_VERSION}", found "${manifestVersion}"`,
     );
     logger.error(
-      `  Please update the manifest_version in your manifest.json to "${CURRENT_MANIFEST_VERSION}"`,
+      `  Please update the manifest_version in your manifest.json to "${MANIFEST_VERSION}"`,
     );
     return false;
   }
