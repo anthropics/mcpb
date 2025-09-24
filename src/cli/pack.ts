@@ -13,7 +13,10 @@ import { basename, join, relative, resolve, sep } from "path";
 
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
-import { CURRENT_MANIFEST_VERSION, CURRENT_MANIFEST_SCHEMA } from "../shared/constants.js";
+import {
+  CURRENT_MANIFEST_SCHEMA,
+  CURRENT_MANIFEST_VERSION,
+} from "../shared/constants.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";
 

@@ -79,33 +79,36 @@ export const McpbUserConfigValuesSchema = z.record(
 export const McpbManifestSchema = z
   .strictObject({
     $schema: z.string().optional(),
-    dxt_version: z.literal(MANIFEST_VERSION).optional().describe("@deprecated Use manifest_version instead"),
+    dxt_version: z
+      .literal(MANIFEST_VERSION)
+      .optional()
+      .describe("@deprecated Use manifest_version instead"),
     manifest_version: z.literal(MANIFEST_VERSION).optional(),
-  name: z.string(),
-  display_name: z.string().optional(),
-  version: z.string(),
-  description: z.string(),
-  long_description: z.string().optional(),
-  author: McpbManifestAuthorSchema,
-  repository: McpbManifestRepositorySchema.optional(),
-  homepage: z.string().url().optional(),
-  documentation: z.string().url().optional(),
-  support: z.string().url().optional(),
-  icon: z.string().optional(),
-  screenshots: z.array(z.string()).optional(),
-  server: McpbManifestServerSchema,
-  tools: z.array(McpbManifestToolSchema).optional(),
-  tools_generated: z.boolean().optional(),
-  prompts: z.array(McpbManifestPromptSchema).optional(),
-  prompts_generated: z.boolean().optional(),
-  keywords: z.array(z.string()).optional(),
-  license: z.string().optional(),
-  privacy_policies: z.array(z.string().url()).optional(),
-  compatibility: McpbManifestCompatibilitySchema.optional(),
-  user_config: z
-    .record(z.string(), McpbUserConfigurationOptionSchema)
-    .optional(),
-})
+    name: z.string(),
+    display_name: z.string().optional(),
+    version: z.string(),
+    description: z.string(),
+    long_description: z.string().optional(),
+    author: McpbManifestAuthorSchema,
+    repository: McpbManifestRepositorySchema.optional(),
+    homepage: z.string().url().optional(),
+    documentation: z.string().url().optional(),
+    support: z.string().url().optional(),
+    icon: z.string().optional(),
+    screenshots: z.array(z.string()).optional(),
+    server: McpbManifestServerSchema,
+    tools: z.array(McpbManifestToolSchema).optional(),
+    tools_generated: z.boolean().optional(),
+    prompts: z.array(McpbManifestPromptSchema).optional(),
+    prompts_generated: z.boolean().optional(),
+    keywords: z.array(z.string()).optional(),
+    license: z.string().optional(),
+    privacy_policies: z.array(z.string().url()).optional(),
+    compatibility: McpbManifestCompatibilitySchema.optional(),
+    user_config: z
+      .record(z.string(), McpbUserConfigurationOptionSchema)
+      .optional(),
+  })
   .refine((data) => !!(data.dxt_version || data.manifest_version), {
     message:
       "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",

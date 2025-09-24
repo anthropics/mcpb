@@ -6,7 +6,10 @@ import { join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import { CURRENT_MANIFEST_SCHEMA, CURRENT_MANIFEST_SCHEMA_LOOSE } from "../shared/constants.js";
+import {
+  CURRENT_MANIFEST_SCHEMA,
+  CURRENT_MANIFEST_SCHEMA_LOOSE,
+} from "../shared/constants.js";
 
 export function validateManifest(inputPath: string): boolean {
   try {

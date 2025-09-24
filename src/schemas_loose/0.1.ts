@@ -81,7 +81,10 @@ export const McpbUserConfigValuesSchema = z.record(
 export const McpbManifestSchema = z
   .object({
     $schema: z.string().optional(),
-    dxt_version: z.literal(MANIFEST_VERSION).optional().describe("@deprecated Use manifest_version instead"),
+    dxt_version: z
+      .literal(MANIFEST_VERSION)
+      .optional()
+      .describe("@deprecated Use manifest_version instead"),
     manifest_version: z.literal(MANIFEST_VERSION).optional(),
     name: z.string(),
     display_name: z.string().optional(),
