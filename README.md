@@ -103,6 +103,10 @@ bundle.mcpb (ZIP file)
 └── icon.png              # Optional: Bundle icon
 ```
 
+### Language Choice Recommendation
+
+**We recommend implementing MCP servers in Node.js** rather than Python to reduce installation friction. Node.js ships with Claude for macOS and Windows, which means your bundle will work out-of-the-box for users without requiring them to install additional Python runtimes (or you to package them manually).
+
 ### Bundling Dependencies
 
 **Python Bundles:**
