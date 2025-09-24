@@ -6,8 +6,8 @@ import { join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import { McpbManifestSchema } from "../schemas.js";
-import { McpbManifestSchema as LooseMcpbManifestSchema } from "../schemas-loose.js";
+import { McpbManifestSchema } from "../schemas/0.2.js";
+import { McpbManifestSchema as LooseMcpbManifestSchema } from "../schemas_loose/0.2.js";
 
 export function validateManifest(inputPath: string): boolean {
   try {
