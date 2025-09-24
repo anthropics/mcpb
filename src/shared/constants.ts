@@ -1,7 +1,9 @@
 import { McpbManifestSchema as ManifestSchemaV0_1 } from "../schemas/0.1.js";
 import { McpbManifestSchema as ManifestSchemaV0_2 } from "../schemas/0.2.js";
+import { McpbManifestSchema as CurrentManifestSchema } from "../schemas/latest.js";
 import { McpbManifestSchema as LooseManifestSchemaV0_1 } from "../schemas_loose/0.1.js";
 import { McpbManifestSchema as LooseManifestSchemaV0_2 } from "../schemas_loose/0.2.js";
+import { McpbManifestSchema as CurrentLooseManifestSchema } from "../schemas_loose/latest.js";
 
 /**
  * Current manifest version - the version that new manifests should use
@@ -27,11 +29,9 @@ export const MANIFEST_SCHEMAS_LOOSE = {
 /**
  * Get the current manifest schema based on CURRENT_MANIFEST_VERSION
  */
-export const CURRENT_MANIFEST_SCHEMA =
-  MANIFEST_SCHEMAS[CURRENT_MANIFEST_VERSION];
+export const CURRENT_MANIFEST_SCHEMA = CurrentManifestSchema;
 
 /**
  * Get the current loose manifest schema based on CURRENT_MANIFEST_VERSION
  */
-export const CURRENT_MANIFEST_SCHEMA_LOOSE =
-  MANIFEST_SCHEMAS_LOOSE[CURRENT_MANIFEST_VERSION];
+export const CURRENT_MANIFEST_SCHEMA_LOOSE = CurrentLooseManifestSchema;
