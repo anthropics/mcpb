@@ -102,12 +102,12 @@ export async function packExtension({
   }
 
   const manifestVersion = manifest.manifest_version || manifest.dxt_version;
-  if (manifestVersion !== MANIFEST_VERSION) {
+  if (manifestVersion !== CURRENT_MANIFEST_VERSION) {
     logger.error(
-      `ERROR: Manifest version mismatch. Expected "${MANIFEST_VERSION}", found "${manifestVersion}"`,
+      `ERROR: Manifest version mismatch. Expected "${CURRENT_MANIFEST_VERSION}", found "${manifestVersion}"`,
     );
     logger.error(
-      `  Please update the manifest_version in your manifest.json to "${MANIFEST_VERSION}"`,
+      `  Please update the manifest_version in your manifest.json to "${CURRENT_MANIFEST_VERSION}"`,
     );
     return false;
   }
