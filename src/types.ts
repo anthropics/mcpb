@@ -14,7 +14,7 @@ import type {
   McpbUserConfigurationOptionSchema,
   McpbUserConfigValuesSchema,
   McpServerConfigSchema,
-} from "./schemas/0.2.js";
+} from "./schemas/latest.js";
 
 export type McpServerConfig = z.infer<typeof McpServerConfigSchema>;
 
