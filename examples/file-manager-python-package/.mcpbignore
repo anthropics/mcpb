@@ -1,0 +1,6 @@
+.venv/
+*.egg-info/
+*.toml
+build/
+dist/
+mcp_server_file_manager/__pycache__/

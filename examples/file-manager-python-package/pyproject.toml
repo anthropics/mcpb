@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "file-manager-python-package"
+version = "0.1.0"
+description = "A Python Package MCP server for file operations"
+authors = [
+    {name = "Anthropic", email = "support@anthropic.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Private :: Do Not Upload"  # Prevents accidental uploads to PyPI
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "trio>=0.22.0"
+]
+
+[tool.setuptools]
+packages = ["mcp_server_file_manager"]
+
+[project.scripts]
+mcp-server-file-manager = "mcp_server_file_manager.__main__:main"
+
+# Custom scripts section for MCPB development
+[tool.mcpb]
+bundle = "pip install . --target mcp_server_file_manager/lib --upgrade"
+test = "python -m mcp_server_file_manager --help"
+pack = "npx @anthropic-ai/mcpb pack . dist\file-manager.mcpb"

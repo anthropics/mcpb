@@ -14,11 +14,12 @@ But, the MCP servers themselves are not robust secure production ready servers a
 
 ## Examples Included
 
-| Example               | Type    | Demonstrates                             |
-| --------------------- | ------- | ---------------------------------------- |
-| `hello-world-node`    | Node.js | Basic MCP server with simple time tool   |
-| `chrome-applescript`  | Node.js | Browser automation via AppleScript       |
-| `file-manager-python` | Python  | File system operations and path handling |
+| Example                       | Type    | Demonstrates                             |
+| ----------------------------- | ------- | ---------------------------------------- |
+| `hello-world-node`            | Node.js | Basic MCP server with simple time tool   |
+| `chrome-applescript`          | Node.js | Browser automation via AppleScript       |
+| `file-manager-python`         | Python  | File system operations and path handling |
+| `file-manager-python-package` | Python  | Same as above but shipping as Python package and featuring an MCPB manifest using module invocation instead of direct script execution |
 
 ## Usage
 
