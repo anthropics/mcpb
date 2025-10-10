@@ -156,52 +156,52 @@ A full `manifest.json` with most of the optional fields looks like this:
       "max": 100
     }
   },
-  "static_responses": {
-    "initialize": {
-      "capabilities": {},
-      "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
-      "protocolVersion": "2025-06-18",
-      "serverInfo": {
-        "name": "MyMCPExtension",
-        "title": "My MCP Extension - Pro Edition",
-        "version": "1.0.0"
-      }
-    },
-    "tools/list": {
-      "tools": [
-        {
-          "name": "search_files",
-          "title": "File search",
-          "description": "Search for files in a directory",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "fileSpec": {
-                "type": "string",
-                "description": "The file name to search for. Wildcards are supported"
-              }
-            },
-            "required": ["fileSpec"]
-          },
-          "outputSchema": {
-            "type": "object",
-            "properties": {
-              "searchResults": {
-                "type": "array",
-                "description": "The list of file paths that were found",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
+  "_meta": {
+    "com.microsoft.windows": {
+      "package_family_name": "MyMcpMSIXPackage_51g09708xawrw",
+      "static_responses": {
+        "initialize": {
+          "capabilities": {},
+          "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
+          "protocolVersion": "2025-06-18",
+          "serverInfo": {
+            "name": "MyMCPExtension",
+            "title": "My MCP Extension - Pro Edition",
+            "version": "1.0.0"
           }
+        },
+        "tools/list": {
+          "tools": [
+            {
+              "name": "search_files",
+              "title": "File search",
+              "description": "Search for files in a directory",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "fileSpec": {
+                    "type": "string",
+                    "description": "The file name to search for. Wildcards are supported"
+                  }
+                },
+                "required": ["fileSpec"]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "searchResults": {
+                    "type": "array",
+                    "description": "The list of file paths that were found",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+              }
+            }
+          ]
         }
-      ]
-    }
-  },
-  "client_extensions": {
-    "windows": {
-      "package_family_name": "MyMcpMSIXPackage_51g09708xawrw"
+      },
     }
   }
 }
@@ -237,8 +237,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
-- **static_responses**: A set of static response to protocol messages (for example, `initialize`, `tools/list`, etc.). This allows clients to avoid running a server when a static response is present (e.g. to get the set of tools with their input schemas). For more information, consult the [MCP specification](https://modelcontextprotocol.io/specification).
-- **client_extensions**: Platform-specific client integration metadata (e.g., Windows `package_family_name`, macOS bundle identifiers) enabling tighter OS/app store integration
+- **_meta**: Platform-specific client integration metadata (e.g., Windows `package_family_name`, macOS bundle identifiers) enabling tighter OS/app store integration. The keys in the `_meta` object are reverse-DNS namespaced, and the values are a dictionary of platform-specific metadata.
 
 ## Compatibility
 
@@ -598,8 +597,6 @@ These fields describe the tools and prompts your MCP server provides. For server
 
 Note: Resources are not included in the manifest because MCP resources are inherently dynamic - they represent URIs to data that the server discovers at runtime based on configuration, filesystem state, database connections, etc.
 
-You can provide richer static tools by adding an `tools/list` entry inside the `static_responses` object.
-
 ### Static Declaration
 
 For servers with a fixed set of capabilities, list them in arrays.
@@ -658,63 +655,4 @@ The `_generated` fields:
 - **prompts_generated**: Server generates additional prompts beyond those listed (default: false)
 
 This helps implementing apps understand that querying the server at runtime will reveal more capabilities than what's declared in the manifest.
-
-## Static responses
-
-Servers can provide clients with static responses to protocol messages. Static responses let clients short-circuit server startup for discovery or platform integration metadata.
-This is useful to obtain rich tool schema information, server instructions, protocol version that the server supports, etc.
-The `static_responses` object is a dictionary where the key is the name of an MCP JSON-RPC method. For more information, consult the [MCP specification](https://modelcontextprotocol.io/specification).
-
-If both the `tools/list` static response and the `tools` array are present, clients should use the tools described in `tools/list`.
-
-Example:
-
-```json
-{
-  "static_responses": {
-    "initialize": {
-      "capabilities": {},
-      "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
-      "protocolVersion": "2025-06-18",
-      "serverInfo": {
-        "name": "MyMCPExtension",
-        "title": "My MCP Extension - Pro Edition",
-        "version": "1.0.0"
-      }
-    },
-    "tools/list": {
-      "tools": [
-        {
-          "name": "search_files",
-          "title": "File search",
-          "description": "Search for files in a directory",
-          "inputSchema": {
-            "type": "object",
-            "properties": {
-              "fileSpec": {
-                "type": "string",
-                "description": "The file name to search for. Wildcards are supported"
-              }
-            },
-            "required": ["fileSpec"]
-          },
-          "outputSchema": {
-            "type": "object",
-            "properties": {
-              "searchResults": {
-                "type": "array",
-                "description": "The list of file paths that were found",
-                "items": {
-                  "type": "string"
-                }
-              }
-            },
-          }
-        }
-      ]
-    }
-  },
-}
-```
-
 

@@ -110,8 +110,7 @@ export const McpbManifestSchema = z
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
-    static_responses: z.record(z.string(), z.any()).optional(),
-    client_extensions: z.record(z.string(), z.record(z.string(), z.any())).optional(),
+    _meta: z.record(z.string(), z.record(z.string(), z.any())).optional(),
   })
   .refine((data) => !!(data.dxt_version || data.manifest_version), {
     message:
