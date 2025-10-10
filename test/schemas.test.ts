@@ -136,4 +136,155 @@ describe("McpbManifestSchema", () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe("client_extensions", () => {
+    const base = {
+      manifest_version: "0.2",
+      name: "client-ext-test",
+      version: "1.0.0",
+      description: "Test manifest",
+      author: { name: "Author" },
+      server: {
+        type: "node" as const,
+        entry_point: "server/index.js",
+        mcp_config: { command: "node", args: ["server/index.js"] },
+      },
+    };
+
+    it("accepts valid client_extensions object with nested dictionaries", () => {
+      const manifest = {
+        ...base,
+        client_extensions: {
+          windows: { package_family_name: "Pkg_123", channel: "stable" },
+          darwin: { bundle_id: "com.example.app", notarized: true },
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects primitive value in client_extensions entry", () => {
+      const manifest = {
+        ...base,
+        client_extensions: {
+          windows: "raw-string" as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message).join("\n");
+        expect(messages).toMatch(/Expected object/);
+      }
+    });
+
+    it("rejects array value in client_extensions entry", () => {
+      const manifest = {
+        ...base,
+        client_extensions: {
+          linux: [] as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects null value in client_extensions entry", () => {
+      const manifest = {
+        ...base,
+        client_extensions: {
+          custom: null as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+    });
+
+    it("allows empty object for client_extensions", () => {
+      const manifest = { ...base, client_extensions: {} };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("static_responses", () => {
+    const base = {
+      manifest_version: "0.2",
+      name: "static-resp-test",
+      version: "1.0.0",
+      description: "Test manifest",
+      author: { name: "Author" },
+      server: {
+        type: "node" as const,
+        entry_point: "server/index.js",
+        mcp_config: { command: "node", args: ["server/index.js"] },
+      },
+    };
+
+    it("accepts valid static_responses with object entries", () => {
+      const manifest = {
+        ...base,
+        static_responses: {
+          initialize: {
+            capabilities: {},
+            protocolVersion: "2025-06-18",
+            serverInfo: { name: "Test", version: "1.0.0" },
+          },
+          "tools/list": {
+            tools: [
+              {
+                name: "search_files",
+                description: "Search for files",
+                inputSchema: { type: "object", properties: { query: { type: "string" } } },
+              },
+            ],
+          },
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts primitive value in static_responses entry", () => {
+      const manifest = {
+        ...base,
+        static_responses: {
+          ping: "pong",
+          code: 200,
+          ok: true,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts array value in static_responses entry", () => {
+      const manifest = {
+        ...base,
+        static_responses: {
+          list: [1, 2, 3],
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts null value in static_responses entry", () => {
+      const manifest = {
+        ...base,
+        static_responses: {
+          initialize: null,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("allows empty object for static_responses", () => {
+      const manifest = { ...base, static_responses: {} };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+  });
 });
+

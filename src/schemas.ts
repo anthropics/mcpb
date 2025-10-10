@@ -100,7 +100,7 @@ export const McpbManifestSchema = z
     screenshots: z.array(z.string()).optional(),
     server: McpbManifestServerSchema,
     tools: z.array(McpbManifestToolSchema).optional(),
-    tools_generated: z.boolean().optional(),
+    tools_generated: z.boolean().optional(),  
     prompts: z.array(McpbManifestPromptSchema).optional(),
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
@@ -110,6 +110,8 @@ export const McpbManifestSchema = z
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
+    static_responses: z.record(z.string(), z.any()).optional(),
+    client_extensions: z.record(z.string(), z.record(z.string(), z.any())).optional(),
   })
   .refine((data) => !!(data.dxt_version || data.manifest_version), {
     message:
