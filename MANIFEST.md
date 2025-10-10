@@ -155,6 +155,54 @@ A full `manifest.json` with most of the optional fields looks like this:
       "min": 1,
       "max": 100
     }
+  },
+  "_meta": {
+    "com.microsoft.windows": {
+      "package_family_name": "MyMcpMSIXPackage_51g09708xawrw",
+      "static_responses": {
+        "initialize": {
+          "capabilities": {},
+          "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
+          "protocolVersion": "2025-06-18",
+          "serverInfo": {
+            "name": "MyMCPExtension",
+            "title": "My MCP Extension - Pro Edition",
+            "version": "1.0.0"
+          }
+        },
+        "tools/list": {
+          "tools": [
+            {
+              "name": "search_files",
+              "title": "File search",
+              "description": "Search for files in a directory",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "fileSpec": {
+                    "type": "string",
+                    "description": "The file name to search for. Wildcards are supported"
+                  }
+                },
+                "required": ["fileSpec"]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "searchResults": {
+                    "type": "array",
+                    "description": "The list of file paths that were found",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+              }
+            }
+          ]
+        }
+      },
+    }
   }
 }
 ```
@@ -189,6 +237,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
+- **_meta**: Platform-specific client integration metadata (e.g., Windows `package_family_name`, macOS bundle identifiers) enabling tighter OS/app store integration. The keys in the `_meta` object are reverse-DNS namespaced, and the values are a dictionary of platform-specific metadata.
 
 ## Compatibility
 
@@ -606,3 +655,4 @@ The `_generated` fields:
 - **prompts_generated**: Server generates additional prompts beyond those listed (default: false)
 
 This helps implementing apps understand that querying the server at runtime will reveal more capabilities than what's declared in the manifest.
+

@@ -136,4 +136,75 @@ describe("McpbManifestSchema", () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe("_meta", () => {
+    const base = {
+      manifest_version: "0.2",
+      name: "client-ext-test",
+      version: "1.0.0",
+      description: "Test manifest",
+      author: { name: "Author" },
+      server: {
+        type: "node" as const,
+        entry_point: "server/index.js",
+        mcp_config: { command: "node", args: ["server/index.js"] },
+      },
+    };
+
+    it("accepts valid _meta object with nested dictionaries", () => {
+      const manifest = {
+        ...base,
+        _meta: {
+          "com.microsoft.windows": { package_family_name: "Pkg_123", channel: "stable" },
+          "com.apple.darwin": { bundle_id: "com.example.app", notarized: true },
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects primitive value in _meta entry", () => {
+      const manifest = {
+        ...base,
+        _meta: {
+          "com.microsoft.windows": "raw-string" as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message).join("\n");
+        expect(messages).toMatch(/Expected object/);
+      }
+    });
+
+    it("rejects array value in _meta entry", () => {
+      const manifest = {
+        ...base,
+        _meta: {
+          "com.apple.darwin": [] as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects null value in _meta entry", () => {
+      const manifest = {
+        ...base,
+        _meta: {
+          custom: null as unknown as Record<string, unknown>,
+        },
+      };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+    });
+
+    it("allows empty object for _meta", () => {
+      const manifest = { ...base, _meta: {} };
+      const result = McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+  });
+
 });
