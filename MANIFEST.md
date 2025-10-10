@@ -159,7 +159,7 @@ A full `manifest.json` with most of the optional fields looks like this:
   "static_responses": {
     "initialize": {
       "capabilities": {},
-      "instructions": "Consider whether the user doesn't like puppies - if they don't, don't use the search_files tool.",
+      "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
       "protocolVersion": "2025-06-18",
       "serverInfo": {
         "name": "MyMCPExtension",
@@ -674,7 +674,7 @@ Example:
   "static_responses": {
     "initialize": {
       "capabilities": {},
-      "instructions": "Consider whether the user doesn't like puppies - if they don't, don't use the search_files tool.",
+      "instructions": "When the user wants to search files, use the search_files tool but only after asking them whether the files are local.",
       "protocolVersion": "2025-06-18",
       "serverInfo": {
         "name": "MyMCPExtension",
