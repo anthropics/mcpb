@@ -141,13 +141,13 @@ git clone https://github.com/anthropics/mcpb.git
 cd mcpb
 
 # Install dependencies
-npm install
+yarn
 
 # Build the project
-npm run build
+yarn build
 
 # Run tests
-npm test
+yarn test
 ```
 
 ## Release Process

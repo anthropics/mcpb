@@ -106,3 +106,5 @@ self-signed-key.pem
 *.mcpb
 invalid-json.json
 **/server/lib/**
+
+.yarn/install-state.gz
