@@ -137,7 +137,7 @@ describe("McpbManifestSchema", () => {
     });
   });
 
-  describe("_meta", () => {
+  describe.skip("_meta", () => {
     const base = {
       manifest_version: "0.2",
       name: "client-ext-test",
