@@ -145,36 +145,100 @@ export async function verifyMcpbFile(
     // Get the signing certificate (first one)
     const signingCert = certificates[0];
 
-    // Verify PKCS#7 signature
-    const contentBuf = forge.util.createBuffer(originalContent);
-
+    // Manually verify PKCS#7 signature (node-forge's verify() is not implemented)
     try {
-      p7.verify({ authenticatedAttributes: true });
-
-      // Also verify the content matches
       const signerInfos = p7.signerInfos;
       const signerInfo = signerInfos?.[0];
-      if (signerInfo) {
-        const md = forge.md.sha256.create();
-        md.update(contentBuf.getBytes());
-        const digest = md.digest().getBytes();
 
-        // Find the message digest attribute
-        let messageDigest = null;
-        for (const attr of signerInfo.authenticatedAttributes) {
-          if (attr.type === forge.pki.oids.messageDigest) {
-            messageDigest = attr.value;
-            break;
-          }
-        }
+      if (!signerInfo) {
+        return { status: "unsigned" };
+      }
 
-        if (!messageDigest || messageDigest !== digest) {
-          return { status: "unsigned" };
+      // Step 1: Verify the message digest in authenticated attributes matches the content
+      const md = forge.md.sha256.create();
+      md.update(forge.util.createBuffer(originalContent).getBytes());
+      const contentDigest = md.digest().getBytes();
+
+      // Find and verify the message digest attribute
+      let messageDigestAttr = null;
+      for (const attr of signerInfo.authenticatedAttributes) {
+        if (attr.type === forge.pki.oids.messageDigest) {
+          messageDigestAttr = attr.value;
+          break;
         }
+      }
+
+      if (!messageDigestAttr || messageDigestAttr !== contentDigest) {
+        return { status: "unsigned" };
+      }
+
+      // Step 2: Verify the signature over the authenticated attributes
+      // Create a DER encoding of the authenticated attributes for signature verification
+      const authenticatedAttributesAsn1 = forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SET,
+        true,
+        signerInfo.authenticatedAttributes.map((attr: any) =>
+          forge.asn1.create(
+            forge.asn1.Class.UNIVERSAL,
+            forge.asn1.Type.SEQUENCE,
+            true,
+            [
+              forge.asn1.create(
+                forge.asn1.Class.UNIVERSAL,
+                forge.asn1.Type.OID,
+                false,
+                forge.asn1.oidToDer(attr.type).getBytes(),
+              ),
+              forge.asn1.create(
+                forge.asn1.Class.UNIVERSAL,
+                forge.asn1.Type.SET,
+                true,
+                [
+                  typeof attr.value === "string"
+                    ? forge.asn1.create(
+                        forge.asn1.Class.UNIVERSAL,
+                        forge.asn1.Type.OCTETSTRING,
+                        false,
+                        attr.value,
+                      )
+                    : attr.value,
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      const bytes = forge.asn1.toDer(authenticatedAttributesAsn1).getBytes();
+
+      // Hash the authenticated attributes
+      const attrMd = forge.md.sha256.create();
+      attrMd.update(bytes);
+
+      // Verify the signature using the certificate's public key
+      // Cast to rsa.PublicKey since PKCS#7 typically uses RSA
+      const publicKey = signingCert.publicKey as forge.pki.rsa.PublicKey;
+      if (!publicKey || typeof publicKey === "object" && Buffer.isBuffer(publicKey)) {
+        return { status: "unsigned" };
+      }
+
+      const verified = publicKey.verify(
+        attrMd.digest().getBytes(),
+        (signerInfo as any).signature,
+      );
+
+      if (!verified) {
+        return { status: "unsigned" };
       }
     } catch (error) {
       return { status: "unsigned" };
     }
+
+    // Check if certificate is self-signed
+    const isSelfSigned =
+      signingCert.issuer.getField("CN")?.value ===
+      signingCert.subject.getField("CN")?.value;
 
     // Convert forge certificate to PEM for OS verification
     const certPem = forge.pki.certificateToPem(signingCert);
@@ -188,18 +252,20 @@ export async function verifyMcpbFile(
       intermediatePems,
     );
 
-    if (!chainValid) {
-      // Signature is valid but certificate is not trusted
-      return { status: "unsigned" };
+    // Determine status based on trust validation
+    let status: "signed" | "self-signed" | "unsigned";
+    if (chainValid) {
+      // Certificate is trusted by OS
+      status = isSelfSigned ? "self-signed" : "signed";
+    } else {
+      // Signature is cryptographically valid but certificate is not trusted
+      // For self-signed certificates, still report as self-signed (not unsigned)
+      // For other certificates, report as unsigned (untrusted)
+      status = isSelfSigned ? "self-signed" : "unsigned";
     }
 
-    // Extract certificate info
-    const isSelfSigned =
-      signingCert.issuer.getField("CN")?.value ===
-      signingCert.subject.getField("CN")?.value;
-
     return {
-      status: isSelfSigned ? "self-signed" : "signed",
+      status,
       publisher: signingCert.subject.getField("CN")?.value || "Unknown",
       issuer: signingCert.issuer.getField("CN")?.value || "Unknown",
       valid_from: signingCert.validity.notBefore.toISOString(),
