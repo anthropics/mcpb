@@ -155,7 +155,10 @@ describe("McpbManifestSchema", () => {
       const manifest = {
         ...base,
         _meta: {
-          "com.microsoft.windows": { package_family_name: "Pkg_123", channel: "stable" },
+          "com.microsoft.windows": {
+            package_family_name: "Pkg_123",
+            channel: "stable",
+          },
           "com.apple.darwin": { bundle_id: "com.example.app", notarized: true },
         },
       };
@@ -167,7 +170,10 @@ describe("McpbManifestSchema", () => {
       const manifest = {
         ...base,
         _meta: {
-          "com.microsoft.windows": "raw-string" as unknown as Record<string, unknown>,
+          "com.microsoft.windows": "raw-string" as unknown as Record<
+            string,
+            unknown
+          >,
         },
       };
       const result = McpbManifestSchema.safeParse(manifest);
@@ -206,5 +212,4 @@ describe("McpbManifestSchema", () => {
       expect(result.success).toBe(true);
     });
   });
-
 });

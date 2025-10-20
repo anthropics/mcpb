@@ -126,13 +126,18 @@ export async function verifyMcpbFile(
 
     // Now we know it's PkcsSignedData. The types are incorrect, so we'll
     // fix them there
+    interface AuthenticatedAttribute {
+      type: string;
+      value: string | forge.asn1.Asn1;
+    }
+
+    interface SignerInfo {
+      authenticatedAttributes: AuthenticatedAttribute[];
+      signature: string;
+    }
+
     const p7 = p7Message as unknown as forge.pkcs7.PkcsSignedData & {
-      signerInfos: Array<{
-        authenticatedAttributes: Array<{
-          type: string;
-          value: unknown;
-        }>;
-      }>;
+      signerInfos: SignerInfo[];
       verify: (options?: { authenticatedAttributes?: boolean }) => boolean;
     };
 
@@ -178,7 +183,7 @@ export async function verifyMcpbFile(
         forge.asn1.Class.UNIVERSAL,
         forge.asn1.Type.SET,
         true,
-        signerInfo.authenticatedAttributes.map((attr: any) =>
+        signerInfo.authenticatedAttributes.map((attr: AuthenticatedAttribute) =>
           forge.asn1.create(
             forge.asn1.Class.UNIVERSAL,
             forge.asn1.Type.SEQUENCE,
@@ -219,13 +224,16 @@ export async function verifyMcpbFile(
       // Verify the signature using the certificate's public key
       // Cast to rsa.PublicKey since PKCS#7 typically uses RSA
       const publicKey = signingCert.publicKey as forge.pki.rsa.PublicKey;
-      if (!publicKey || typeof publicKey === "object" && Buffer.isBuffer(publicKey)) {
+      if (
+        !publicKey ||
+        (typeof publicKey === "object" && Buffer.isBuffer(publicKey))
+      ) {
         return { status: "unsigned" };
       }
 
       const verified = publicKey.verify(
         attrMd.digest().getBytes(),
-        (signerInfo as any).signature,
+        signerInfo.signature,
       );
 
       if (!verified) {
