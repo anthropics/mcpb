@@ -84,7 +84,7 @@ A full `manifest.json` with most of the optional fields looks like this:
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/my-mcp-extension"
+    "url": "https://github.com/your-username/my-mcp-extension.git"
   },
   "homepage": "https://example.com/my-extension",
   "documentation": "https://docs.example.com/my-extension",
