@@ -6,8 +6,10 @@ import { join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import { McpbManifestSchema } from "../schemas.js";
-import { McpbManifestSchema as LooseMcpbManifestSchema } from "../schemas-loose.js";
+import {
+  LATEST_MANIFEST_SCHEMA,
+  LATEST_MANIFEST_SCHEMA_LOOSE,
+} from "../shared/constants.js";
 
 export function validateManifest(inputPath: string): boolean {
   try {
@@ -22,7 +24,7 @@ export function validateManifest(inputPath: string): boolean {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
 
-    const result = McpbManifestSchema.safeParse(manifestData);
+    const result = LATEST_MANIFEST_SCHEMA.safeParse(manifestData);
 
     if (result.success) {
       console.log("Manifest schema validation passes!");
@@ -72,7 +74,7 @@ export async function cleanMcpb(inputPath: string) {
     const manifestPath = resolve(unpackPath, "manifest.json");
     const originalManifest = await fs.readFile(manifestPath, "utf-8");
     const manifestData = JSON.parse(originalManifest);
-    const result = LooseMcpbManifestSchema.safeParse(manifestData);
+    const result = LATEST_MANIFEST_SCHEMA_LOOSE.safeParse(manifestData);
 
     if (!result.success) {
       throw new Error(

@@ -1,20 +1,20 @@
 import * as z from "zod";
 
-export const CURRENT_MANIFEST_VERSION = "0.2";
+export const MANIFEST_VERSION = "0.1";
 
-export const McpServerConfigSchema = z.strictObject({
+export const McpServerConfigSchema = z.object({
   command: z.string(),
   args: z.array(z.string()).optional(),
   env: z.record(z.string(), z.string()).optional(),
 });
 
-export const McpbManifestAuthorSchema = z.strictObject({
+export const McpbManifestAuthorSchema = z.object({
   name: z.string(),
   email: z.string().email().optional(),
   url: z.string().url().optional(),
 });
 
-export const McpbManifestRepositorySchema = z.strictObject({
+export const McpbManifestRepositorySchema = z.object({
   type: z.string(),
   url: z.string().url(),
 });
@@ -28,18 +28,18 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
     .optional(),
 });
 
-export const McpbManifestServerSchema = z.strictObject({
+export const McpbManifestServerSchema = z.object({
   type: z.enum(["python", "node", "binary"]),
   entry_point: z.string(),
   mcp_config: McpbManifestMcpConfigSchema,
 });
 
 export const McpbManifestCompatibilitySchema = z
-  .strictObject({
+  .object({
     claude_desktop: z.string().optional(),
     platforms: z.array(z.enum(["darwin", "win32", "linux"])).optional(),
     runtimes: z
-      .strictObject({
+      .object({
         python: z.string().optional(),
         node: z.string().optional(),
       })
@@ -47,19 +47,19 @@ export const McpbManifestCompatibilitySchema = z
   })
   .passthrough();
 
-export const McpbManifestToolSchema = z.strictObject({
+export const McpbManifestToolSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
 });
 
-export const McpbManifestPromptSchema = z.strictObject({
+export const McpbManifestPromptSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   arguments: z.array(z.string()).optional(),
   text: z.string(),
 });
 
-export const McpbUserConfigurationOptionSchema = z.strictObject({
+export const McpbUserConfigurationOptionSchema = z.object({
   type: z.enum(["string", "number", "boolean", "directory", "file"]),
   title: z.string(),
   description: z.string(),
@@ -79,13 +79,13 @@ export const McpbUserConfigValuesSchema = z.record(
 );
 
 export const McpbManifestSchema = z
-  .strictObject({
+  .object({
     $schema: z.string().optional(),
     dxt_version: z
-      .string()
+      .literal(MANIFEST_VERSION)
       .optional()
       .describe("@deprecated Use manifest_version instead"),
-    manifest_version: z.string().optional(),
+    manifest_version: z.literal(MANIFEST_VERSION).optional(),
     name: z.string(),
     display_name: z.string().optional(),
     version: z.string(),
@@ -100,12 +100,11 @@ export const McpbManifestSchema = z
     screenshots: z.array(z.string()).optional(),
     server: McpbManifestServerSchema,
     tools: z.array(McpbManifestToolSchema).optional(),
-    tools_generated: z.boolean().optional(),  
+    tools_generated: z.boolean().optional(),
     prompts: z.array(McpbManifestPromptSchema).optional(),
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
     license: z.string().optional(),
-    privacy_policies: z.array(z.string()).optional(),
     compatibility: McpbManifestCompatibilitySchema.optional(),
     user_config: z
       .record(z.string(), McpbUserConfigurationOptionSchema)
@@ -117,7 +116,7 @@ export const McpbManifestSchema = z
       "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
   });
 
-export const McpbSignatureInfoSchema = z.strictObject({
+export const McpbSignatureInfoSchema = z.object({
   status: z.enum(["signed", "unsigned", "self-signed"]),
   publisher: z.string().optional(),
   issuer: z.string().optional(),

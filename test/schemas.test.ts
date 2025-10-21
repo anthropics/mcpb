@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { McpbManifestSchema } from "../src/schemas.js";
+import { McpbManifestSchema, v0_3 } from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
@@ -37,7 +37,7 @@ describe("McpbManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      manifest_version: "1.0",
+      manifest_version: "0.2",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -117,7 +117,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        manifest_version: "1.0",
+        manifest_version: "0.2",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -139,7 +139,7 @@ describe("McpbManifestSchema", () => {
 
   describe("_meta", () => {
     const base = {
-      manifest_version: "0.2",
+      manifest_version: "0.3",
       name: "client-ext-test",
       version: "1.0.0",
       description: "Test manifest",
@@ -155,11 +155,14 @@ describe("McpbManifestSchema", () => {
       const manifest = {
         ...base,
         _meta: {
-          "com.microsoft.windows": { package_family_name: "Pkg_123", channel: "stable" },
+          "com.microsoft.windows": {
+            package_family_name: "Pkg_123",
+            channel: "stable",
+          },
           "com.apple.darwin": { bundle_id: "com.example.app", notarized: true },
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
 
@@ -167,10 +170,13 @@ describe("McpbManifestSchema", () => {
       const manifest = {
         ...base,
         _meta: {
-          "com.microsoft.windows": "raw-string" as unknown as Record<string, unknown>,
+          "com.microsoft.windows": "raw-string" as unknown as Record<
+            string,
+            unknown
+          >,
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message).join("\n");
@@ -185,7 +191,7 @@ describe("McpbManifestSchema", () => {
           "com.apple.darwin": [] as unknown as Record<string, unknown>,
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
@@ -196,13 +202,13 @@ describe("McpbManifestSchema", () => {
           custom: null as unknown as Record<string, unknown>,
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
     it("allows empty object for _meta", () => {
       const manifest = { ...base, _meta: {} };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
   });
