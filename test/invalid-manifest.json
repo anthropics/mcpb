@@ -2,7 +2,7 @@
   "manifest_version": "1.0",
   "name": "test-extension",
   "version": "1.0.0",
-  "description": "A test DXT extension",
+  "description": "A test MCPB extension",
   "author": {
     "email": "not-a-valid-email"
   },

@@ -3,7 +3,7 @@
   "name": "test-extension",
   "display_name": "Test Extension",
   "version": "1.0.0",
-  "description": "A test DXT extension",
+  "description": "A test MCPB extension",
   "author": {
     "name": "Test Author",
     "email": "test@example.com"
