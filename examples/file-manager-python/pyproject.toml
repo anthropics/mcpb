@@ -24,8 +24,8 @@ packages = ["server"]
 [project.scripts]
 bundle-deps = "python:install_deps"
 
-# Custom scripts section for DXT development
-[tool.dxt]
+# Custom scripts section for MCPB development
+[tool.mcpb]
 bundle = "pip install \"mcp[all]\" --target server/lib --upgrade --force-reinstall"
 test = "python server/main.py --debug"
-pack = "npx @anthropic-ai/dxt pack"
+pack = "npx @anthropic-ai/mcpb pack"

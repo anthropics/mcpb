@@ -146,7 +146,7 @@ export async function verifyMcpbFile(
     const signingCert = certificates[0];
 
     // Verify PKCS#7 signature
-    const contentBuf = forge.util.createBuffer(originalContent);
+    const contentBuf = forge.util.createBuffer(originalContent.toString('binary'));
 
     try {
       p7.verify({ authenticatedAttributes: true });

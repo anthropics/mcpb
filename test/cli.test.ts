@@ -11,7 +11,7 @@ interface ExecSyncError extends Error {
   signal: string | null;
 }
 
-describe("DXT CLI", () => {
+describe("MCPB CLI", () => {
   const cliPath = join(__dirname, "../dist/cli/cli.js");
   const validManifestPath = join(__dirname, "valid-manifest.json");
   const invalidManifestPath = join(__dirname, "invalid-manifest.json");

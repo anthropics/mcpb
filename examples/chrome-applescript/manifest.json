@@ -13,7 +13,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "build": "npx @anthropic-ai/dxt pack"
+    "build": "npx @anthropic-ai/mcpb pack"
   },
   "server": {
     "type": "node",

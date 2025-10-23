@@ -71,7 +71,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.2",
   "name": "My MCP Extension",
   "display_name": "My Awesome MCP Extension",
   "version": "1.0.0",

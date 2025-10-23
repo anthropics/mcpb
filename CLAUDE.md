@@ -1,0 +1,1 @@
+- "location of our mcpb bundle to test: /Users/bthompson/mcp-servers/chroma-mcp/bundle/chroma-mcp-bundle.mcpb"
