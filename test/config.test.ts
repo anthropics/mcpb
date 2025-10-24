@@ -90,7 +90,7 @@ describe("getMcpConfigForManifest", () => {
   };
 
   const baseManifest: McpbManifest = {
-    manifest_version: "0.2",
+    manifest_version: "0.3",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
@@ -305,7 +305,7 @@ describe("getMcpConfigForManifest", () => {
 
 describe("hasRequiredConfigMissing", () => {
   const baseManifest: McpbManifest = {
-    manifest_version: "0.2",
+    manifest_version: "0.3",
     name: "test-extension",
     version: "1.0.0",
     description: "Test extension",
