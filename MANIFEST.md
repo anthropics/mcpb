@@ -1,7 +1,7 @@
 # MCPB Manifest.json Spec
 
-Current version: `0.2`
-Last updated: 2025-09-12
+Current version: `0.3`
+Last updated: 2025-10-24
 
 ## Manifest Schema
 
@@ -11,7 +11,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```jsonc
 {
-  "manifest_version": "0.2", // Manifest spec version this manifest conforms to
+  "manifest_version": "0.3", // Manifest spec version this manifest conforms to
   "name": "my-extension", // Machine-readable name (used for CLI, APIs)
   "version": "1.0.0", // Semantic version of your extension
   "description": "A simple MCP extension", // Brief description of what the extension does
@@ -37,7 +37,7 @@ A basic `manifest.json` with just the required fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.2",
+  "manifest_version": "0.3",
   "name": "my-extension",
   "version": "1.0.0",
   "description": "A simple MCP extension",
@@ -71,7 +71,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 ```json
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.3",
   "name": "My MCP Extension",
   "display_name": "My Awesome MCP Extension",
   "version": "1.0.0",
@@ -90,10 +90,26 @@ A full `manifest.json` with most of the optional fields looks like this:
   "documentation": "https://docs.example.com/my-extension",
   "support": "https://github.com/your-username/my-extension/issues",
   "icon": "icon.png",
+  "icons": [
+    {
+      "src": "assets/icons/icon-16-light.png",
+      "sizes": "16x16",
+      "theme": "light"
+    },
+    {
+      "src": "assets/icons/icon-16-dark.png",
+      "sizes": "16x16",
+      "theme": "dark"
+    }
+  ],
   "screenshots": [
     "assets/screenshots/screenshot1.png",
     "assets/screenshots/screenshot2.png"
   ],
+  "localization": {
+    "resources": "resources/${locale}.json",
+    "default_locale": "en-US"
+  },
   "server": {
     "type": "node",
     "entry_point": "server/index.js",
@@ -221,6 +237,7 @@ A full `manifest.json` with most of the optional fields looks like this:
 ### Optional Fields
 
 - **icon**: Path to a png icon file, either relative in the package or a https:// url.
+- **icons**: Array of icon descriptors (`src`, `sizes`, optional `theme`) for light/dark or size-specific assets.
 - **display_name**: Human-friendly name for UI display
 - **long_description**: Detailed description for extension stores, markdown
 - **repository**: Source code repository information (type and url)
@@ -238,6 +255,38 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
 - **user_config**: User-configurable options for the extension (see User Configuration section)
 - **_meta**: Platform-specific client integration metadata (e.g., Windows `package_family_name`, macOS bundle identifiers) enabling tighter OS/app store integration. The keys in the `_meta` object are reverse-DNS namespaced, and the values are a dictionary of platform-specific metadata.
+- **localization**: Location of translated strings for user-facing fields (`resources` path containing a `${locale}` placeholder and `default_locale`).
+
+### Localization
+
+Provide localized strings without bloating the manifest by pointing to external per-locale resource files. A localization entry looks like this:
+
+```json
+"localization": {
+  "resources": "resources/${locale}.json",
+  "default_locale": "en-US"
+}
+```
+
+- `resources` must include a `${locale}` placeholder. Clients resolve it relative to the server install directory.
+- `default_locale` must be a valid [BCP 47](https://www.rfc-editor.org/rfc/bcp/bcp47.txt) identifier such as `en-US` or `zh-Hans`.
+- Values for the default locale stay in the main manifest; localized files only need to contain overrides.
+- When a translation is missing, clients fall back to the default locale value from the manifest.
+
+### Icons
+
+Use the `icons` array when you need multiple icon variants (different sizes or themes):
+
+```json
+"icons": [
+  { "src": "assets/icons/icon-16-light.png", "sizes": "16x16", "theme": "light" },
+  { "src": "assets/icons/icon-16-dark.png", "sizes": "16x16", "theme": "dark" }
+]
+```
+
+- `sizes` must be in `WIDTHxHEIGHT` form (e.g., `128x128`).
+- `theme` is optional; use values like `light`, `dark`, or platform-specific labels (e.g., `high-contrast`).
+- The legacy `icon` field remains supported for single assets—clients use it when `icons` is omitted.
 
 ## Compatibility
 

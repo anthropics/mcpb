@@ -194,6 +194,7 @@ describe("init functions", () => {
         },
         {
           icon: "",
+          icons: [],
           screenshots: [],
         },
         {
@@ -215,6 +216,7 @@ describe("init functions", () => {
           keywords: "",
           license: "",
         },
+        undefined,
       );
 
       expect(manifest).toEqual({
@@ -258,6 +260,10 @@ describe("init functions", () => {
         },
         {
           icon: "icon.png",
+          icons: [
+            { src: "assets/icons/icon-16-light.png", sizes: "16x16", theme: "light" },
+            { src: "assets/icons/icon-16-dark.png", sizes: "16x16", theme: "dark" },
+          ],
           screenshots: ["screen1.png", "screen2.png"],
         },
         {
@@ -301,6 +307,10 @@ describe("init functions", () => {
           license: "MIT",
           repository: { type: "git", url: "https://github.com/user/repo" },
         },
+        {
+          resources: "resources/${locale}.json",
+          default_locale: "en-US",
+        },
       );
 
       expect(manifest).toEqual({
@@ -320,7 +330,23 @@ describe("init functions", () => {
         documentation: "https://docs.example.com",
         support: "https://support.example.com",
         icon: "icon.png",
+        icons: [
+          {
+            src: "assets/icons/icon-16-light.png",
+            sizes: "16x16",
+            theme: "light",
+          },
+          {
+            src: "assets/icons/icon-16-dark.png",
+            sizes: "16x16",
+            theme: "dark",
+          },
+        ],
         screenshots: ["screen1.png", "screen2.png"],
+        localization: {
+          resources: "resources/${locale}.json",
+          default_locale: "en-US",
+        },
         server: {
           type: "python",
           entry_point: "server/main.py",
