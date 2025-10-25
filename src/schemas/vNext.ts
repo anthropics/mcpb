@@ -1,7 +1,7 @@
 // WIP: This schema is under development and not yet finalized
 import * as z from "zod";
 
-export const MANIFEST_VERSION = "0.3";
+export const MANIFEST_VERSION = "vNext";
 
 export const McpServerConfigSchema = z.strictObject({
   command: z.string(),
