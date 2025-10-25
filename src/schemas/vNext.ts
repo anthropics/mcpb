@@ -106,10 +106,6 @@ export const McpbManifestSchema = z
       .record(z.string(), McpbUserConfigurationOptionSchema)
       .optional(),
     _meta: z.record(z.string(), z.record(z.string(), z.any())).optional(),
-  })
-  .refine((data) => !!(data.dxt_version || data.manifest_version), {
-    message:
-      "Either 'dxt_version' (deprecated) or 'manifest_version' must be provided",
   });
 
 export const McpbSignatureInfoSchema = z.strictObject({
