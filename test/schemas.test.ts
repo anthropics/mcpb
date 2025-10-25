@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { McpbManifestSchema, v0_3 } from "../src/schemas/index.js";
+import { McpbManifestSchema, vNext } from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
@@ -139,7 +139,7 @@ describe("McpbManifestSchema", () => {
 
   describe("_meta", () => {
     const base = {
-      manifest_version: "0.3",
+      manifest_version: "vNext",
       name: "client-ext-test",
       version: "1.0.0",
       description: "Test manifest",
@@ -162,7 +162,7 @@ describe("McpbManifestSchema", () => {
           "com.apple.darwin": { bundle_id: "com.example.app", notarized: true },
         },
       };
-      const result = v0_3.McpbManifestSchema.safeParse(manifest);
+      const result = vNext.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
 
@@ -176,7 +176,7 @@ describe("McpbManifestSchema", () => {
           >,
         },
       };
-      const result = v0_3.McpbManifestSchema.safeParse(manifest);
+      const result = vNext.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message).join("\n");
@@ -191,7 +191,7 @@ describe("McpbManifestSchema", () => {
           "com.apple.darwin": [] as unknown as Record<string, unknown>,
         },
       };
-      const result = v0_3.McpbManifestSchema.safeParse(manifest);
+      const result = vNext.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
@@ -202,13 +202,13 @@ describe("McpbManifestSchema", () => {
           custom: null as unknown as Record<string, unknown>,
         },
       };
-      const result = v0_3.McpbManifestSchema.safeParse(manifest);
+      const result = vNext.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
     it("allows empty object for _meta", () => {
       const manifest = { ...base, _meta: {} };
-      const result = v0_3.McpbManifestSchema.safeParse(manifest);
+      const result = vNext.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
   });

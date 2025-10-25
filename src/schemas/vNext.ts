@@ -1,8 +1,6 @@
 // WIP: This schema is under development and not yet finalized
 import * as z from "zod";
 
-export const MANIFEST_VERSION = "0.3";
-
 export const McpServerConfigSchema = z.strictObject({
   command: z.string(),
   args: z.array(z.string()).optional(),
@@ -81,10 +79,10 @@ export const McpbManifestSchema = z
   .strictObject({
     $schema: z.string().optional(),
     dxt_version: z
-      .literal(MANIFEST_VERSION)
+      .string()
       .optional()
       .describe("@deprecated Use manifest_version instead"),
-    manifest_version: z.literal(MANIFEST_VERSION).optional(),
+    manifest_version: z.string().optional(),
     name: z.string(),
     display_name: z.string().optional(),
     version: z.string(),
