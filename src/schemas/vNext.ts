@@ -77,36 +77,35 @@ export const McpbUserConfigValuesSchema = z.record(
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
-export const McpbManifestSchema = z
-  .strictObject({
-    $schema: z.string().optional(),
-    manifest_version: z.literal(MANIFEST_VERSION).optional(),
-    name: z.string(),
-    display_name: z.string().optional(),
-    version: z.string(),
-    description: z.string(),
-    long_description: z.string().optional(),
-    author: McpbManifestAuthorSchema,
-    repository: McpbManifestRepositorySchema.optional(),
-    homepage: z.string().url().optional(),
-    documentation: z.string().url().optional(),
-    support: z.string().url().optional(),
-    icon: z.string().optional(),
-    screenshots: z.array(z.string()).optional(),
-    server: McpbManifestServerSchema,
-    tools: z.array(McpbManifestToolSchema).optional(),
-    tools_generated: z.boolean().optional(),
-    prompts: z.array(McpbManifestPromptSchema).optional(),
-    prompts_generated: z.boolean().optional(),
-    keywords: z.array(z.string()).optional(),
-    license: z.string().optional(),
-    privacy_policies: z.array(z.string().url()).optional(),
-    compatibility: McpbManifestCompatibilitySchema.optional(),
-    user_config: z
-      .record(z.string(), McpbUserConfigurationOptionSchema)
-      .optional(),
-    _meta: z.record(z.string(), z.record(z.string(), z.any())).optional(),
-  });
+export const McpbManifestSchema = z.strictObject({
+  $schema: z.string().optional(),
+  manifest_version: z.literal(MANIFEST_VERSION).optional(),
+  name: z.string(),
+  display_name: z.string().optional(),
+  version: z.string(),
+  description: z.string(),
+  long_description: z.string().optional(),
+  author: McpbManifestAuthorSchema,
+  repository: McpbManifestRepositorySchema.optional(),
+  homepage: z.string().url().optional(),
+  documentation: z.string().url().optional(),
+  support: z.string().url().optional(),
+  icon: z.string().optional(),
+  screenshots: z.array(z.string()).optional(),
+  server: McpbManifestServerSchema,
+  tools: z.array(McpbManifestToolSchema).optional(),
+  tools_generated: z.boolean().optional(),
+  prompts: z.array(McpbManifestPromptSchema).optional(),
+  prompts_generated: z.boolean().optional(),
+  keywords: z.array(z.string()).optional(),
+  license: z.string().optional(),
+  privacy_policies: z.array(z.string().url()).optional(),
+  compatibility: McpbManifestCompatibilitySchema.optional(),
+  user_config: z
+    .record(z.string(), McpbUserConfigurationOptionSchema)
+    .optional(),
+  _meta: z.record(z.string(), z.record(z.string(), z.any())).optional(),
+});
 
 export const McpbSignatureInfoSchema = z.strictObject({
   status: z.enum(["signed", "unsigned", "self-signed"]),

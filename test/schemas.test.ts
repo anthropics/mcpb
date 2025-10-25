@@ -212,5 +212,4 @@ describe("McpbManifestSchema", () => {
       expect(result.success).toBe(true);
     });
   });
-
 });
