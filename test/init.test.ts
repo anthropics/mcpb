@@ -261,8 +261,16 @@ describe("init functions", () => {
         {
           icon: "icon.png",
           icons: [
-            { src: "assets/icons/icon-16-light.png", sizes: "16x16", theme: "light" },
-            { src: "assets/icons/icon-16-dark.png", sizes: "16x16", theme: "dark" },
+            {
+              src: "assets/icons/icon-16-light.png",
+              sizes: "16x16",
+              theme: "light",
+            },
+            {
+              src: "assets/icons/icon-16-dark.png",
+              sizes: "16x16",
+              theme: "dark",
+            },
           ],
           screenshots: ["screen1.png", "screen2.png"],
         },

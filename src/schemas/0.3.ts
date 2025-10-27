@@ -104,10 +104,7 @@ export const McpbManifestIconSchema = z.strictObject({
       ICON_SIZE_REGEX,
       'sizes must be in the format "WIDTHxHEIGHT" (e.g., "16x16")',
     ),
-  theme: z
-    .string()
-    .min(1, "theme cannot be empty when provided")
-    .optional(),
+  theme: z.string().min(1, "theme cannot be empty when provided").optional(),
 });
 
 export const McpbManifestSchema = z
@@ -129,9 +126,9 @@ export const McpbManifestSchema = z
     documentation: z.string().url().optional(),
     support: z.string().url().optional(),
     icon: z.string().optional(),
-  icons: z.array(McpbManifestIconSchema).optional(),
+    icons: z.array(McpbManifestIconSchema).optional(),
     screenshots: z.array(z.string()).optional(),
-  localization: McpbManifestLocalizationSchema.optional(),
+    localization: McpbManifestLocalizationSchema.optional(),
     server: McpbManifestServerSchema,
     tools: z.array(McpbManifestToolSchema).optional(),
     tools_generated: z.boolean().optional(),

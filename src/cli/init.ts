@@ -543,7 +543,8 @@ export async function promptLocalization() {
   const placeholderRegex = /\$\{locale\}/i;
 
   const resourcesPath = await input({
-    message: "Localization resources path (must include ${locale} placeholder):",
+    message:
+      "Localization resources path (must include ${locale} placeholder):",
     default: "resources/${locale}.json",
     validate: (value) => {
       if (!value.trim()) {
