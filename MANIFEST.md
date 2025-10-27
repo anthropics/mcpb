@@ -230,30 +230,30 @@ A full `manifest.json` with most of the optional fields looks like this:
 - **manifest_version**: Specification version this extension conforms to
 - **name**: Machine-readable name (used for CLI, APIs)
 - **version**: Semantic version (semver)
-- **description**: Brief description
-- **author**: Author information object with name (required), email (optional), and url (optional)
+- 🌎 **description**: Brief description. This field is localizable.
+- 🌎 **author**: Author information object with name (required, localizable), email (optional), and url (optional)
 - **server**: Server configuration object
 
 ### Optional Fields
 
-- **icon**: Path to a png icon file, either relative in the package or a https:// url.
+- **icon**: Path to a png icon file, either relative in the package or a `https://` url.
 - **icons**: Array of icon descriptors (`src`, `sizes`, optional `theme`) for light/dark or size-specific assets.
-- **display_name**: Human-friendly name for UI display
-- **long_description**: Detailed description for extension stores, markdown
-- **repository**: Source code repository information (type and url)
-- **homepage**: Extension homepage URL
-- **documentation**: Documentation URL
-- **support**: Support/issues URL
-- **screenshots**: Array of screenshot paths
-- **tools**: Array of tools the extension provides
-- **tools_generated**: Boolean indicating the server generates additional tools at runtime (default: false)
-- **prompts**: Array of prompts the extension provides
-- **prompts_generated**: Boolean indicating the server generates additional prompts at runtime (default: false)
-- **keywords**: Search keywords
-- **license**: License identifier
-- **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document
-- **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions)
-- **user_config**: User-configurable options for the extension (see User Configuration section)
+- 🌎 **display_name**: Human-friendly name for UI display. This field is localizable.
+- 🌎 **long_description**: Detailed description for extension stores, markdown. This field is localizable.
+- **repository**: Source code repository information (type and url).
+- **homepage**: Extension homepage URL.
+- **documentation**: Documentation URL.
+- **support**: Support/issues URL.
+- **screenshots**: Array of screenshot paths.
+- 🌎 **tools**: Array of tools the extension provides. This field is localizable.
+- **tools_generated**: Boolean indicating the server generates additional tools at runtime (default: false).
+- 🌎 **prompts**: Array of prompts the extension provides. This field is localizable.
+- **prompts_generated**: Boolean indicating the server generates additional prompts at runtime (default: false).
+- 🌎 **keywords**: Search keywords. This field is localizable.
+- **license**: License identifier.
+- **privacy_policies**: Array of URLs to privacy policies for external services that handle user data. Required when the extension connects to external services (first- or third-party) that process user data. Each URL should link to the respective service's privacy policy document.
+- **compatibility**: Compatibility requirements (client app version, platforms, and runtime versions).
+- **user_config**: User-configurable options for the extension (see User Configuration section).
 - **_meta**: Platform-specific client integration metadata (e.g., Windows `package_family_name`, macOS bundle identifiers) enabling tighter OS/app store integration. The keys in the `_meta` object are reverse-DNS namespaced, and the values are a dictionary of platform-specific metadata.
 - **localization**: Location of translated strings for user-facing fields (`resources` path containing a `${locale}` placeholder and `default_locale`).
 
@@ -272,6 +272,13 @@ Provide localized strings without bloating the manifest by pointing to external 
 - `default_locale` must be a valid [BCP 47](https://www.rfc-editor.org/rfc/bcp/bcp47.txt) identifier such as `en-US` or `zh-Hans`.
 - Values for the default locale stay in the main manifest; localized files only need to contain overrides.
 - When a translation is missing, clients fall back to the default locale value from the manifest.
+
+For tools and prompts, the descriptions are also localizable. 
+
+#### Client guidelines
+- if a client wants to show tool or prompt descriptions in their UI, the client should look for the locale-specific description override in the corresponding per-locale file.
+- clients should only look for tools/prompts present in the manifest.json, i.e. prompts and tools that only exist in the per-locale file should be ignored.
+- Clients should apply locale fallbacks if the client/user locale is not represented by the server. For example, if the user is in the `es-UY` locale but the server does not include that per-locale file, the client should look for an approrpiate fallback, e.g. `es-MX` or `es-ES`.
 
 ### Icons
 
@@ -655,9 +662,9 @@ For servers with a fixed set of capabilities, list them in arrays.
 Each prompt in the `prompts` array must include:
 
 - **name**: The identifier for the prompt
-- **description** (optional): Explanation of what the prompt does
+- 🌎 **description** (optional): Explanation of what the prompt does
 - **arguments** (optional): Array of argument names that can be used in the prompt text
-- **text**: The actual prompt text that uses template variables like `${arguments.topic}` or `${arguments.aspect}` as placeholders for MCP Client-supplied arguments. If your argument is named `language`, you'd add `${arguments.language} where you expect it to show up in the prompt.
+- 🌎 **text**: The actual prompt text that uses template variables like `${arguments.topic}` or `${arguments.aspect}` as placeholders for MCP Client-supplied arguments. If your argument is named `language`, you'd add `${arguments.language} where you expect it to show up in the prompt.
 
 Example:
 
