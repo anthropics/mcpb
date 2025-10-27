@@ -107,7 +107,7 @@ A full `manifest.json` with most of the optional fields looks like this:
     "assets/screenshots/screenshot2.png"
   ],
   "localization": {
-    "resources": "resources/${locale}.json",
+    "resources": "custom-directory-for-mcpb-resources/${locale}.json",
     "default_locale": "en-US"
   },
   "server": {
@@ -261,24 +261,25 @@ A full `manifest.json` with most of the optional fields looks like this:
 
 Provide localized strings without bloating the manifest by pointing to external per-locale resource files. A localization entry looks like this:
 
-```json
+```jsonc
 "localization": {
-  "resources": "resources/${locale}.json",
+  "resources": "relative-path-to-resources/${locale}.json",
   "default_locale": "en-US"
 }
 ```
 
-- `resources` must include a `${locale}` placeholder. Clients resolve it relative to the server install directory.
+- `resources` must include a `${locale}` placeholder. Clients resolve it relative to the server install directory. 
+  - This property is optional, and its default value is **`mcpb-resources/${locale}.json`**.
 - `default_locale` must be a valid [BCP 47](https://www.rfc-editor.org/rfc/bcp/bcp47.txt) identifier such as `en-US` or `zh-Hans`.
+  - This property is optional, and its default value is `en-US`.
 - Values for the default locale stay in the main manifest; localized files only need to contain overrides.
-- When a translation is missing, clients fall back to the default locale value from the manifest.
 
 For tools and prompts, the descriptions are also localizable. 
 
 #### Client guidelines
 - if a client wants to show tool or prompt descriptions in their UI, the client should look for the locale-specific description override in the corresponding per-locale file.
 - clients should only look for tools/prompts present in the manifest.json, i.e. prompts and tools that only exist in the per-locale file should be ignored.
-- Clients should apply locale fallbacks if the client/user locale is not represented by the server. For example, if the user is in the `es-UY` locale but the server does not include that per-locale file, the client should look for an approrpiate fallback, e.g. `es-MX` or `es-ES`.
+- Clients should apply locale fallbacks if the client/user locale is not represented by the server. For example, if the user is in the `es-UY` locale but the server does not include that per-locale file, the client should look for an approrpiate fallback, e.g. `es-MX` or `es-ES`, or fall back to the values in the manifest.
 
 ### Icons
 
