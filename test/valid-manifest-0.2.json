@@ -1,0 +1,21 @@
+{
+    "manifest_version": "0.2",
+    "name": "legacy-extension",
+    "display_name": "Legacy Extension",
+    "version": "1.0.0",
+    "description": "An extension that predates 0.3",
+    "author": {
+        "name": "Legacy Author",
+        "email": "legacy@example.com"
+    },
+    "server": {
+        "type": "node",
+        "entry_point": "server/index.js",
+        "mcp_config": {
+            "command": "node",
+            "args": [
+                "${__dirname}/server/index.js"
+            ]
+        }
+    }
+}
