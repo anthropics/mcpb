@@ -664,7 +664,7 @@ Each prompt in the `prompts` array must include:
 - **name**: The identifier for the prompt
 - 🌎 **description** (optional): Explanation of what the prompt does
 - **arguments** (optional): Array of argument names that can be used in the prompt text
-- 🌎 **text**: The actual prompt text that uses template variables like `${arguments.topic}` or `${arguments.aspect}` as placeholders for MCP Client-supplied arguments. If your argument is named `language`, you'd add `${arguments.language} where you expect it to show up in the prompt.
+- 🌎 **text**: The actual prompt text that uses template variables like `${arguments.topic}` or `${arguments.aspect}` as placeholders for MCP Client-supplied arguments. If your argument is named `language`, you'd add `${arguments.language}` where you expect it to show up in the prompt.
 
 Example:
 
