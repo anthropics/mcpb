@@ -98,7 +98,7 @@ export const McpbManifestSchema = z
     screenshots: z.array(z.string()).optional(),
     server: McpbManifestServerSchema,
     tools: z.array(McpbManifestToolSchema).optional(),
-    tools_generated: z.boolean().optional(),  
+    tools_generated: z.boolean().optional(),
     prompts: z.array(McpbManifestPromptSchema).optional(),
     prompts_generated: z.boolean().optional(),
     keywords: z.array(z.string()).optional(),
