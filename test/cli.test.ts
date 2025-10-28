@@ -80,6 +80,93 @@ describe("MCPB CLI", () => {
     fs.unlinkSync(invalidJsonPath);
   });
 
+  describe("icon validation integration", () => {
+    const testDir = join(__dirname, "icon-test");
+
+    beforeAll(() => {
+      // Create test directory
+      if (!fs.existsSync(testDir)) {
+        fs.mkdirSync(testDir, { recursive: true });
+      }
+
+      // Create a valid PNG file (1x1 transparent pixel)
+      const validPngBuffer = Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+        0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+        0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
+        0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41,
+        0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
+        0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00,
+        0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+        0x42, 0x60, 0x82,
+      ]);
+      fs.writeFileSync(join(testDir, "icon.png"), validPngBuffer);
+    });
+
+    afterAll(() => {
+      // Clean up test directory
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+    });
+
+    it("should pass validation with valid local icon", () => {
+      const manifestWithIcon = join(testDir, "manifest-with-icon.json");
+      fs.writeFileSync(
+        manifestWithIcon,
+        JSON.stringify({
+          manifest_version: LATEST_MANIFEST_VERSION,
+          name: "test-with-icon",
+          version: "1.0.0",
+          description: "Test with icon",
+          author: { name: "Test" },
+          icon: "icon.png",
+          server: {
+            type: "node",
+            entry_point: "server/index.js",
+            mcp_config: { command: "node" },
+          },
+        })
+      );
+
+      const result = execSync(`node ${cliPath} validate ${manifestWithIcon}`, {
+        encoding: "utf-8",
+      });
+
+      expect(result).toContain("Manifest schema validation passes!");
+      expect(result).toContain("Icon validation");
+    });
+
+    it("should warn about manifest with remote icon URL but not fail", () => {
+      const manifestWithUrl = join(testDir, "manifest-with-url.json");
+      fs.writeFileSync(
+        manifestWithUrl,
+        JSON.stringify({
+          manifest_version: LATEST_MANIFEST_VERSION,
+          name: "test-with-url",
+          version: "1.0.0",
+          description: "Test with URL",
+          author: { name: "Test" },
+          icon: "https://example.com/icon.png",
+          server: {
+            type: "node",
+            entry_point: "server/index.js",
+            mcp_config: { command: "node" },
+          },
+        })
+      );
+
+      const result = execSync(`node ${cliPath} validate ${manifestWithUrl}`, {
+        encoding: "utf-8",
+      });
+
+      expect(result).toContain("Manifest schema validation passes!");
+      expect(result).toContain("Icon validation warnings");
+      expect(result).toContain("Icon path uses a remote URL");
+    });
+  });
+
   describe("pack and unpack", () => {
     const tempDir = join(__dirname, "temp-pack-test");
     const packedFilePath = join(__dirname, "test-extension.dxt");

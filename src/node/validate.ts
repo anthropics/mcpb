@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from "fs";
 import * as fs from "fs/promises";
 import { DestroyerOfModules } from "galactus";
 import * as os from "os";
-import { join, resolve } from "path";
+import { dirname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
@@ -10,6 +10,102 @@ import {
   LATEST_MANIFEST_SCHEMA,
   LATEST_MANIFEST_SCHEMA_LOOSE,
 } from "../shared/constants.js";
+
+/**
+ * Check if a buffer contains a valid PNG file signature
+ */
+function isPNG(buffer: Buffer): boolean {
+  // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+  return (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0d &&
+    buffer[5] === 0x0a &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0x0a
+  );
+}
+
+/**
+ * Validate icon field in manifest
+ * @param iconPath - The icon path from manifest.json
+ * @param baseDir - The base directory containing the manifest
+ * @returns Validation result with errors and warnings
+ */
+function validateIcon(
+  iconPath: string,
+  baseDir: string,
+): { valid: boolean; errors: string[]; warnings: string[] } {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const isRemoteUrl =
+    iconPath.startsWith("http://") || iconPath.startsWith("https://");
+  const hasVariableSubstitution = iconPath.includes("${__dirname}");
+  const isAbsolutePath = isAbsolute(iconPath);
+
+  // Warn about remote URLs (best practice: use local files)
+  if (isRemoteUrl) {
+    warnings.push(
+      "Icon path uses a remote URL. " +
+        'Best practice for local MCP servers: Use local files like "icon": "icon.png" for maximum compatibility. ' +
+        "Claude Desktop currently only supports local icon files in bundles.",
+    );
+  }
+
+  // Check for ${__dirname} variable (error - doesn't work)
+  if (hasVariableSubstitution) {
+    errors.push(
+      'Icon path should not use ${__dirname} variable substitution. ' +
+        'Use a simple relative path like "icon.png" instead of "${__dirname}/icon.png".',
+    );
+  }
+
+  // Check for absolute path (error - not portable)
+  if (isAbsolutePath) {
+    errors.push(
+      "Icon path must be relative to the bundle root, not an absolute path. " +
+        `Found: "${iconPath}"`,
+    );
+  }
+
+  // Only proceed with file checks if the path looks like a local file
+  if (!isRemoteUrl && !isAbsolutePath && !hasVariableSubstitution) {
+    // Check file existence
+    const fullIconPath = join(baseDir, iconPath);
+    if (!existsSync(fullIconPath)) {
+      errors.push(`Icon file not found at path: ${iconPath}`);
+    } else {
+      try {
+        // Check PNG format
+        const buffer = readFileSync(fullIconPath);
+        if (!isPNG(buffer)) {
+          errors.push(
+            `Icon file must be PNG format. The file at "${iconPath}" does not appear to be a valid PNG file.`,
+          );
+        } else {
+          // File exists and is a valid PNG - add recommendation
+          warnings.push(
+            "Icon validation passed. Recommended size is 512×512 pixels for best display in Claude Desktop.",
+          );
+        }
+      } catch (error) {
+        errors.push(
+          `Unable to read icon file at "${iconPath}": ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}
 
 export function validateManifest(inputPath: string): boolean {
   try {
@@ -28,6 +124,28 @@ export function validateManifest(inputPath: string): boolean {
 
     if (result.success) {
       console.log("Manifest schema validation passes!");
+
+      // Validate icon if present
+      if (manifestData.icon) {
+        const baseDir = dirname(manifestPath);
+        const iconValidation = validateIcon(manifestData.icon, baseDir);
+
+        if (iconValidation.errors.length > 0) {
+          console.log("\nERROR: Icon validation failed:\n");
+          iconValidation.errors.forEach((error) => {
+            console.log(`  - ${error}`);
+          });
+          return false;
+        }
+
+        if (iconValidation.warnings.length > 0) {
+          console.log("\nIcon validation warnings:\n");
+          iconValidation.warnings.forEach((warning) => {
+            console.log(`  - ${warning}`);
+          });
+        }
+      }
+
       return true;
     } else {
       console.log("ERROR: Manifest validation failed:\n");

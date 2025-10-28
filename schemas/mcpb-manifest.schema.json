@@ -6,12 +6,12 @@
     },
     "dxt_version": {
       "type": "string",
-      "const": "0.2",
+      "const": "0.3",
       "description": "@deprecated Use manifest_version instead"
     },
     "manifest_version": {
       "type": "string",
-      "const": "0.2"
+      "const": "0.3"
     },
     "name": {
       "type": "string"
@@ -80,11 +80,53 @@
     "icon": {
       "type": "string"
     },
+    "icons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "string",
+            "pattern": "^\\d+x\\d+$"
+          },
+          "theme": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "src",
+          "sizes"
+        ],
+        "additionalProperties": false
+      }
+    },
     "screenshots": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "localization": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "string",
+          "pattern": "\\$\\{locale\\}"
+        },
+        "default_locale": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+        }
+      },
+      "required": [
+        "resources",
+        "default_locale"
+      ],
+      "additionalProperties": false
     },
     "server": {
       "type": "object",
@@ -312,6 +354,13 @@
           "description"
         ],
         "additionalProperties": false
+      }
+    },
+    "_meta": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {}
       }
     }
   },
