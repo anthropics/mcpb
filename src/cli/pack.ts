@@ -14,8 +14,8 @@ import { basename, join, relative, resolve, sep } from "path";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
 import {
-  LatestMcpbManifestSchema,
   LATEST_MANIFEST_VERSION,
+  LatestMcpbManifestSchema,
 } from "../schemas/index.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";

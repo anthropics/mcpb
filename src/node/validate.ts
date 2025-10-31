@@ -146,7 +146,7 @@ export function validateManifest(inputPath: string): boolean {
       return true;
     } else {
       console.log("ERROR: Manifest validation failed:\n");
-      result.error.issues.forEach((issue: any) => {
+      result.error.issues.forEach((issue) => {
         const path = issue.path.join(".");
         console.log(`  - ${path ? `${path}: ` : ""}${issue.message}`);
       });
@@ -189,7 +189,8 @@ export async function cleanMcpb(inputPath: string) {
     const manifestPath = resolve(unpackPath, "manifest.json");
     const originalManifest = await fs.readFile(manifestPath, "utf-8");
     const manifestData = JSON.parse(originalManifest);
-    const result = LatestMcpbManifestSchema.passthrough().safeParse(manifestData);
+    const result =
+      LatestMcpbManifestSchema.passthrough().safeParse(manifestData);
 
     if (!result.success) {
       throw new Error(
