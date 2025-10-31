@@ -10,8 +10,8 @@ export * as v1_0 from "./1.0.js";
 export * as any from "./any.js";
 export * as latest from "./latest.js";
 export {
-  MANIFEST_VERSION as LATEST_MANIFEST_VERSION,
   McpbManifestSchema as LATEST_MANIFEST_SCHEMA,
+  MANIFEST_VERSION as LATEST_MANIFEST_VERSION,
   McpbManifestSchema,
 } from "./latest.js";
 
