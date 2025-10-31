@@ -6,7 +6,7 @@ import { dirname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import { LATEST_MANIFEST_SCHEMA_STRICT } from "../schemas/index.js";
+import { LATEST_MANIFEST_SCHEMA } from "../schemas/index.js";
 
 /**
  * Check if a buffer contains a valid PNG file signature
@@ -117,7 +117,7 @@ export function validateManifest(inputPath: string): boolean {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
 
-    const result = LATEST_MANIFEST_SCHEMA_STRICT.safeParse(manifestData);
+    const result = LATEST_MANIFEST_SCHEMA.safeParse(manifestData);
 
     if (result.success) {
       console.log("Manifest schema validation passes!");
@@ -189,7 +189,7 @@ export async function cleanMcpb(inputPath: string) {
     const manifestPath = resolve(unpackPath, "manifest.json");
     const originalManifest = await fs.readFile(manifestPath, "utf-8");
     const manifestData = JSON.parse(originalManifest);
-    const result = LATEST_MANIFEST_SCHEMA_STRICT.passthrough().safeParse(manifestData);
+    const result = LATEST_MANIFEST_SCHEMA.passthrough().safeParse(manifestData);
 
     if (!result.success) {
       throw new Error(

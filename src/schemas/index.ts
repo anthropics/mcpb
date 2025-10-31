@@ -11,14 +11,14 @@ export * as any from "./any.js";
 export * as latest from "./latest.js";
 export {
   MANIFEST_VERSION as LATEST_MANIFEST_VERSION,
-  McpbManifestSchema as LATEST_MANIFEST_SCHEMA_STRICT,
+  McpbManifestSchema as LATEST_MANIFEST_SCHEMA,
   McpbManifestSchema,
 } from "./latest.js";
 
 /**
  * Map of manifest versions to their strict schemas
  */
-export const VERSIONED_MANIFEST_SCHEMAS_STRICT = {
+export const VERSIONED_MANIFEST_SCHEMAS = {
   "0.1": ManifestSchemaV0_1,
   "0.2": ManifestSchemaV0_2,
   "0.3": ManifestSchemaV0_3,
