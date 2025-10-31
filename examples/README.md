@@ -17,7 +17,8 @@ But, the MCP servers themselves are not robust secure production ready servers a
 | Example               | Type    | Demonstrates                             |
 | --------------------- | ------- | ---------------------------------------- |
 | `hello-world-node`    | Node.js | Basic MCP server with simple time tool   |
-| `chrome-applescript`  | Node.js | Browser automation via AppleScript       |
+| `chrome-applescript`  | Node.js | Chrome browser automation via AppleScript |
+| `edge-applescript`    | Node.js | Edge browser automation via AppleScript   |
 | `file-manager-python` | Python  | File system operations and path handling |
 
 ## Usage
