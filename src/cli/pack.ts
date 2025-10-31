@@ -14,7 +14,7 @@ import { basename, join, relative, resolve, sep } from "path";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
 import {
-  LATEST_MANIFEST_SCHEMA,
+  LatestMcpbManifestSchema,
   LATEST_MANIFEST_VERSION,
 } from "../schemas/index.js";
 import { getLogger } from "../shared/log.js";
@@ -95,7 +95,7 @@ export async function packExtension({
   try {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
-    manifest = LATEST_MANIFEST_SCHEMA.parse(manifestData);
+    manifest = LatestMcpbManifestSchema.parse(manifestData);
   } catch (error) {
     logger.error("ERROR: Failed to parse manifest.json");
     if (error instanceof Error) {
