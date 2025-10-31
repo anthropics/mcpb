@@ -23,7 +23,7 @@
     }
   },
   "rules": {
-    "prettier/prettier": "warn",
+    "prettier/prettier": "error",
     // Require all external imports to be declared as a dependency
     "import/no-extraneous-dependencies": [
       "error",
