@@ -132,7 +132,7 @@ describe("Icon Validation", () => {
 
   function createTestManifest(filename: string, iconConfig: { icon?: string }) {
     const manifest = {
-      manifest_version: "0.3",
+      manifest_version: "1.0",
       name: "test-extension",
       version: "1.0.0",
       description: "Test extension for icon validation",

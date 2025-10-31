@@ -54,7 +54,7 @@ describe("McpbManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      manifest_version: "0.3",
+      manifest_version: "1.0",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -152,7 +152,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        manifest_version: "0.3",
+        manifest_version: "1.0",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -174,7 +174,7 @@ describe("McpbManifestSchema", () => {
 
   describe("_meta", () => {
     const base = {
-      manifest_version: "0.3",
+      manifest_version: "0.3" as const,
       name: "client-ext-test",
       version: "1.0.0",
       description: "Test manifest",
@@ -250,7 +250,7 @@ describe("McpbManifestSchema", () => {
 
   describe("localization", () => {
     const base = {
-      manifest_version: "0.3" as const,
+      manifest_version: "1.0" as const,
       name: "loc-ext",
       version: "1.0.0",
       description: "Test manifest",
@@ -305,7 +305,7 @@ describe("McpbManifestSchema", () => {
 
   describe("icons", () => {
     const base = {
-      manifest_version: "0.3" as const,
+      manifest_version: "1.0" as const,
       name: "icon-ext",
       version: "1.0.0",
       description: "Test manifest",

@@ -2,7 +2,7 @@ import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
-import { LATEST_MANIFEST_VERSION } from "../shared/constants.js";
+import { LATEST_MANIFEST_VERSION } from "../schemas/index.js";
 import type { McpbManifestLatest } from "../types.js";
 
 interface PackageJson {

@@ -14,9 +14,9 @@ import { basename, join, relative, resolve, sep } from "path";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
 import {
-  LATEST_MANIFEST_SCHEMA,
+  LATEST_MANIFEST_SCHEMA_STRICT,
   LATEST_MANIFEST_VERSION,
-} from "../shared/constants.js";
+} from "../schemas/index.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";
 
@@ -95,7 +95,7 @@ export async function packExtension({
   try {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
-    manifest = LATEST_MANIFEST_SCHEMA.parse(manifestData);
+    manifest = LATEST_MANIFEST_SCHEMA_STRICT.parse(manifestData);
   } catch (error) {
     logger.error("ERROR: Failed to parse manifest.json");
     if (error instanceof Error) {
@@ -104,7 +104,7 @@ export async function packExtension({
     return false;
   }
 
-  const manifestVersion = manifest.manifest_version || manifest.dxt_version;
+  const manifestVersion = manifest.manifest_version;
   if (manifestVersion !== LATEST_MANIFEST_VERSION) {
     logger.error(
       `ERROR: Manifest version mismatch. Expected "${LATEST_MANIFEST_VERSION}", found "${manifestVersion}"`,
