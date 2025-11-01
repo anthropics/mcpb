@@ -51,19 +51,32 @@ program
   .command("init [directory]")
   .description("Create a new MCPB extension manifest")
   .option("-y, --yes", "Accept all defaults (non-interactive mode)")
-  .action((directory?: string, options?: { yes?: boolean }) => {
-    void (async () => {
-      try {
-        const success = await initExtension(directory, options?.yes);
-        process.exit(success ? 0 : 1);
-      } catch (error) {
-        console.error(
-          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-        process.exit(1);
-      }
-    })();
-  });
+  .option(
+    "-s, --schema-version <version>",
+    "Schema version to use (0.1, 0.2, or 0.3)",
+  )
+  .action(
+    (
+      directory?: string,
+      options?: { yes?: boolean; schemaVersion?: string },
+    ) => {
+      void (async () => {
+        try {
+          const success = await initExtension(
+            directory,
+            options?.yes,
+            options?.schemaVersion,
+          );
+          process.exit(success ? 0 : 1);
+        } catch (error) {
+          console.error(
+            `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+          process.exit(1);
+        }
+      })();
+    },
+  );
 
 // Validate command
 program
@@ -88,22 +101,33 @@ program
 program
   .command("pack [directory] [output]")
   .description("Pack a directory into an MCPB extension")
-  .action((directory: string = process.cwd(), output?: string) => {
-    void (async () => {
-      try {
-        const success = await packExtension({
-          extensionPath: directory,
-          outputPath: output,
-        });
-        process.exit(success ? 0 : 1);
-      } catch (error) {
-        console.error(
-          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-        process.exit(1);
-      }
-    })();
-  });
+  .option(
+    "-s, --schema-version <version>",
+    "Schema version to use (0.1, 0.2, or 0.3)",
+  )
+  .action(
+    (
+      directory: string = process.cwd(),
+      output?: string,
+      options?: { schemaVersion?: string },
+    ) => {
+      void (async () => {
+        try {
+          const success = await packExtension({
+            extensionPath: directory,
+            outputPath: output,
+            schemaVersion: options?.schemaVersion,
+          });
+          process.exit(success ? 0 : 1);
+        } catch (error) {
+          console.error(
+            `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+          process.exit(1);
+        }
+      })();
+    },
+  );
 
 // Unpack command
 program

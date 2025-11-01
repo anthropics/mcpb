@@ -14,8 +14,10 @@ import { basename, join, relative, resolve, sep } from "path";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
 import {
-  LATEST_MANIFEST_SCHEMA,
+  DEFAULT_MANIFEST_VERSION,
   LATEST_MANIFEST_VERSION,
+  MANIFEST_SCHEMAS,
+  VALID_MANIFEST_VERSIONS,
 } from "../shared/constants.js";
 import { getLogger } from "../shared/log.js";
 import { initExtension } from "./init.js";
@@ -24,6 +26,7 @@ interface PackOptions {
   extensionPath: string;
   outputPath?: string;
   silent?: boolean;
+  schemaVersion?: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -52,9 +55,19 @@ export async function packExtension({
   extensionPath,
   outputPath,
   silent,
+  schemaVersion = DEFAULT_MANIFEST_VERSION,
 }: PackOptions): Promise<boolean> {
   const resolvedPath = resolve(extensionPath);
   const logger = getLogger({ silent });
+
+  // Validate schema version
+  if (!VALID_MANIFEST_VERSIONS.includes(schemaVersion as any)) {
+    logger.error(`ERROR: Invalid schema version: ${schemaVersion}`);
+    logger.error(
+      `Valid versions are: ${VALID_MANIFEST_VERSIONS.join(", ")}`,
+    );
+    return false;
+  }
 
   // Check if directory exists
   if (!existsSync(resolvedPath) || !statSync(resolvedPath).isDirectory()) {
@@ -72,7 +85,7 @@ export async function packExtension({
     });
 
     if (shouldInit) {
-      const success = await initExtension(extensionPath);
+      const success = await initExtension(extensionPath, false, schemaVersion);
       if (!success) {
         logger.error("ERROR: Failed to create manifest");
         return false;
@@ -95,7 +108,10 @@ export async function packExtension({
   try {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
-    manifest = LATEST_MANIFEST_SCHEMA.parse(manifestData);
+
+    // Get the schema for the specified version
+    const schema = MANIFEST_SCHEMAS[schemaVersion as keyof typeof MANIFEST_SCHEMAS];
+    manifest = schema.parse(manifestData);
   } catch (error) {
     logger.error("ERROR: Failed to parse manifest.json");
     if (error instanceof Error) {
@@ -105,12 +121,12 @@ export async function packExtension({
   }
 
   const manifestVersion = manifest.manifest_version || manifest.dxt_version;
-  if (manifestVersion !== LATEST_MANIFEST_VERSION) {
+  if (manifestVersion !== schemaVersion) {
     logger.error(
-      `ERROR: Manifest version mismatch. Expected "${LATEST_MANIFEST_VERSION}", found "${manifestVersion}"`,
+      `ERROR: Manifest version mismatch. Expected "${schemaVersion}", found "${manifestVersion}"`,
     );
     logger.error(
-      `  Please update the manifest_version in your manifest.json to "${LATEST_MANIFEST_VERSION}"`,
+      `  Please update the manifest_version in your manifest.json to "${schemaVersion}"`,
     );
     return false;
   }

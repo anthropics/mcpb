@@ -2,8 +2,12 @@ import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
-import { LATEST_MANIFEST_VERSION } from "../shared/constants.js";
-import type { McpbManifestLatest } from "../types.js";
+import {
+  DEFAULT_MANIFEST_VERSION,
+  LATEST_MANIFEST_VERSION,
+  VALID_MANIFEST_VERSIONS,
+} from "../shared/constants.js";
+import type { McpbManifest } from "../types.js";
 
 interface PackageJson {
   name?: string;
@@ -878,14 +882,15 @@ export function buildManifest(
     resources: string;
     default_locale: string;
   },
-): McpbManifestLatest {
+  schemaVersion: string = DEFAULT_MANIFEST_VERSION,
+): McpbManifest {
   const { name, displayName, version, description, authorName } = basicInfo;
   const { authorEmail, authorUrl } = authorInfo;
   const { serverType, entryPoint, mcp_config } = serverConfig;
   const { keywords, license, repository } = optionalFields;
 
   return {
-    manifest_version: LATEST_MANIFEST_VERSION,
+    manifest_version: schemaVersion as "0.1" | "0.2" | "0.3",
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }
@@ -942,6 +947,7 @@ export function printNextSteps() {
 export async function initExtension(
   targetPath: string = process.cwd(),
   nonInteractive = false,
+  schemaVersion: string = DEFAULT_MANIFEST_VERSION,
 ): Promise<boolean> {
   const resolvedPath = resolve(targetPath);
   const manifestPath = join(resolvedPath, "manifest.json");
@@ -1011,6 +1017,15 @@ export async function initExtension(
       ? getDefaultOptionalFields(packageData)
       : await promptOptionalFields(packageData);
 
+    // Validate schema version
+    if (!VALID_MANIFEST_VERSIONS.includes(schemaVersion as any)) {
+      console.error(`ERROR: Invalid schema version: ${schemaVersion}`);
+      console.error(
+        `Valid versions are: ${VALID_MANIFEST_VERSIONS.join(", ")}`,
+      );
+      return false;
+    }
+
     // Build manifest
     const manifest = buildManifest(
       basicInfo,
@@ -1027,6 +1042,7 @@ export async function initExtension(
       userConfig,
       optionalFields,
       localization,
+      schemaVersion,
     );
 
     // Write manifest
