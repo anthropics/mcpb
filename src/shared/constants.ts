@@ -9,8 +9,14 @@ import { McpbManifestSchema as CurrentLooseManifestSchema } from "../schemas_loo
 
 /**
  * Latest manifest version - the version that new manifests should use
+ * @deprecated
  */
 export const LATEST_MANIFEST_VERSION = "0.3" as const;
+
+/**
+ * Default manifest version for new packages
+ */
+export const DEFAULT_MANIFEST_VERSION = "0.2" as const;
 
 /**
  * Map of manifest versions to their strict schemas
@@ -32,10 +38,12 @@ export const MANIFEST_SCHEMAS_LOOSE = {
 
 /**
  * Get the latest manifest schema based on LATEST_MANIFEST_VERSION
+ * @deprecated
  */
 export const LATEST_MANIFEST_SCHEMA = CurrentManifestSchema;
 
 /**
  * Get the latest loose manifest schema based on LATEST_MANIFEST_VERSION
+ * @deprecated
  */
 export const LATEST_MANIFEST_SCHEMA_LOOSE = CurrentLooseManifestSchema;

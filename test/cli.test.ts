@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import { join } from "node:path";
 
-import { LATEST_MANIFEST_VERSION } from "../src/schemas/index.js";
+import { DEFAULT_MANIFEST_VERSION } from "../src/shared/constants";
 
 interface ExecSyncError extends Error {
   stdout: Buffer;
@@ -113,7 +113,7 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         manifestWithIcon,
         JSON.stringify({
-          manifest_version: LATEST_MANIFEST_VERSION,
+          manifest_version: DEFAULT_MANIFEST_VERSION,
           name: "test-with-icon",
           version: "1.0.0",
           description: "Test with icon",
@@ -140,7 +140,7 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         manifestWithUrl,
         JSON.stringify({
-          manifest_version: LATEST_MANIFEST_VERSION,
+          manifest_version: DEFAULT_MANIFEST_VERSION,
           name: "test-with-url",
           version: "1.0.0",
           description: "Test with URL",
@@ -177,7 +177,7 @@ describe("DXT CLI", () => {
       fs.writeFileSync(
         join(tempDir, "manifest.json"),
         JSON.stringify({
-          manifest_version: LATEST_MANIFEST_VERSION,
+          manifest_version: DEFAULT_MANIFEST_VERSION,
           name: "Test Extension",
           version: "1.0.0",
           description: "A test extension",
@@ -274,7 +274,7 @@ describe("DXT CLI", () => {
         fs.writeFileSync(
           join(tempExecDir, "manifest.json"),
           JSON.stringify({
-            manifest_version: LATEST_MANIFEST_VERSION,
+            manifest_version: DEFAULT_MANIFEST_VERSION,
             name: "Test Executable Extension",
             version: "1.0.0",
             description: "A test extension with executable files",

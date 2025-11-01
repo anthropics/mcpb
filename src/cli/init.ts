@@ -2,8 +2,8 @@ import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
-import { LATEST_MANIFEST_VERSION } from "../shared/constants.js";
-import type { McpbManifestLatest } from "../types.js";
+import { DEFAULT_MANIFEST_VERSION } from "../shared/constants.js";
+import type { McpbManifest } from "../types.js";
 
 interface PackageJson {
   name?: string;
@@ -878,14 +878,14 @@ export function buildManifest(
     resources: string;
     default_locale: string;
   },
-): McpbManifestLatest {
+): McpbManifest {
   const { name, displayName, version, description, authorName } = basicInfo;
   const { authorEmail, authorUrl } = authorInfo;
   const { serverType, entryPoint, mcp_config } = serverConfig;
   const { keywords, license, repository } = optionalFields;
 
   return {
-    manifest_version: LATEST_MANIFEST_VERSION,
+    manifest_version: DEFAULT_MANIFEST_VERSION,
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }
