@@ -9,8 +9,10 @@ import { McpbManifestSchema as CurrentLooseManifestSchema } from "../schemas_loo
 
 /**
  * Latest manifest version - the version that new manifests should use
+ * Currently set to 0.2 for Claude Desktop compatibility
+ * (0.3 schema is available but not yet supported by Claude Desktop)
  */
-export const LATEST_MANIFEST_VERSION = "0.3" as const;
+export const LATEST_MANIFEST_VERSION = "0.2" as const;
 
 /**
  * Map of manifest versions to their strict schemas

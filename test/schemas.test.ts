@@ -134,7 +134,7 @@ describe("McpbManifestSchema", () => {
       },
     };
 
-    const result = McpbManifestSchema.safeParse(fullManifest);
+    const result = v0_3.McpbManifestSchema.safeParse(fullManifest);
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -152,7 +152,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        manifest_version: "0.3",
+        manifest_version: "0.2",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -270,7 +270,7 @@ describe("McpbManifestSchema", () => {
           default_locale: "en-US",
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((issue) => issue.message);
@@ -286,7 +286,7 @@ describe("McpbManifestSchema", () => {
           default_locale: "en_us",
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
@@ -298,7 +298,7 @@ describe("McpbManifestSchema", () => {
           default_locale: "en-US",
         },
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
   });
@@ -322,7 +322,7 @@ describe("McpbManifestSchema", () => {
         ...base,
         icons: [{ src: "assets/icon.png", size: "16", theme: "light" }],
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(false);
     });
 
@@ -331,7 +331,7 @@ describe("McpbManifestSchema", () => {
         ...base,
         icons: [{ src: "assets/icon.png", size: "128x128" }],
       };
-      const result = McpbManifestSchema.safeParse(manifest);
+      const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
     });
   });
