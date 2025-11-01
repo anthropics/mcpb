@@ -1,6 +1,10 @@
 import * as z from "zod";
 
-export const MANIFEST_VERSION = "0.1";
+export const MANIFEST_VERSION = "1.0";
+
+const LOCALE_PLACEHOLDER_REGEX = /\$\{locale\}/i;
+const BCP47_REGEX = /^[A-Za-z0-9]{2,8}(?:-[A-Za-z0-9]{1,8})*$/;
+const ICON_SIZE_REGEX = /^\d+x\d+$/;
 
 export const McpServerConfigSchema = z.strictObject({
   command: z.string(),
@@ -76,13 +80,35 @@ export const McpbUserConfigValuesSchema = z.record(
   z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
 );
 
+export const McpbManifestLocalizationSchema = z.strictObject({
+  resources: z
+    .string()
+    .regex(
+      LOCALE_PLACEHOLDER_REGEX,
+      'resources must include a "${locale}" placeholder',
+    ),
+  default_locale: z
+    .string()
+    .regex(
+      BCP47_REGEX,
+      "default_locale must be a valid BCP 47 locale identifier",
+    ),
+});
+
+export const McpbManifestIconSchema = z.strictObject({
+  src: z.string(),
+  size: z
+    .string()
+    .regex(
+      ICON_SIZE_REGEX,
+      'size must be in the format "WIDTHxHEIGHT" (e.g., "16x16")',
+    ),
+  theme: z.string().min(1, "theme cannot be empty when provided").optional(),
+});
+
 export const McpbManifestSchema = z.strictObject({
   $schema: z.string().optional(),
-  dxt_version: z
-    .literal(MANIFEST_VERSION)
-    .optional()
-    .describe("@deprecated Use manifest_version instead"),
-  manifest_version: z.literal(MANIFEST_VERSION).optional(),
+  manifest_version: z.literal(MANIFEST_VERSION),
   name: z.string(),
   display_name: z.string().optional(),
   version: z.string(),
@@ -94,7 +120,9 @@ export const McpbManifestSchema = z.strictObject({
   documentation: z.string().url().optional(),
   support: z.string().url().optional(),
   icon: z.string().optional(),
+  icons: z.array(McpbManifestIconSchema).optional(),
   screenshots: z.array(z.string()).optional(),
+  localization: McpbManifestLocalizationSchema.optional(),
   server: McpbManifestServerSchema,
   tools: z.array(McpbManifestToolSchema).optional(),
   tools_generated: z.boolean().optional(),
@@ -102,6 +130,7 @@ export const McpbManifestSchema = z.strictObject({
   prompts_generated: z.boolean().optional(),
   keywords: z.array(z.string()).optional(),
   license: z.string().optional(),
+  privacy_policies: z.array(z.string().url()).optional(),
   compatibility: McpbManifestCompatibilitySchema.optional(),
   user_config: z
     .record(z.string(), McpbUserConfigurationOptionSchema)

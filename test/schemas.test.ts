@@ -1,7 +1,11 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { McpbManifestSchema, v0_2, v0_3 } from "../src/schemas/index.js";
+import {
+  LatestMcpbManifestSchema as McpbManifestSchema,
+  v0_2,
+  v0_3,
+} from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
@@ -54,7 +58,7 @@ describe("McpbManifestSchema", () => {
 
   it("should validate manifest with all optional fields", () => {
     const fullManifest = {
-      manifest_version: "0.3",
+      manifest_version: "1.0",
       name: "full-extension",
       display_name: "Full Featured Extension",
       version: "2.0.0",
@@ -152,7 +156,7 @@ describe("McpbManifestSchema", () => {
 
     serverTypes.forEach((type) => {
       const manifest = {
-        manifest_version: "0.3",
+        manifest_version: "1.0",
         name: "test",
         version: "1.0.0",
         description: "Test",
@@ -174,7 +178,7 @@ describe("McpbManifestSchema", () => {
 
   describe("_meta", () => {
     const base = {
-      manifest_version: "0.3",
+      manifest_version: "0.3" as const,
       name: "client-ext-test",
       version: "1.0.0",
       description: "Test manifest",
@@ -250,7 +254,7 @@ describe("McpbManifestSchema", () => {
 
   describe("localization", () => {
     const base = {
-      manifest_version: "0.3" as const,
+      manifest_version: "1.0" as const,
       name: "loc-ext",
       version: "1.0.0",
       description: "Test manifest",
@@ -305,7 +309,7 @@ describe("McpbManifestSchema", () => {
 
   describe("icons", () => {
     const base = {
-      manifest_version: "0.3" as const,
+      manifest_version: "1.0" as const,
       name: "icon-ext",
       version: "1.0.0",
       description: "Test manifest",

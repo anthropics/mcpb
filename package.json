@@ -1,7 +1,7 @@
 {
   "name": "@anthropic-ai/mcpb",
   "description": "Tools for building MCP Bundles",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -26,25 +26,6 @@
       "types": "./dist/cli.d.ts",
       "import": "./dist/cli.js",
       "require": "./dist/cli.js"
-    },
-    "./mcpb-manifest-v0.1.schema.json": "./dist/mcpb-manifest-v0.1.schema.json",
-    "./mcpb-manifest-v0.2.schema.json": "./dist/mcpb-manifest-v0.2.schema.json",
-    "./mcpb-manifest-v0.3.schema.json": "./dist/mcpb-manifest-v0.3.schema.json",
-    "./mcpb-manifest-latest.schema.json": "./dist/mcpb-manifest-latest.schema.json",
-    "./schemas": {
-      "types": "./dist/schemas/index.d.ts",
-      "import": "./dist/schemas/index.js",
-      "require": "./dist/schemas/index.js"
-    },
-    "./schemas/*": {
-      "types": "./dist/schemas/*.d.ts",
-      "import": "./dist/schemas/*.js",
-      "require": "./dist/schemas/*.js"
-    },
-    "./schemas-loose": {
-      "types": "./dist/schemas-loose.d.ts",
-      "import": "./dist/schemas-loose.js",
-      "require": "./dist/schemas-loose.js"
     }
   },
   "bin": "dist/cli/cli.js",
