@@ -13,7 +13,7 @@ export const LATEST_MANIFEST_VERSION = "0.3" as const;
 /**
  * Default manifest version for new packages
  */
-export const DEFAULT_MANIFEST_VERSION = "0.2" as const;
+export const DEFAULT_MANIFEST_VERSION = "0.3" as const;
 
 /**
  * Map of manifest versions to their strict schemas

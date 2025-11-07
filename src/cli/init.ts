@@ -5,7 +5,7 @@ import type { z } from "zod";
 
 // Import the schema for DEFAULT_MANIFEST_VERSION
 // TODO: Allow dynamic manifest version choice
-import type { McpbManifestSchema } from "../schemas/0.2.js";
+import type { McpbManifestSchema } from "../schemas/0.3.js";
 import { DEFAULT_MANIFEST_VERSION } from "../shared/constants.js";
 
 interface PackageJson {
@@ -877,10 +877,10 @@ export function buildManifest(
     license: string;
     repository?: { type: string; url: string };
   },
-  // localization?: {
-  //   resources: string;
-  //   default_locale: string;
-  // },
+  localization?: {
+    resources: string;
+    default_locale: string;
+  },
 ): z.infer<typeof McpbManifestSchema> {
   const { name, displayName, version, description, authorName } = basicInfo;
   const { authorEmail, authorUrl } = authorInfo;
@@ -909,7 +909,7 @@ export function buildManifest(
     ...(visualAssets.screenshots.length > 0
       ? { screenshots: visualAssets.screenshots }
       : {}),
-    // ...(localization ? { localization } : {}),
+    ...(localization ? { localization } : {}),
     server: {
       type: serverType,
       entry_point: entryPoint,
@@ -994,9 +994,9 @@ export async function initExtension(
     const visualAssets = nonInteractive
       ? { icon: "", icons: [], screenshots: [] }
       : await promptVisualAssets();
-    // const localization = nonInteractive
-    //   ? undefined
-    //   : await promptLocalization();
+    const localization = nonInteractive
+      ? undefined
+      : await promptLocalization();
     const serverConfig = nonInteractive
       ? getDefaultServerConfig(packageData)
       : await promptServerConfig(packageData);
@@ -1029,6 +1029,7 @@ export async function initExtension(
       compatibility,
       userConfig,
       optionalFields,
+      localization,
     );
 
     // Write manifest
