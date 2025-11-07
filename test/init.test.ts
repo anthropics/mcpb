@@ -388,6 +388,10 @@ describe("init functions", () => {
         keywords: ["test", "extension", "mcp"],
         license: "MIT",
         repository: { type: "git", url: "https://github.com/user/repo" },
+        localization: {
+          default_locale: "en-US",
+          resources: "resources/${locale}.json",
+        },
       });
     });
   });
