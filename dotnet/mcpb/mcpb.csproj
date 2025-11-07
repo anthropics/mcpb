@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Mcpb</RootNamespace>
+        <AssemblyName>mcpb</AssemblyName>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>mcpb</ToolCommandName>
+        <PackageId>Mcpb.Cli</PackageId>
+        <Version>0.3.0</Version>
+        <Authors>Alexander Sklar</Authors>
+        <Description>CLI tool for building MCP Bundles (.mcpb)</Description>
+        <PackageTags>MCP;MCPB;CLI;bundles;DXT;ModelContextProtocol</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/asklar/mcpb</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/asklar/mcpb</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    </PropertyGroup>
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>mcpb.Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
+        <PackageReference Include="ModelContextProtocol" Version="0.4.0-preview.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <Using Include="System.Text.Json" />
+        <Using Include="System.Text.Json.Serialization" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Json\JsonContext.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon></DependentUpon>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+
+</Project>
