@@ -315,7 +315,8 @@ describe("init functions", () => {
           license: "MIT",
           repository: { type: "git", url: "https://github.com/user/repo" },
         },
-        { // localization
+        {
+          // localization
           resources: "resources/${locale}.json",
           default_locale: "en-US",
         },
