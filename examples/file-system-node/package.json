@@ -5,6 +5,6 @@
   "private": true,
   "main": "server/index.js",
   "dependencies": {
-    "@modelcontextprotocol/server-filesystem": "2025.1.14"
+    "@modelcontextprotocol/server-filesystem": "2025.7.1"
   }
 }
