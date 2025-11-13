@@ -1,0 +1,23 @@
+{
+  "manifest_version": "0.4",
+  "name": "hello-world-uv",
+  "display_name": "Hello World (UV Runtime)",
+  "version": "1.0.0",
+  "description": "Simple MCP server using UV runtime",
+  "author": {
+    "name": "Anthropic"
+  },
+  "icon": "icon.png",
+  "server": {
+    "type": "uv",
+    "entry_point": "src/server.py"
+  },
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  },
+  "keywords": ["example", "hello-world", "uv"],
+  "license": "MIT"
+}
