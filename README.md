@@ -109,12 +109,22 @@ bundle.mcpb (ZIP file)
 
 ### Bundling Dependencies
 
-**Python Bundles:**
+**UV Runtime (Recommended for Python - v0.4+):**
 
+- Use `server.type = "uv"` in manifest
+- Include `pyproject.toml` with dependencies (no bundled packages needed)
+- Host application manages Python and dependencies automatically
+- Works cross-platform without user Python installation
+- See `examples/hello-world-uv`
+
+**Python Bundles (Traditional):**
+
+- Use `server.type = "python"` in manifest
 - Bundle all required packages in `server/lib/` directory
 - OR bundle a complete virtual environment in `server/venv/`
 - Use tools like `pip-tools`, `poetry`, or `pipenv` to create reproducible bundles
 - Set `PYTHONPATH` to include bundled packages via `mcp_config.env`
+- **Limitation**: Cannot portably bundle compiled dependencies
 
 **Node.js Bundles:**
 
