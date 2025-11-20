@@ -109,6 +109,8 @@ bundle.mcpb (ZIP file)
 
 ### Bundling Dependencies
 
+#### Traditional Bundling (Recommended for Maximum Compatibility)
+
 **Python Bundles:**
 
 - Bundle all required packages in `server/lib/` directory
@@ -128,6 +130,87 @@ bundle.mcpb (ZIP file)
 - Static linking preferred for maximum compatibility
 - Include all required shared libraries if dynamic linking used
 - Test on clean systems without development tools
+
+#### Alternative: PyPI-Based Deployment for Python (Advanced)
+
+For Python packages published to PyPI, you can use `uvx` for dynamic dependency resolution instead of bundling dependencies. This approach trades bundle size for an external dependency requirement.
+
+**When to use PyPI deployment:**
+- You're already publishing your package to PyPI
+- You want smaller bundle sizes (< 1 MB vs 50+ MB)
+- You need the ability to push updates without resubmitting bundles
+- Your users can install additional tools
+
+**Requirements:**
+- Your package must be published to PyPI
+- Users must have `uv` installed globally (via `pip install uv` or `brew install uv`)
+- Internet connection required at first launch (for dependency fetching)
+
+**Manifest configuration:**
+
+```json
+{
+  "server": {
+    "type": "python",
+    "entry_point": "src/your_package/main.py",
+    "mcp_config": {
+      "command": "uvx",
+      "args": [
+        "--native-tls",
+        "your-package-name@latest"
+      ],
+      "env": {
+        "API_KEY": "${user_config.api_key}"
+      }
+    }
+  }
+}
+```
+
+**PyPI package requirements (`pyproject.toml`):**
+
+```toml
+[project]
+name = "your-package-name"  # Must match uvx args
+version = "1.0.0"
+dependencies = [
+  "mcp[cli]>=1.11.0",
+  # Your other dependencies
+]
+
+[project.scripts]
+your-package-name = "your_package.main:main"
+```
+
+**Bundle structure:**
+
+```
+bundle.mcpb (< 1 MB)
+├── manifest.json
+├── pyproject.toml         # PyPI package definition
+├── uv.lock                # Lockfile for reproducibility
+└── src/
+    └── your_package/
+        └── main.py        # Source code (for reference/auditing)
+```
+
+**How it works:**
+1. Claude Desktop executes: `uvx --native-tls your-package-name@latest`
+2. `uvx` (like `npx` for Python) fetches the package from PyPI
+3. Dependencies are installed to `~/.cache/uv/` (cached for future runs)
+4. The package entry point is executed
+
+**Trade-offs:**
+
+| Aspect | Traditional Bundling | PyPI + uvx |
+|--------|---------------------|------------|
+| Bundle size | 50-100 MB | < 1 MB |
+| User requirements | None (works offline) | `uv` must be installed |
+| Internet required | No | Yes (first run) |
+| Updates | Requires new bundle | `@latest` auto-updates |
+| Compatibility | Maximum | Requires modern Python |
+
+**Example:** The Braze MCP Server uses this pattern. See their [GitHub repository](https://github.com/braze-inc/braze_mcp_server) for a complete reference implementation.
 
 ### Using Variable Substitution for Portability
 
