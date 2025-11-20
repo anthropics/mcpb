@@ -109,6 +109,8 @@ bundle.mcpb (ZIP file)
 
 ### Bundling Dependencies
 
+#### Traditional Bundling (Recommended for Maximum Compatibility)
+
 **Python Bundles:**
 
 - Bundle all required packages in `server/lib/` directory
@@ -128,6 +130,170 @@ bundle.mcpb (ZIP file)
 - Static linking preferred for maximum compatibility
 - Include all required shared libraries if dynamic linking used
 - Test on clean systems without development tools
+
+#### Alternative: PyPI-Based Deployment for Python (Advanced)
+
+For Python packages published to PyPI, you can use `uvx` to dynamically fetch dependencies instead of bundling them.
+
+**Requirements:**
+- Package published to PyPI with `[project.scripts]` entry point
+- Users must have `uv` installed (`pip install uv` or `brew install uv`)
+- Internet connection at first launch
+
+**Manifest configuration:**
+
+```json
+{
+  "server": {
+    "type": "python",
+    "entry_point": "src/your_package/main.py",
+    "mcp_config": {
+      "command": "uvx",
+      "args": ["--native-tls", "your-package-name@latest"],
+      "env": {
+        "API_KEY": "${user_config.api_key}"
+      }
+    }
+  }
+}
+```
+
+**Trade-offs:**
+
+| Aspect | Traditional Bundling | PyPI + uvx |
+|--------|---------------------|------------|
+| Bundle size | 50-100 MB | < 1 MB |
+| User requirements | None | `uv` must be installed |
+| Updates | Requires new bundle | `@latest` auto-updates |
+
+See `examples/pypi-python/` for a complete reference implementation.
+
+### Using Variable Substitution for Portability
+
+The manifest supports variable substitution for cross-platform compatibility:
+
+**Available variables:**
+- `${__dirname}` - Extension's installation directory
+- `${HOME}` - User's home directory  
+- `${DESKTOP}` - User's desktop folder
+- `${DOCUMENTS}` - User's documents folder
+- `${DOWNLOADS}` - User's downloads folder
+- `${pathSeparator}` or `${/}` - Platform-specific separator
+- `${user_config.KEY}` - User-configured values
+
+**Common portability mistakes:**
+```javascript
+// ❌ WRONG - Hardcoded absolute paths
+spawn('/usr/local/bin/node', ['script.js']);
+spawn('C:\\Program Files\\tool\\bin.exe');
+
+// ✅ CORRECT - Use runtime's executables
+spawn(process.execPath, ['script.js']);
+
+// ❌ WRONG - Assuming global packages
+spawn('npx', ['some-command']);
+
+// ✅ CORRECT - Bundle and reference locally
+spawn('${__dirname}/node_modules/.bin/tool');
+```
+
+**Testing portability:**
+1. Fresh VM without development tools
+2. Different OS than development machine
+3. Verify variable substitution works
+4. Check all paths resolve correctly
+
+## Testing Your MCPB
+
+Before distributing your MCPB, follow this four-phase testing approach:
+
+### Phase 1: Development Testing
+- Unit tests for your server code
+- Manual testing on your development machine
+- Tool functionality verification
+- Error handling validation
+
+### Phase 2: Clean Environment Testing ⚠️ Critical
+Test on a fresh system without development tools to catch portability issues:
+
+**Using Docker (recommended):**
+```bash
+# Create clean test environment
+docker run -it node:20 bash
+
+# Copy ONLY your MCPB bundle (no global packages)
+# Test installation exactly as users would
+```
+
+**What this catches:**
+- Missing bundled dependencies
+- Hardcoded paths
+- Global package assumptions
+- Platform-specific code issues
+
+**Common issues found:**
+- ❌ `spawn('/usr/local/bin/node')` - Hardcoded path
+- ✅ `spawn(process.execPath)` - Runtime's own Node.js
+- ❌ Assuming `npx` is globally installed
+- ✅ Bundling all required executables
+
+### Phase 3: Cross-Platform Testing
+- Test on different OS than you developed on
+- Verify paths work correctly on both macOS and Windows
+- Use forward slashes in paths (automatically converted)
+- Test platform-specific features with fallbacks
+
+### Phase 4: Integration Testing
+- Install in actual host application (Claude Desktop, etc.)
+- Test complete end-to-end workflows
+- Verify error messages are helpful
+- Check performance and responsiveness
+
+## Error Message Best Practices
+
+Well-crafted error messages dramatically reduce support burden. Include three components:
+
+### 1. What went wrong (specific diagnosis)
+```javascript
+// ❌ Generic
+throw new Error("An error occurred");
+
+// ✅ Specific  
+throw new Error("Failed to read config file at path/to/config.json");
+```
+
+### 2. Why it happened (context)
+```javascript
+// ❌ Vague
+return { isError: true, content: [{ type: "text", text: "Authentication failed" }] };
+
+// ✅ Clear
+return { 
+  isError: true, 
+  content: [{ 
+    type: "text", 
+    text: "API key is invalid or has expired. Generate a new key at Settings → API" 
+  }] 
+};
+```
+
+### 3. How to fix it (actionable steps)
+```javascript
+// ❌ Unhelpful
+throw new Error("Check your settings");
+
+// ✅ Actionable
+throw new Error("Missing API key. Add it in Settings → Extensions → [Your Extension] → API Key field");
+```
+
+### Error Categories
+Return structured errors via MCP protocol with clear `isError` flags:
+
+- **Configuration errors** - Missing or invalid settings
+- **Authentication errors** - Invalid credentials with regeneration instructions
+- **Resource errors** - File not found, network unavailable with paths/URLs
+- **Permission errors** - Access denied with required permission details
+- **Validation errors** - Invalid input with expected format
 
 # Contributing
 

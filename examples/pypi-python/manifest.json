@@ -1,0 +1,66 @@
+{
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.3",
+  "name": "example-pypi-mcp",
+  "display_name": "PyPI Example MCP Server",
+  "version": "1.0.0",
+  "description": "Example MCP server demonstrating PyPI-based deployment with uvx",
+  "long_description": "This example demonstrates how to create an MCP Bundle that uses PyPI and uvx for dynamic dependency resolution instead of bundling dependencies. This approach results in smaller bundle sizes (< 1 MB) and enables automatic updates, but requires users to have 'uv' installed globally.",
+  "author": {
+    "name": "Anthropic",
+    "email": "support@anthropic.com",
+    "url": "https://github.com/anthropics"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "src/example_pypi_mcp/main.py",
+    "mcp_config": {
+      "command": "uvx",
+      "args": [
+        "--native-tls",
+        "example-pypi-mcp@latest"
+      ],
+      "env": {
+        "API_KEY": "${user_config.api_key}",
+        "DEBUG": "${user_config.debug_mode}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "echo",
+      "description": "Echo back a message (demonstrates basic tool functionality)"
+    },
+    {
+      "name": "get_timestamp",
+      "description": "Get current timestamp in ISO format"
+    }
+  ],
+  "keywords": ["example", "pypi", "uvx", "python", "deployment"],
+  "license": "MIT",
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "API Key",
+      "description": "Example API key for demonstration purposes",
+      "sensitive": true,
+      "required": false,
+      "default": "demo-key-12345"
+    },
+    "debug_mode": {
+      "type": "boolean",
+      "title": "Debug Mode",
+      "description": "Enable debug logging output",
+      "default": false,
+      "required": false
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "python": ">=3.10.0 <4"
+    }
+  },
+  "privacy_policies": []
+}

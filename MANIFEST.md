@@ -419,7 +419,7 @@ The `server` object defines how to run the MCP server:
 
 The `mcp_config` object in the server configuration defines how the implementing app should execute the MCP server. This replaces the manual JSON configuration users currently need to write.
 
-**Python Example:**
+**Python Example (Traditional Bundling):**
 
 ```json
 "mcp_config": {
@@ -430,6 +430,22 @@ The `mcp_config` object in the server configuration defines how the implementing
   }
 }
 ```
+
+**Python Example (PyPI + uvx):**
+
+For packages published to PyPI, use `uvx` to fetch dependencies dynamically:
+
+```json
+"mcp_config": {
+  "command": "uvx",
+  "args": ["--native-tls", "your-package-name@latest"],
+  "env": {
+    "API_KEY": "${user_config.api_key}"
+  }
+}
+```
+
+Requires: Package on PyPI with `[project.scripts]` entry point, users have `uv` installed.
 
 **Node.js Example:**
 
