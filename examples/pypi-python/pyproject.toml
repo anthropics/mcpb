@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "example-pypi-mcp"
+version = "1.0.0"
+description = "Example MCP server demonstrating PyPI-based deployment"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Anthropic", email = "support@anthropic.com"}
+]
+license = {text = "MIT"}
+keywords = ["mcp", "model-context-protocol", "example", "pypi"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Private :: Do Not Upload"  # Prevents accidental upload to PyPI
+]
+
+dependencies = [
+    "mcp[cli]>=1.11.0",
+]
+
+[project.scripts]
+example-pypi-mcp = "example_pypi_mcp.main:main"
+
+[tool.setuptools]
+packages = ["src/example_pypi_mcp"]
+
+[tool.setuptools.package-dir]
+"example_pypi_mcp" = "src/example_pypi_mcp"

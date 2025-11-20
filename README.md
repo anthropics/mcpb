@@ -109,6 +109,8 @@ bundle.mcpb (ZIP file)
 
 ### Bundling Dependencies
 
+#### Traditional Bundling (Recommended for Maximum Compatibility)
+
 **Python Bundles:**
 
 - Bundle all required packages in `server/lib/` directory
@@ -128,6 +130,43 @@ bundle.mcpb (ZIP file)
 - Static linking preferred for maximum compatibility
 - Include all required shared libraries if dynamic linking used
 - Test on clean systems without development tools
+
+#### Alternative: PyPI-Based Deployment for Python (Advanced)
+
+For Python packages published to PyPI, you can use `uvx` to dynamically fetch dependencies instead of bundling them.
+
+**Requirements:**
+- Package published to PyPI with `[project.scripts]` entry point
+- Users must have `uv` installed (`pip install uv` or `brew install uv`)
+- Internet connection at first launch
+
+**Manifest configuration:**
+
+```json
+{
+  "server": {
+    "type": "python",
+    "entry_point": "src/your_package/main.py",
+    "mcp_config": {
+      "command": "uvx",
+      "args": ["--native-tls", "your-package-name@latest"],
+      "env": {
+        "API_KEY": "${user_config.api_key}"
+      }
+    }
+  }
+}
+```
+
+**Trade-offs:**
+
+| Aspect | Traditional Bundling | PyPI + uvx |
+|--------|---------------------|------------|
+| Bundle size | 50-100 MB | < 1 MB |
+| User requirements | None | `uv` must be installed |
+| Updates | Requires new bundle | `@latest` auto-updates |
+
+See `examples/pypi-python/` for a complete reference implementation.
 
 ### Using Variable Substitution for Portability
 
