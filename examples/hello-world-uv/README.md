@@ -4,7 +4,7 @@ This example demonstrates a minimal MCP server using **UV runtime**.
 
 ## What is UV Runtime?
 
-UV runtime lets Claude Desktop automatically manage Python and dependencies for your extension:
+UV runtime lets MCP clients manage Python and dependencies for your extension. The MCP client is responsible for the following:
 - Downloads the correct Python version for the user's platform
 - Creates an isolated virtual environment
 - Installs dependencies from `pyproject.toml`
