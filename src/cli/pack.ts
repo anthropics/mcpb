@@ -22,6 +22,7 @@ interface PackOptions {
   extensionPath: string;
   outputPath?: string;
   silent?: boolean;
+  manifestVersion?: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -50,9 +51,21 @@ export async function packExtension({
   extensionPath,
   outputPath,
   silent,
+  manifestVersion: targetManifestVersion,
 }: PackOptions): Promise<boolean> {
   const resolvedPath = resolve(extensionPath);
   const logger = getLogger({ silent });
+
+  // Validate target manifest version if provided
+  if (
+    targetManifestVersion &&
+    !(targetManifestVersion in MANIFEST_SCHEMAS)
+  ) {
+    logger.error(
+      `ERROR: Invalid manifest version "${targetManifestVersion}". Supported versions: ${Object.keys(MANIFEST_SCHEMAS).join(", ")}`,
+    );
+    return false;
+  }
 
   // Check if directory exists
   if (!existsSync(resolvedPath) || !statSync(resolvedPath).isDirectory()) {
@@ -90,10 +103,11 @@ export async function packExtension({
 
   // Read and parse manifest
   let manifest;
+  let finalManifestContent: string;
   try {
     const manifestContent = readFileSync(manifestPath, "utf-8");
     const manifestData = JSON.parse(manifestContent);
-    const manifestVersion = getManifestVersionFromRawData(manifestData);
+    let manifestVersion = getManifestVersionFromRawData(manifestData);
     if (!manifestVersion) {
       logger.error(
         `ERROR: Manifest version mismatch. Expected "${Object.keys(MANIFEST_SCHEMAS).join(" or ")}", found "${manifestVersion}"`,
@@ -104,7 +118,20 @@ export async function packExtension({
       return false;
     }
 
+    // Override manifest version if target version is specified
+    if (targetManifestVersion && targetManifestVersion !== manifestVersion) {
+      logger.log(
+        `Overriding manifest version from ${manifestVersion} to ${targetManifestVersion}`,
+      );
+      manifestData.manifest_version = targetManifestVersion;
+      // Remove legacy dxt_version if present to avoid confusion
+      delete manifestData.dxt_version;
+      manifestVersion =
+        targetManifestVersion as keyof typeof MANIFEST_SCHEMAS;
+    }
+
     manifest = MANIFEST_SCHEMAS[manifestVersion].parse(manifestData);
+    finalManifestContent = JSON.stringify(manifestData, null, 2);
   } catch (error) {
     logger.error("ERROR: Failed to parse manifest.json");
     if (error instanceof Error) {
@@ -134,6 +161,14 @@ export async function packExtension({
       {},
       mcpbIgnorePatterns,
     );
+
+    // Override manifest.json with potentially modified content (version override)
+    if (files[manifestPath]) {
+      files[manifestPath] = {
+        ...files[manifestPath],
+        data: Buffer.from(finalManifestContent, "utf-8"),
+      };
+    }
 
     // Print package header
     logger.log(`\n📦  ${manifest.name}@${manifest.version}`);

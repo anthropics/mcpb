@@ -88,22 +88,33 @@ program
 program
   .command("pack [directory] [output]")
   .description("Pack a directory into an MCPB extension")
-  .action((directory: string = process.cwd(), output?: string) => {
-    void (async () => {
-      try {
-        const success = await packExtension({
-          extensionPath: directory,
-          outputPath: output,
-        });
-        process.exit(success ? 0 : 1);
-      } catch (error) {
-        console.error(
-          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-        process.exit(1);
-      }
-    })();
-  });
+  .option(
+    "--manifest-version <version>",
+    "Override manifest version in the output bundle",
+  )
+  .action(
+    (
+      directory: string = process.cwd(),
+      output?: string,
+      options?: { manifestVersion?: string },
+    ) => {
+      void (async () => {
+        try {
+          const success = await packExtension({
+            extensionPath: directory,
+            outputPath: output,
+            manifestVersion: options?.manifestVersion,
+          });
+          process.exit(success ? 0 : 1);
+        } catch (error) {
+          console.error(
+            `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+          process.exit(1);
+        }
+      })();
+    },
+  );
 
 // Unpack command
 program
