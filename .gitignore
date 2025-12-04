@@ -107,4 +107,25 @@ self-signed-key.pem
 invalid-json.json
 **/server/lib/**
 
+# .NET build artifacts
+**/[Bb]in/
+**/[Oo]bj/
+
+# StyleCop
+StyleCopReport.xml
+*.pdb
+*.tmp
+.vs/**
+
+# Windows Store app package directories and files
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.appxbundle
+*.appxupload
+
+**/server/lib/**
+
 .yarn/install-state.gz

@@ -46,7 +46,9 @@ AI tools like Claude Code are particularly good at creating MCP bundles when inf
 >    - https://github.com/anthropics/mcpb/tree/main/examples - Reference implementations including a "Hello World" example
 > 2. **Create a proper bundle structure:**
 >    - Generate a valid manifest.json following the MANIFEST.md spec
->    - Implement an MCP server using @modelcontextprotocol/sdk with proper tool definitions
+>    - Implement an MCP server with proper tool definitions. Use the right library for the target language:
+        - TypeScript: @modelcontextprotocol/sdk using a NodeJS console app.
+        - C#: the ModelContextProtocol pre-release NuGet package, as a console stdio exe. Only write AoT-friendly code.
 >    - Include proper error handling, security measures, and timeout management
 > 3. **Follow best development practices:**
 >    - Implement proper MCP protocol communication via stdio transport
@@ -135,9 +137,10 @@ bundle.mcpb (ZIP file)
 
 **Binary Bundles:**
 
-- Static linking preferred for maximum compatibility
+- Static linking preferred for maximum compatibility.
 - Include all required shared libraries if dynamic linking used
-- Test on clean systems without development tools
+- Test on clean systems without development tools.
+- For C#, publish as AoT and include all necessary runtime assets like DLLs.
 
 # Contributing
 
@@ -170,3 +173,33 @@ yarn test
 # License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## .NET CLI Port (Experimental)
+
+An experimental .NET 8 global tool implementation of the `mcpb` CLI is included under `dotnet/` providing near feature parity with the TypeScript version:
+
+- Interactive `init` (mirrors all TS prompts; `--yes` for non-interactive defaults). Default server type in .NET flow is `binary` instead of `node`.
+- `pack` reproduces archive listing, size formatting, grouping of deep paths, SHA1 shasum, ignored file counts via `.mcpbignore`.
+- `validate`, `sign`, `verify`, `info`, `unsign` commands align output wording with the TS CLI (chain trust validation TBD; current .NET verify checks signature cryptographic validity only).
+- Signing uses Windows/.NET `SignedCms` (detached PKCS#7) rather than forge; signature block format is identical (`MCPB_SIG_V1` / `MCPB_SIG_END`).
+
+Install (once published):
+```pwsh
+dotnet tool install --global mcpb
+```
+Local build for testing:
+```pwsh
+cd dotnet/mcpb
+dotnet pack -c Release
+dotnet tool install --global --add-source . mcpb
+```
+Then run:
+```pwsh
+mcpb init
+mcpb pack
+```
+
+Known gaps vs TS implementation:
+- Certificate chain trust / intermediate certificate handling not yet implemented.
+- `clean` command not yet ported.
+- Integration tests for full CLI flows are pending.

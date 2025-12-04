@@ -1,0 +1,290 @@
+name: Test .NET Tool
+
+on:
+  pull_request:
+    branches:
+      - main
+      - user/asklar/dotnet
+    paths:
+      - 'dotnet/**'
+      - 'examples/**'
+      - '.github/workflows/test-dotnet.yml'
+  push:
+    branches:
+      - main
+      - user/asklar/dotnet
+    paths:
+      - 'dotnet/**'
+      - 'examples/**'
+      - '.github/workflows/test-dotnet.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test-dotnet:
+    name: Test .NET Tool
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@3e891b0cb619bf60e2c25674b222b8940e2c1c25 # v4.1.0
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Setup Node.js (for examples)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20.x'
+      
+      # Step a) Run .NET tests
+      - name: Run .NET Tests
+        shell: bash
+        run: |
+          cd dotnet
+          dotnet restore
+          dotnet build -c Release
+          dotnet test -c Release --no-build --verbosity normal
+      
+      # Step b) Validate basic CLI functionality
+      - name: Test CLI - Help Command
+        shell: bash
+        run: |
+          cd dotnet
+          dotnet run --project mcpb/mcpb.csproj -- --help
+      
+      - name: Test CLI - Version Command
+        shell: bash
+        run: |
+          cd dotnet
+          dotnet run --project mcpb/mcpb.csproj -- --version
+      
+      # Step c) Test with examples - hello-world-node
+      - name: Setup hello-world-node Example
+        shell: bash
+        run: |
+          cd examples/hello-world-node
+          npm install
+      
+      - name: Test CLI - Validate hello-world-node Manifest
+        shell: bash
+        run: |
+          cd dotnet
+          dotnet run --project mcpb/mcpb.csproj -- validate ../examples/hello-world-node/manifest.json
+      
+      - name: Test CLI - Pack hello-world-node (with update and output)
+        shell: bash
+        run: |
+          cd examples/hello-world-node
+          echo "=== Original Manifest ==="
+          cat manifest.json
+          echo ""
+          echo "=== Running mcpb pack --update ==="
+          dotnet run --project ../../dotnet/mcpb/mcpb.csproj -- pack . hello-world-test.mcpb --update
+          echo ""
+          echo "=== Updated Manifest with _meta ==="
+          cat manifest.json
+          echo ""
+          echo "=== Verifying _meta field was added ==="
+          if grep -q '"_meta"' manifest.json; then
+            echo "✓ _meta field found in manifest"
+          else
+            echo "✗ _meta field NOT found in manifest"
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying static_responses ==="
+          if grep -q '"static_responses"' manifest.json; then
+            echo "✓ static_responses found in manifest"
+          else
+            echo "✗ static_responses NOT found in manifest"
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying inputSchema is present in tools/list ==="
+          if grep -q '"inputSchema"' manifest.json; then
+            echo "✓ inputSchema found in manifest"
+            echo ""
+            echo "=== Extracting tool schema from _meta ==="
+            cat manifest.json | grep -A 50 '"tools/list"' | head -50
+          else
+            echo "✗ inputSchema NOT found in manifest"
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying initialize response with protocolVersion ==="
+          if grep -q '"protocolVersion"' manifest.json; then
+            echo "✓ protocolVersion found"
+            echo ""
+            echo "=== Initialize response ==="
+            cat manifest.json | grep -A 20 '"initialize"' | head -20
+          else
+            echo "✗ protocolVersion NOT found"
+            exit 1
+          fi
+      
+      # Test with file-system-node example
+      - name: Setup file-system-node Example
+        shell: bash
+        run: |
+          cd examples/file-system-node
+          npm install
+      
+      - name: Test CLI - Validate file-system-node Manifest
+        shell: bash
+        run: |
+          cd dotnet
+          dotnet run --project mcpb/mcpb.csproj -- validate ../examples/file-system-node/manifest.json
+      
+      - name: Test CLI - Pack file-system-node (no update)
+        shell: bash
+        run: |
+          cd examples/file-system-node
+          echo "=== Testing pack without --update ==="
+          dotnet run --project ../../dotnet/mcpb/mcpb.csproj -- pack . file-system-test.mcpb --force || true
+          echo ""
+          echo "=== Manifest (should be unchanged) ==="
+          cat manifest.json
+      
+      - name: Test CLI - Update file-system-node with schema discovery
+        shell: bash
+        run: |
+          cd examples/file-system-node
+          echo "=== File-system-node example requires allowed_directories argument ==="
+          echo "=== Temporarily modifying manifest to include test directory ==="
+          cp manifest.json manifest.json.backup
+          TEST_DIR="$(cd .. && pwd)"
+          echo "Using test directory: $TEST_DIR"
+          jq --arg dir "$TEST_DIR" '.server.mcp_config.args = ["${__dirname}/server/index.js", $dir]' manifest.json > manifest.json.tmp && mv manifest.json.tmp manifest.json
+          echo ""
+          echo "=== Running mcpb pack --update to discover schemas ==="
+          dotnet run --project ../../dotnet/mcpb/mcpb.csproj -- pack . /tmp/fs-test.mcpb --update || echo "Pack may have warnings"
+          echo ""
+          echo "=== FULL UPDATED MANIFEST ==="
+          cat manifest.json | jq .
+          echo ""
+          echo "=== Verifying _meta field exists ==="
+          if [ "$(cat manifest.json | jq -r '._meta | type')" = "object" ]; then
+            echo "✓ _meta field is present and is an object"
+          else
+            echo "✗ _meta field NOT found or not an object"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying com.microsoft.windows in _meta ==="
+          if [ "$(cat manifest.json | jq -r '._meta["com.microsoft.windows"] | type')" = "object" ]; then
+            echo "✓ com.microsoft.windows field is present"
+          else
+            echo "✗ com.microsoft.windows field NOT found"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying static_responses in com.microsoft.windows ==="
+          if [ "$(cat manifest.json | jq -r '._meta["com.microsoft.windows"].static_responses | type')" = "object" ]; then
+            echo "✓ static_responses field is present"
+          else
+            echo "✗ static_responses field NOT found"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying protocolVersion in initialize response ==="
+          PROTOCOL_VERSION=$(cat manifest.json | jq -r '._meta["com.microsoft.windows"].static_responses.initialize.protocolVersion')
+          if [ "$PROTOCOL_VERSION" != "null" ] && [ -n "$PROTOCOL_VERSION" ]; then
+            echo "✓ protocolVersion found: $PROTOCOL_VERSION"
+          else
+            echo "✗ protocolVersion NOT found"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying tools/list has tools array ==="
+          TOOLS_COUNT=$(cat manifest.json | jq -r '._meta["com.microsoft.windows"].static_responses["tools/list"].tools | length')
+          if [ "$TOOLS_COUNT" -gt 0 ]; then
+            echo "✓ tools/list contains $TOOLS_COUNT tools"
+          else
+            echo "✗ tools/list does not contain any tools"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying inputSchema for read_file tool ==="
+          READ_FILE_SCHEMA=$(cat manifest.json | jq '._meta["com.microsoft.windows"].static_responses["tools/list"].tools[] | select(.name == "read_file") | .inputSchema')
+          if [ "$READ_FILE_SCHEMA" != "null" ] && [ -n "$READ_FILE_SCHEMA" ]; then
+            echo "✓ inputSchema found for read_file"
+            echo "$READ_FILE_SCHEMA" | jq .
+          else
+            echo "✗ inputSchema NOT found for read_file"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying inputSchema has required 'path' property for read_file ==="
+          HAS_PATH=$(cat manifest.json | jq -r '._meta["com.microsoft.windows"].static_responses["tools/list"].tools[] | select(.name == "read_file") | .inputSchema.properties.path | type')
+          if [ "$HAS_PATH" = "object" ]; then
+            echo "✓ read_file inputSchema has 'path' property"
+          else
+            echo "✗ read_file inputSchema missing 'path' property"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Verifying inputSchema for write_file tool ==="
+          WRITE_FILE_SCHEMA=$(cat manifest.json | jq '._meta["com.microsoft.windows"].static_responses["tools/list"].tools[] | select(.name == "write_file") | .inputSchema')
+          if [ "$WRITE_FILE_SCHEMA" != "null" ] && [ -n "$WRITE_FILE_SCHEMA" ]; then
+            echo "✓ inputSchema found for write_file"
+            echo "$WRITE_FILE_SCHEMA" | jq .
+          else
+            echo "✗ inputSchema NOT found for write_file"
+            mv manifest.json.backup manifest.json
+            exit 1
+          fi
+          echo ""
+          echo "=== Restoring original manifest ==="
+          mv manifest.json.backup manifest.json
+      
+      # Test init command
+      - name: Test CLI - Init Command
+        shell: bash
+        run: |
+          cd dotnet
+          mkdir -p ../test-init
+          cd ../test-init
+          echo "=== Testing mcpb init ==="
+          dotnet run --project ../dotnet/mcpb/mcpb.csproj -- init --yes --server-type node --entry-point server/index.js
+          echo ""
+          echo "=== Generated Manifest ==="
+          cat manifest.json
+          echo ""
+          echo "=== Verifying manifest was created ==="
+          if [ -f manifest.json ]; then
+            echo "✓ manifest.json created"
+          else
+            echo "✗ manifest.json NOT created"
+            exit 1
+          fi
+      
+      # Clean up test artifacts
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: |
+          cd examples/hello-world-node
+          git checkout manifest.json || true
+          rm -f hello-world-test.mcpb || true
+          cd ../file-system-node
+          git checkout manifest.json || true
+          rm -f file-system-test.mcpb file-system-schema-test.mcpb || true
+          cd ../../
+          rm -rf test-init || true
