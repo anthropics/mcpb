@@ -1,0 +1,15 @@
+{
+  "name": "edge-applescript",
+  "version": "0.1.0",
+  "description": "Control Microsoft Edge browser tabs, windows, and navigation",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.7.0"
+  },
+  "author": "Anthropic",
+  "license": "MIT"
+}
