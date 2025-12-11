@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/mcpb/">
+    <Project Path="mcpb\mcpb.csproj" Type="C#" />
+    <Project Path="mcpb.Tests\mcpb.Tests.csproj" Type="C#" />
+  </Folder>
+</Solution>
