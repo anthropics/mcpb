@@ -1,12 +1,12 @@
 import { confirm, input, select } from "@inquirer/prompts";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join, resolve } from "path";
-import type { z } from "zod";
 
-// Import the schema for DEFAULT_MANIFEST_VERSION
-// TODO: Allow dynamic manifest version choice
-import type { McpbManifestSchema } from "../schemas/0.2.js";
-import { DEFAULT_MANIFEST_VERSION } from "../shared/constants.js";
+import {
+  DEFAULT_MANIFEST_VERSION,
+  MANIFEST_SCHEMAS,
+} from "../shared/constants.js";
+import type { McpbManifestAny } from "../types.js";
 
 interface PackageJson {
   name?: string;
@@ -877,18 +877,19 @@ export function buildManifest(
     license: string;
     repository?: { type: string; url: string };
   },
+  manifestVersion: keyof typeof MANIFEST_SCHEMAS = DEFAULT_MANIFEST_VERSION,
   // localization?: {
   //   resources: string;
   //   default_locale: string;
   // },
-): z.infer<typeof McpbManifestSchema> {
+): McpbManifestAny {
   const { name, displayName, version, description, authorName } = basicInfo;
   const { authorEmail, authorUrl } = authorInfo;
   const { serverType, entryPoint, mcp_config } = serverConfig;
   const { keywords, license, repository } = optionalFields;
 
   return {
-    manifest_version: DEFAULT_MANIFEST_VERSION,
+    manifest_version: manifestVersion,
     name,
     ...(displayName && displayName !== name
       ? { display_name: displayName }
@@ -945,9 +946,20 @@ export function printNextSteps() {
 export async function initExtension(
   targetPath: string = process.cwd(),
   nonInteractive = false,
+  manifestVersion?: string,
 ): Promise<boolean> {
   const resolvedPath = resolve(targetPath);
   const manifestPath = join(resolvedPath, "manifest.json");
+
+  // Validate manifest version if provided
+  if (manifestVersion && !(manifestVersion in MANIFEST_SCHEMAS)) {
+    console.error(
+      `ERROR: Invalid manifest version "${manifestVersion}". Supported versions: ${Object.keys(MANIFEST_SCHEMAS).join(", ")}`,
+    );
+    return false;
+  }
+  const effectiveManifestVersion = (manifestVersion ||
+    DEFAULT_MANIFEST_VERSION) as keyof typeof MANIFEST_SCHEMAS;
 
   if (existsSync(manifestPath)) {
     if (nonInteractive) {
@@ -1029,6 +1041,7 @@ export async function initExtension(
       compatibility,
       userConfig,
       optionalFields,
+      effectiveManifestVersion,
     );
 
     // Write manifest

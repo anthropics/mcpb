@@ -188,7 +188,8 @@
       },
       "required": [
         "type",
-        "entry_point"
+        "entry_point",
+        "mcp_config"
       ],
       "additionalProperties": false
     },

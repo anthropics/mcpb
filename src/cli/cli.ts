@@ -51,19 +51,32 @@ program
   .command("init [directory]")
   .description("Create a new MCPB extension manifest")
   .option("-y, --yes", "Accept all defaults (non-interactive mode)")
-  .action((directory?: string, options?: { yes?: boolean }) => {
-    void (async () => {
-      try {
-        const success = await initExtension(directory, options?.yes);
-        process.exit(success ? 0 : 1);
-      } catch (error) {
-        console.error(
-          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-        process.exit(1);
-      }
-    })();
-  });
+  .option(
+    "--manifest-version <version>",
+    "Manifest version to use in the generated manifest",
+  )
+  .action(
+    (
+      directory?: string,
+      options?: { yes?: boolean; manifestVersion?: string },
+    ) => {
+      void (async () => {
+        try {
+          const success = await initExtension(
+            directory,
+            options?.yes,
+            options?.manifestVersion,
+          );
+          process.exit(success ? 0 : 1);
+        } catch (error) {
+          console.error(
+            `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+          process.exit(1);
+        }
+      })();
+    },
+  );
 
 // Validate command
 program

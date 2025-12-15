@@ -37,8 +37,7 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
 export const McpbManifestServerSchema = z.strictObject({
   type: z.enum(["python", "node", "binary", "uv"]),
   entry_point: z.string(),
-  // mcp_config is optional for UV type (UV handles execution)
-  mcp_config: McpbManifestMcpConfigSchema.optional(),
+  mcp_config: McpbManifestMcpConfigSchema,
 });
 
 export const McpbManifestCompatibilitySchema = z.strictObject({
