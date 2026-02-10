@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { join } from "node:path";
 
 describe("Icon Validation", () => {
-  const cliPath = join(__dirname, "../dist/cli/cli.js");
+  const cliPath = join(__dirname, "../packages/cli/dist/cli/cli.js");
   const testFixturesDir = join(__dirname, "fixtures", "icon-validation");
 
   beforeAll(() => {

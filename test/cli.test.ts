@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import { join } from "node:path";
 
-import { DEFAULT_MANIFEST_VERSION } from "../src/shared/constants";
+import { DEFAULT_MANIFEST_VERSION } from "@modelcontextprotocol/mcpb-schemas";
 
 interface ExecSyncError extends Error {
   stdout: Buffer;
@@ -12,7 +12,7 @@ interface ExecSyncError extends Error {
 }
 
 describe("DXT CLI", () => {
-  const cliPath = join(__dirname, "../dist/cli/cli.js");
+  const cliPath = join(__dirname, "../packages/cli/dist/cli/cli.js");
   const validManifestPath = join(__dirname, "valid-manifest.json");
   const invalidManifestPath = join(__dirname, "invalid-manifest.json");
 

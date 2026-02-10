@@ -11,11 +11,13 @@ import {
 } from "fs";
 import { basename, join, relative, resolve, sep } from "path";
 
+import {
+  MANIFEST_SCHEMAS,
+  getManifestVersionFromRawData,
+} from "@modelcontextprotocol/mcpb-schemas";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
-import { MANIFEST_SCHEMAS } from "../shared/constants.js";
 import { getLogger } from "../shared/log.js";
-import { getManifestVersionFromRawData } from "../shared/manifestVersionResolve.js";
 import { initExtension } from "./init.js";
 
 interface PackOptions {

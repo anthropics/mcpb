@@ -5,7 +5,7 @@ The MCPB CLI provides tools for building MCP Bundles.
 ## Installation
 
 ```bash
-npm install -g @anthropic-ai/mcpb
+npm install -g @modelcontextprotocol/mcpb-cli
 ```
 
 ```

@@ -5,8 +5,8 @@ import { basename, join, resolve } from "path";
 import {
   DEFAULT_MANIFEST_VERSION,
   MANIFEST_SCHEMAS,
-} from "../shared/constants.js";
-import type { McpbManifestAny } from "../types.js";
+  type McpbManifestAny,
+} from "@modelcontextprotocol/mcpb-schemas";
 
 interface PackageJson {
   name?: string;

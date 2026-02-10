@@ -15,39 +15,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anthropic-ai/mcpb@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@anthropic-ai/mcpb@workspace:."
-  dependencies:
-    "@inquirer/prompts": "npm:^6.0.1"
-    "@types/jest": "npm:^29.5.14"
-    "@types/node": "npm:^22.15.3"
-    "@types/node-forge": "npm:1.3.11"
-    "@typescript-eslint/eslint-plugin": "npm:^5.62.0"
-    "@typescript-eslint/parser": "npm:^5.62.0"
-    commander: "npm:^13.1.0"
-    eslint: "npm:^8.43.0"
-    eslint-config-prettier: "npm:^8.10.0"
-    eslint-import-resolver-typescript: "npm:^3.6.1"
-    eslint-plugin-import: "npm:^2.29.1"
-    eslint-plugin-prettier: "npm:^5.1.3"
-    eslint-plugin-simple-import-sort: "npm:^10.0.0"
-    fflate: "npm:^0.8.2"
-    galactus: "npm:^1.0.0"
-    ignore: "npm:^7.0.5"
-    jest: "npm:^29.7.0"
-    node-forge: "npm:^1.3.2"
-    prettier: "npm:^3.3.3"
-    pretty-bytes: "npm:^5.6.0"
-    ts-jest: "npm:^29.3.2"
-    typescript: "npm:^5.6.3"
-    zod: "npm:^3.25.67"
-    zod-to-json-schema: "npm:^3.24.6"
-  bin:
-    mcpb: dist/cli/cli.js
-  languageName: unknown
-  linkType: soft
-
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/code-frame@npm:7.27.1"
@@ -992,6 +959,33 @@ __metadata:
   checksum: 10c0/3d1ce6ebc69df9682a5a8896b414c6537e428a1d68b02fcc8363b04284a8ca0df04d0ee3013132252ab14f2527bc13bea6526a912ecb5658f0e39fd2860b4df4
   languageName: node
   linkType: hard
+
+"@modelcontextprotocol/mcpb-cli@workspace:packages/cli":
+  version: 0.0.0-use.local
+  resolution: "@modelcontextprotocol/mcpb-cli@workspace:packages/cli"
+  dependencies:
+    "@inquirer/prompts": "npm:^6.0.1"
+    "@modelcontextprotocol/mcpb-schemas": "workspace:*"
+    commander: "npm:^13.1.0"
+    fflate: "npm:^0.8.2"
+    galactus: "npm:^1.0.0"
+    ignore: "npm:^7.0.5"
+    node-forge: "npm:^1.3.2"
+    pretty-bytes: "npm:^5.6.0"
+    zod: "npm:^3.25.67"
+  bin:
+    mcpb-cli: dist/cli/cli.js
+  languageName: unknown
+  linkType: soft
+
+"@modelcontextprotocol/mcpb-schemas@workspace:*, @modelcontextprotocol/mcpb-schemas@workspace:packages/schemas":
+  version: 0.0.0-use.local
+  resolution: "@modelcontextprotocol/mcpb-schemas@workspace:packages/schemas"
+  dependencies:
+    zod: "npm:^3.25.67"
+    zod-to-json-schema: "npm:^3.24.6"
+  languageName: unknown
+  linkType: soft
 
 "@napi-rs/wasm-runtime@npm:^0.2.11":
   version: 0.2.11
@@ -4553,6 +4547,28 @@ __metadata:
   checksum: 10c0/7579ff94e899e2f76ab64491d76cf606274c874d8f2af4a442c016bd85688927fcfca157ba6bf74b08e9439dc010b248ce05b96cc7c126a354c3bae7fcb48b7f
   languageName: node
   linkType: hard
+
+"mcpb-workspace@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "mcpb-workspace@workspace:."
+  dependencies:
+    "@types/jest": "npm:^29.5.14"
+    "@types/node": "npm:^22.15.3"
+    "@types/node-forge": "npm:1.3.11"
+    "@typescript-eslint/eslint-plugin": "npm:^5.62.0"
+    "@typescript-eslint/parser": "npm:^5.62.0"
+    eslint: "npm:^8.43.0"
+    eslint-config-prettier: "npm:^8.10.0"
+    eslint-import-resolver-typescript: "npm:^3.6.1"
+    eslint-plugin-import: "npm:^2.29.1"
+    eslint-plugin-prettier: "npm:^5.1.3"
+    eslint-plugin-simple-import-sort: "npm:^10.0.0"
+    jest: "npm:^29.7.0"
+    prettier: "npm:^3.3.3"
+    ts-jest: "npm:^29.3.2"
+    typescript: "npm:^5.6.3"
+  languageName: unknown
+  linkType: soft
 
 "merge-stream@npm:^2.0.0":
   version: 2.0.0

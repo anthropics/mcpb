@@ -9,8 +9,8 @@ import {
   getDefaultEntryPoint,
   getDefaultRepositoryUrl,
   readPackageJson,
-} from "../src/cli/init.js";
-import { DEFAULT_MANIFEST_VERSION } from "../src/shared/constants.js";
+} from "@modelcontextprotocol/mcpb-cli";
+import { DEFAULT_MANIFEST_VERSION } from "@modelcontextprotocol/mcpb-schemas";
 
 // Mock the fs module
 jest.mock("fs", () => ({

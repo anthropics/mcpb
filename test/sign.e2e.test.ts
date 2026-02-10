@@ -17,7 +17,7 @@ import {
   signMcpbFile,
   unsignMcpbFile,
   verifyMcpbFile,
-} from "../src/node/sign.js";
+} from "@modelcontextprotocol/mcpb-cli";
 
 // Test directory
 const TEST_DIR = path.join(__dirname, "test-output");

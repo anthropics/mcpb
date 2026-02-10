@@ -7,7 +7,7 @@ import { join } from "path";
 import { promisify } from "util";
 import type { z } from "zod";
 
-import type { McpbSignatureInfoSchema } from "../shared/common.js";
+import type { McpbSignatureInfoSchema } from "@modelcontextprotocol/mcpb-schemas";
 
 // Signature block markers
 const SIGNATURE_HEADER = "MCPB_SIG_V1";

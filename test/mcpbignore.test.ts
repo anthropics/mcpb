@@ -6,7 +6,7 @@ import {
   getAllFiles,
   readMcpbIgnorePatterns,
   shouldExclude,
-} from "../src/node/files.js";
+} from "@modelcontextprotocol/mcpb-cli";
 
 describe("McpbIgnore functionality", () => {
   let tempDir: string;
