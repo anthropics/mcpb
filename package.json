@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "build": "yarn workspace @modelcontextprotocol/mcpb-schemas run build && yarn workspace @modelcontextprotocol/mcpb-cli run build",
+    "build:code": "yarn run build:schemas && yarn run build:cli",
     "build:cli": "yarn workspace @modelcontextprotocol/mcpb-cli run build",
     "build:schemas": "yarn workspace @modelcontextprotocol/mcpb-schemas run build",
     "dev": "yarn workspace @modelcontextprotocol/mcpb-cli run dev",
