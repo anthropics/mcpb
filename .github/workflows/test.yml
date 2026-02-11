@@ -59,12 +59,12 @@ jobs:
         run: yarn build:schema
       - name: Check for schema changes
         run: |
-          if ! git diff --exit-code schemas/; then
+          if ! git diff --exit-code packages/schemas/schemas/; then
             echo "Error: JSON schemas in schemas/ directory are out of sync!"
             echo "Please run 'yarn build:schema' and commit the changes."
             echo ""
             echo "Changes detected:"
-            git diff schemas/
+            git diff packages/schemas/schemas/;
             exit 1
           fi
           echo "✓ All schemas are up to date"
