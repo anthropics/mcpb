@@ -12,7 +12,7 @@
   ],
   "plugins": ["@typescript-eslint", "import", "prettier", "simple-import-sort"],
   "parser": "@typescript-eslint/parser",
-  "ignorePatterns": ["dist/*", "node_modules/*", "*.js"],
+  "ignorePatterns": ["dist/**", "node_modules/**", "*.js", "*.d.ts"],
   "parserOptions": {
     "project": "./tsconfig.json"
   },
@@ -28,7 +28,7 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "packageDir": "./"
+        "packageDir": ["./", "./packages/cli", "./packages/schemas"]
       }
     ],
     // Imports must not cause cyclical dependencies

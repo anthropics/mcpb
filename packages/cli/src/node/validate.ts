@@ -1,14 +1,14 @@
+import {
+  getManifestVersionFromRawData,
+  MANIFEST_SCHEMAS,
+  MANIFEST_SCHEMAS_LOOSE,
+} from "@modelcontextprotocol/mcpb-schemas";
 import { existsSync, readFileSync, statSync } from "fs";
 import * as fs from "fs/promises";
 import * as os from "os";
 import { dirname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
-import {
-  MANIFEST_SCHEMAS,
-  MANIFEST_SCHEMAS_LOOSE,
-  getManifestVersionFromRawData,
-} from "@modelcontextprotocol/mcpb-schemas";
 import { unpackExtension } from "../cli/unpack.js";
 
 /**

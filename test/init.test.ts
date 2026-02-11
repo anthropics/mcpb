@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from "fs";
-
 import {
   buildManifest,
   createMcpConfig,
@@ -11,6 +9,7 @@ import {
   readPackageJson,
 } from "@modelcontextprotocol/mcpb-cli";
 import { DEFAULT_MANIFEST_VERSION } from "@modelcontextprotocol/mcpb-schemas";
+import { existsSync, readFileSync } from "fs";
 
 // Mock the fs module
 jest.mock("fs", () => ({

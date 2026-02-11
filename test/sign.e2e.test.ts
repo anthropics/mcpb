@@ -9,15 +9,14 @@
  * 5. Tests various failure scenarios
  */
 
-import * as fs from "fs";
-import forge from "node-forge";
-import * as path from "path";
-
 import {
   signMcpbFile,
   unsignMcpbFile,
   verifyMcpbFile,
 } from "@modelcontextprotocol/mcpb-cli";
+import * as fs from "fs";
+import forge from "node-forge";
+import * as path from "path";
 
 // Test directory
 const TEST_DIR = path.join(__dirname, "test-output");
