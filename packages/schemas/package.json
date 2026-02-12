@@ -1,0 +1,59 @@
+{
+  "name": "@modelcontextprotocol/mcpb-schemas",
+  "description": "MCPB manifest schemas and helpers",
+  "version": "2.1.2",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js",
+      "require": "./dist/browser.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js",
+      "require": "./dist/schemas/index.js"
+    },
+    "./schemas/*": {
+      "types": "./dist/schemas/*.d.ts",
+      "import": "./dist/schemas/*.js",
+      "require": "./dist/schemas/*.js"
+    },
+    "./schemas-loose": {
+      "types": "./dist/schemas_loose/index.d.ts",
+      "import": "./dist/schemas_loose/index.js",
+      "require": "./dist/schemas_loose/index.js"
+    },
+    "./mcpb-manifest-v0.1.schema.json": "./dist/mcpb-manifest-v0.1.schema.json",
+    "./mcpb-manifest-v0.2.schema.json": "./dist/mcpb-manifest-v0.2.schema.json",
+    "./mcpb-manifest-v0.3.schema.json": "./dist/mcpb-manifest-v0.3.schema.json",
+    "./mcpb-manifest-v0.4.schema.json": "./dist/mcpb-manifest-v0.4.schema.json",
+    "./mcpb-manifest-latest.schema.json": "./dist/mcpb-manifest-latest.schema.json"
+  },
+  "files": [
+    "dist",
+    "schemas"
+  ],
+  "scripts": {
+    "build": "yarn run build:code && yarn run build:schema",
+    "build:code": "tsc -p tsconfig.json",
+    "build:schema": "node ./scripts/build-mcpb-schema.js",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "author": "Anthropic <support@anthropic.com>",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "zod-to-json-schema": "^3.24.6"
+  }
+}

@@ -3,34 +3,28 @@
   "display": "Default",
   "compilerOptions": {
     "target": "es2024",
-    "lib": ["ES2023"],
-
+    "lib": [
+      "ES2023"
+    ],
     "module": "node18",
     "moduleResolution": "node16",
     "esModuleInterop": true,
-
-    // Path settings
-    "rootDir": "./src",
-    "outDir": "./dist",
-
     // Type checking
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
     // Emit settings
     "declaration": true,
     "noEmit": false,
     "inlineSources": false,
     "isolatedModules": false,
-
     // Other settings
     "allowJs": true,
     "resolveJsonModule": true,
     "incremental": true,
     "preserveWatchOutput": true,
-    "types": ["node"]
-  },
-  "include": ["src/**/*.ts", "src/*.ts"],
-  "exclude": ["node_modules", "dist"]
+    "types": [
+      "node"
+    ]
+  }
 }

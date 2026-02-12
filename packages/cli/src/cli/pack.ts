@@ -1,4 +1,8 @@
 import { confirm } from "@inquirer/prompts";
+import {
+  getManifestVersionFromRawData,
+  MANIFEST_SCHEMAS,
+} from "@modelcontextprotocol/mcpb-schemas";
 import { createHash } from "crypto";
 import type { Zippable } from "fflate";
 import { zipSync } from "fflate";
@@ -13,9 +17,7 @@ import { basename, join, relative, resolve, sep } from "path";
 
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "../node/files.js";
 import { validateManifest } from "../node/validate.js";
-import { MANIFEST_SCHEMAS } from "../shared/constants.js";
 import { getLogger } from "../shared/log.js";
-import { getManifestVersionFromRawData } from "../shared/manifestVersionResolve.js";
 import { initExtension } from "./init.js";
 
 interface PackOptions {

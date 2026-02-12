@@ -1,16 +1,15 @@
+import {
+  getManifestVersionFromRawData,
+  MANIFEST_SCHEMAS,
+  MANIFEST_SCHEMAS_LOOSE,
+} from "@modelcontextprotocol/mcpb-schemas";
 import { existsSync, readFileSync, statSync } from "fs";
 import * as fs from "fs/promises";
-import { DestroyerOfModules } from "galactus";
 import * as os from "os";
 import { dirname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
-import {
-  MANIFEST_SCHEMAS,
-  MANIFEST_SCHEMAS_LOOSE,
-} from "../shared/constants.js";
-import { getManifestVersionFromRawData } from "../shared/manifestVersionResolve.js";
 
 /**
  * Check if a buffer contains a valid PNG file signature
@@ -225,6 +224,7 @@ export async function cleanMcpb(inputPath: string) {
     if (existsSync(nodeModulesPath)) {
       console.log(" -- node_modules found, deleting development dependencies");
 
+      const { DestroyerOfModules } = await import("galactus");
       const destroyer = new DestroyerOfModules({
         rootDirectory: unpackPath,
       });

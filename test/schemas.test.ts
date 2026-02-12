@@ -1,7 +1,6 @@
+import { v0_2, v0_3 } from "@modelcontextprotocol/mcpb-schemas";
 import { readFileSync } from "fs";
 import { join } from "path";
-
-import { v0_2, v0_3 } from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {

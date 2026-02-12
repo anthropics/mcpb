@@ -1,12 +1,11 @@
 import { confirm, input, select } from "@inquirer/prompts";
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { basename, join, resolve } from "path";
-
 import {
   DEFAULT_MANIFEST_VERSION,
   MANIFEST_SCHEMAS,
-} from "../shared/constants.js";
-import type { McpbManifestAny } from "../types.js";
+  type McpbManifestAny,
+} from "@modelcontextprotocol/mcpb-schemas";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { basename, join, resolve } from "path";
 
 interface PackageJson {
   name?: string;

@@ -2,12 +2,21 @@
 
 import fs from "fs";
 
+const packagePaths = [
+  "packages/cli/package.json",
+  "packages/schemas/package.json",
+];
+
 try {
-  // Read current package.json
-  const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
+  const packageJsons = packagePaths.map((packagePath) => {
+    return {
+      path: packagePath,
+      data: JSON.parse(fs.readFileSync(packagePath, "utf8")),
+    };
+  });
 
   // Get current version and strip any existing prerelease
-  const baseVersion = packageJson.version.split("-")[0];
+  const baseVersion = packageJsons[0].data.version.split("-")[0];
 
   // Generate timestamp (YYYYMMDDHHMMSS)
   const now = new Date();
@@ -24,9 +33,13 @@ try {
 
   console.log(`Publishing ${devVersion}...`);
 
-  // Update package.json version
-  packageJson.version = devVersion;
-  fs.writeFileSync("package.json", JSON.stringify(packageJson, null, 2) + "\n");
+  for (const packageJson of packageJsons) {
+    packageJson.data.version = devVersion;
+    fs.writeFileSync(
+      packageJson.path,
+      JSON.stringify(packageJson.data, null, 2) + "\n",
+    );
+  }
 } catch (error) {
   console.error("Failed to publish:", error.message);
   process.exit(1);

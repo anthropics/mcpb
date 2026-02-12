@@ -1,12 +1,11 @@
-import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
-
 import {
   getAllFiles,
   readMcpbIgnorePatterns,
   shouldExclude,
-} from "../src/node/files.js";
+} from "@modelcontextprotocol/mcpb-cli";
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
 
 describe("McpbIgnore functionality", () => {
   let tempDir: string;

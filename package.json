@@ -1,77 +1,29 @@
 {
-  "name": "@anthropic-ai/mcpb",
-  "description": "Tools for building MCP Bundles",
-  "version": "2.1.2",
-  "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
-    },
-    "./browser": {
-      "types": "./dist/browser.d.ts",
-      "import": "./dist/browser.js",
-      "require": "./dist/browser.js"
-    },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js",
-      "require": "./dist/node.js"
-    },
-    "./cli": {
-      "types": "./dist/cli.d.ts",
-      "import": "./dist/cli.js",
-      "require": "./dist/cli.js"
-    },
-    "./mcpb-manifest-v0.1.schema.json": "./dist/mcpb-manifest-v0.1.schema.json",
-    "./mcpb-manifest-v0.2.schema.json": "./dist/mcpb-manifest-v0.2.schema.json",
-    "./mcpb-manifest-v0.3.schema.json": "./dist/mcpb-manifest-v0.3.schema.json",
-    "./mcpb-manifest-latest.schema.json": "./dist/mcpb-manifest-latest.schema.json",
-    "./schemas": {
-      "types": "./dist/schemas/index.d.ts",
-      "import": "./dist/schemas/index.js",
-      "require": "./dist/schemas/index.js"
-    },
-    "./schemas/*": {
-      "types": "./dist/schemas/*.d.ts",
-      "import": "./dist/schemas/*.js",
-      "require": "./dist/schemas/*.js"
-    },
-    "./schemas-loose": {
-      "types": "./dist/schemas-loose.d.ts",
-      "import": "./dist/schemas-loose.js",
-      "require": "./dist/schemas-loose.js"
-    }
-  },
-  "bin": "dist/cli/cli.js",
-  "files": [
-    "dist",
-    "schemas"
+  "name": "mcpb-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "yarn run build:code && yarn run build:schema",
-    "build:code": "tsc",
-    "build:schema": "node ./scripts/build-mcpb-schema.js",
-    "dev": "tsc --watch",
+    "build": "yarn workspace @modelcontextprotocol/mcpb-schemas run build && yarn workspace @modelcontextprotocol/mcpb-cli run build",
+    "build:code": "yarn run build:schemas && yarn run build:cli",
+    "build:cli": "yarn workspace @modelcontextprotocol/mcpb-cli run build",
+    "build:schemas": "yarn workspace @modelcontextprotocol/mcpb-schemas run build",
+    "dev": "yarn workspace @modelcontextprotocol/mcpb-cli run dev",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "fix": "eslint --ext .ts . --fix && prettier -w .",
-    "lint": "tsc -p ./tsconfig.json && eslint --ext .ts .",
+    "lint": "tsc -p ./packages/cli/tsconfig.json && tsc -p ./packages/schemas/tsconfig.json && eslint --ext .ts .",
     "dev-version": "./scripts/create-dev-version.js"
   },
-  "author": "Anthropic <support@anthropic.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.3",
     "@types/node-forge": "1.3.11",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -82,17 +34,6 @@
     "prettier": "^3.3.3",
     "ts-jest": "^29.3.2",
     "typescript": "^5.6.3"
-  },
-  "dependencies": {
-    "@inquirer/prompts": "^6.0.1",
-    "commander": "^13.1.0",
-    "fflate": "^0.8.2",
-    "galactus": "^1.0.0",
-    "ignore": "^7.0.5",
-    "node-forge": "^1.3.2",
-    "pretty-bytes": "^5.6.0",
-    "zod": "^3.25.67",
-    "zod-to-json-schema": "^3.24.6"
   },
   "resolutions": {
     "@babel/helpers": "7.27.1",

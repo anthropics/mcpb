@@ -6,11 +6,11 @@
 >
 > - `dxt` CLI is now `mcpb`
 > - `.dxt` files are now `.mcpb` files
-> - `@anthropic-ai/dxt` package will be moved to `@anthropic-ai/mcpb`
+> - `@anthropic-ai/dxt` package will be moved to `@modelcontextprotocol/mcpb-cli`
 
 MCP Bundles (`.mcpb`) are zip archives containing a local MCP server and a `manifest.json` that describes the server and its capabilities. The format is spiritually similar to Chrome extensions (`.crx`) or VS Code extensions (`.vsix`), enabling end users to install local MCP servers with a single click.
 
-This repository provides three components: The bundle specification in [MANIFEST.md](MANIFEST.md), a CLI tool for creating bundles (see [CLI.md](CLI.md)), and the code used by Claude for macOS and Windows to load and verify MCPB bundles ([src/index.ts](src/index.ts)).
+This repository provides three components: The bundle specification in [MANIFEST.md](MANIFEST.md), a CLI tool for creating bundles (see [CLI.md](CLI.md)), and the code used by Claude for macOS and Windows to load and verify MCPB bundles ([packages/cli/src/index.ts](packages/cli/src/index.ts)).
 
 - For developers of local MCP servers, we aim to make distribution and installation of said servers convenient
 - For developers of apps supporting local MCP servers, we aim to make it easy to add support for MCPB bundles
@@ -24,7 +24,15 @@ At the core, MCPB are simple zip files containing your entire MCP server and a `
 To make this process easier, this package offers a CLI that helps you with the creation of both the `manifest.json` and the final `.mcpb` file. To install it, run:
 
 ```sh
-npm install -g @anthropic-ai/mcpb
+npm install -g @modelcontextprotocol/mcpb-cli
+```
+
+# For App Developers
+
+To validate MCPB manifests and reuse the schema helpers directly, install the schemas package:
+
+```sh
+npm install @modelcontextprotocol/mcpb-schemas
 ```
 
 1. In a folder containing your local MCP server, run `mcpb init`. This command will guide you through the creation of a `manifest.json`.

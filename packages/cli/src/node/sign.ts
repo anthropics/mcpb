@@ -1,3 +1,4 @@
+import type { McpbSignatureInfoSchema } from "@modelcontextprotocol/mcpb-schemas";
 import { execFile } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
 import { mkdtemp, rm, writeFile } from "fs/promises";
@@ -6,8 +7,6 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { promisify } from "util";
 import type { z } from "zod";
-
-import type { McpbSignatureInfoSchema } from "../shared/common.js";
 
 // Signature block markers
 const SIGNATURE_HEADER = "MCPB_SIG_V1";

@@ -2,9 +2,16 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
+    "isolatedModules": true,
     "module": "node18",
     "moduleResolution": "node16",
-    "types": ["node", "jest"]
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": [
+    "packages/**/src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

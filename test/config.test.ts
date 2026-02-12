@@ -1,9 +1,12 @@
+import type {
+  Logger,
+  McpbManifestAny,
+} from "@modelcontextprotocol/mcpb-schemas";
 import {
   getMcpConfigForManifest,
   hasRequiredConfigMissing,
   replaceVariables,
-} from "../src/shared/config";
-import type { Logger, McpbManifestAny } from "../src/types";
+} from "@modelcontextprotocol/mcpb-schemas";
 
 describe("replaceVariables", () => {
   it("should replace variables in strings", () => {
