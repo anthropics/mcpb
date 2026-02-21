@@ -1,4 +1,5 @@
 import { execFile } from "child_process";
+import { createHash, createVerify } from "crypto";
 import { readFileSync, writeFileSync } from "fs";
 import { mkdtemp, rm, writeFile } from "fs/promises";
 import forge from "node-forge";
@@ -125,11 +126,11 @@ export async function verifyMcpbFile(
       return { status: "unsigned" };
     }
 
-    // Parse PKCS#7 signature
+    // Parse PKCS#7 signature to extract certificate info
     const asn1 = forge.asn1.fromDer(pkcs7Signature.toString("binary"));
     const p7Message = forge.pkcs7.messageFromAsn1(asn1);
 
-    // Verify it's signed data and cast to correct type
+    // Verify it's signed data
     if (
       !("type" in p7Message) ||
       p7Message.type !== forge.pki.oids.signedData
@@ -137,17 +138,7 @@ export async function verifyMcpbFile(
       return { status: "unsigned" };
     }
 
-    // Now we know it's PkcsSignedData. The types are incorrect, so we'll
-    // fix them there
-    const p7 = p7Message as unknown as forge.pkcs7.PkcsSignedData & {
-      signerInfos: Array<{
-        authenticatedAttributes: Array<{
-          type: string;
-          value: unknown;
-        }>;
-      }>;
-      verify: (options?: { authenticatedAttributes?: boolean }) => boolean;
-    };
+    const p7 = p7Message as unknown as forge.pkcs7.PkcsSignedData;
 
     // Extract certificates from PKCS#7
     const certificates = p7.certificates || [];
@@ -158,61 +149,42 @@ export async function verifyMcpbFile(
     // Get the signing certificate (first one)
     const signingCert = certificates[0];
 
-    // Verify PKCS#7 signature
-    const contentBuf = forge.util.createBuffer(originalContent);
-
-    try {
-      p7.verify({ authenticatedAttributes: true });
-
-      // Also verify the content matches
-      const signerInfos = p7.signerInfos;
-      const signerInfo = signerInfos?.[0];
-      if (signerInfo) {
-        const md = forge.md.sha256.create();
-        md.update(contentBuf.getBytes());
-        const digest = md.digest().getBytes();
-
-        // Find the message digest attribute
-        let messageDigest = null;
-        for (const attr of signerInfo.authenticatedAttributes) {
-          if (attr.type === forge.pki.oids.messageDigest) {
-            messageDigest = attr.value;
-            break;
-          }
-        }
-
-        if (!messageDigest || messageDigest !== digest) {
-          return { status: "unsigned" };
-        }
+    // Restore original content before EOCD comment_length update.
+    // The signer updates the ZIP EOCD comment_length to include the
+    // signature block size (so strict ZIP parsers accept the file),
+    // but the PKCS#7 signature covers the content *before* that update.
+    const contentForVerification = Buffer.from(originalContent);
+    const sigBlockLen =
+      SIGNATURE_HEADER.length + 4 + pkcs7Signature.length + SIGNATURE_FOOTER.length;
+    const eocdOffset = findEocdOffset(contentForVerification);
+    if (eocdOffset !== -1) {
+      const commentLength = contentForVerification.readUInt16LE(eocdOffset + 20);
+      if (commentLength >= sigBlockLen) {
+        contentForVerification.writeUInt16LE(
+          commentLength - sigBlockLen,
+          eocdOffset + 20,
+        );
       }
-    } catch (error) {
-      return { status: "unsigned" };
     }
 
-    // Convert forge certificate to PEM for OS verification
-    const certPem = forge.pki.certificateToPem(signingCert);
-    const intermediatePems = certificates
-      .slice(1)
-      .map((cert) => Buffer.from(forge.pki.certificateToPem(cert)));
-
-    // Verify certificate chain against OS trust store
-    const chainValid = await verifyCertificateChain(
-      Buffer.from(certPem),
-      intermediatePems,
+    // Verify the PKCS#7 detached signature cryptographically
+    // (node-forge's p7.verify() is not implemented, so we use Node.js crypto)
+    const signatureValid = verifyPkcs7DetachedSignature(
+      contentForVerification,
+      pkcs7Signature,
     );
 
-    if (!chainValid) {
-      // Signature is valid but certificate is not trusted
+    if (!signatureValid) {
       return { status: "unsigned" };
     }
 
-    // Extract certificate info
+    // Check if self-signed
     const isSelfSigned =
       signingCert.issuer.getField("CN")?.value ===
       signingCert.subject.getField("CN")?.value;
 
-    return {
-      status: isSelfSigned ? "self-signed" : "signed",
+    // Build certificate info
+    const certInfo = {
       publisher: signingCert.subject.getField("CN")?.value || "Unknown",
       issuer: signingCert.issuer.getField("CN")?.value || "Unknown",
       valid_from: signingCert.validity.notBefore.toISOString(),
@@ -225,6 +197,29 @@ export async function verifyMcpbFile(
         .digest()
         .toHex(),
     };
+
+    if (isSelfSigned) {
+      // Self-signed certs can never pass chain verification, so report
+      // their status directly
+      return { status: "self-signed", ...certInfo };
+    }
+
+    // For CA-signed certs, verify certificate chain against OS trust store
+    const certPem = forge.pki.certificateToPem(signingCert);
+    const intermediatePems = certificates
+      .slice(1)
+      .map((cert) => Buffer.from(forge.pki.certificateToPem(cert)));
+
+    const chainValid = await verifyCertificateChain(
+      Buffer.from(certPem),
+      intermediatePems,
+    );
+
+    if (!chainValid) {
+      return { status: "unsigned" };
+    }
+
+    return { status: "signed", ...certInfo };
   } catch (error) {
     throw new Error(`Failed to verify MCPB file: ${error}`);
   }
@@ -242,6 +237,157 @@ function findEocdOffset(buffer: Buffer): number {
     }
   }
   return -1;
+}
+
+/**
+ * Verifies a detached PKCS#7 signature over the given content.
+ *
+ * node-forge does not implement PKCS#7 signature verification
+ * (see https://github.com/digitalbazaar/forge/issues/1088), so we parse the
+ * ASN.1 structure with node-forge and verify the RSA signature using Node.js
+ * built-in crypto.
+ *
+ * The verification follows RFC 5652 (CMS) Section 5.4:
+ * 1. Compute hash of original content, compare with messageDigest attribute
+ * 2. DER-encode the authenticated attributes as a SET (re-tagged from [0])
+ * 3. Verify the RSA signature over the DER-encoded attributes
+ */
+function verifyPkcs7DetachedSignature(
+  content: Buffer,
+  pkcs7Der: Buffer,
+): boolean {
+  try {
+    // Parse the raw ASN.1 to navigate the PKCS#7 structure
+    const contentInfoAsn1 = forge.asn1.fromDer(pkcs7Der.toString("binary"));
+
+    // ContentInfo: SEQUENCE { contentType OID, [0] EXPLICIT content }
+    const contentInfoValues = contentInfoAsn1.value as forge.asn1.Asn1[];
+    const signedDataAsn1 = (contentInfoValues[1].value as forge.asn1.Asn1[])[0];
+
+    // SignedData: SEQUENCE {
+    //   version INTEGER,
+    //   digestAlgorithms SET,
+    //   encapContentInfo SEQUENCE,
+    //   [0] IMPLICIT certificates (optional),
+    //   [1] IMPLICIT crls (optional),
+    //   signerInfos SET
+    // }
+    const signedDataValues = signedDataAsn1.value as forge.asn1.Asn1[];
+
+    // Collect certificates [0] and all SET children
+    let certsAsn1: forge.asn1.Asn1[] = [];
+    const sets: forge.asn1.Asn1[] = [];
+
+    for (const child of signedDataValues) {
+      // Context-specific [0] constructed = certificates
+      if (
+        child.tagClass === forge.asn1.Class.CONTEXT_SPECIFIC &&
+        child.constructed &&
+        child.type === 0
+      ) {
+        certsAsn1 = child.value as forge.asn1.Asn1[];
+      }
+      // Universal SET = digestAlgorithms or signerInfos
+      if (
+        child.tagClass === forge.asn1.Class.UNIVERSAL &&
+        child.type === forge.asn1.Type.SET &&
+        child.constructed
+      ) {
+        sets.push(child);
+      }
+    }
+
+    // The last SET in SignedData is signerInfos (first SET is digestAlgorithms)
+    if (sets.length < 2 || certsAsn1.length === 0) {
+      return false;
+    }
+
+    const signerInfosAsn1 = sets[sets.length - 1];
+    const signerInfosList = signerInfosAsn1.value as forge.asn1.Asn1[];
+    if (signerInfosList.length === 0) {
+      return false;
+    }
+
+    // First SignerInfo SEQUENCE
+    const signerInfoAsn1 = signerInfosList[0];
+    const signerInfoChildren = signerInfoAsn1.value as forge.asn1.Asn1[];
+
+    // Find authenticated attributes [0] and encryptedDigest (OCTET STRING)
+    let authAttrsNode: forge.asn1.Asn1 | null = null;
+    let encryptedDigestNode: forge.asn1.Asn1 | null = null;
+
+    for (const child of signerInfoChildren) {
+      // Context-specific [0] constructed = authenticatedAttributes
+      if (
+        child.tagClass === forge.asn1.Class.CONTEXT_SPECIFIC &&
+        child.type === 0 &&
+        child.constructed
+      ) {
+        authAttrsNode = child;
+      }
+      // OCTET STRING (primitive) = encryptedDigest (the RSA signature)
+      if (
+        child.tagClass === forge.asn1.Class.UNIVERSAL &&
+        child.type === forge.asn1.Type.OCTETSTRING &&
+        !child.constructed
+      ) {
+        encryptedDigestNode = child;
+      }
+    }
+
+    if (!authAttrsNode || !encryptedDigestNode) {
+      return false;
+    }
+
+    // Step 1: Verify message digest attribute matches content hash
+    const contentHash = createHash("sha256").update(content).digest();
+
+    const authAttrs = authAttrsNode.value as forge.asn1.Asn1[];
+    let messageDigest: Buffer | null = null;
+
+    for (const attr of authAttrs) {
+      const attrSeq = attr.value as forge.asn1.Asn1[];
+      const oid = forge.asn1.derToOid(attrSeq[0].value as string);
+      if (oid === forge.pki.oids.messageDigest) {
+        // Attribute value: SET { OCTET STRING }
+        const valueSet = attrSeq[1].value as forge.asn1.Asn1[];
+        messageDigest = Buffer.from(valueSet[0].value as string, "binary");
+        break;
+      }
+    }
+
+    if (!messageDigest || !contentHash.equals(messageDigest)) {
+      return false;
+    }
+
+    // Step 2: Verify the RSA signature over the authenticated attributes
+    // Per RFC 5652 Section 5.4, the signature is computed over the
+    // DER-encoded authenticated attributes with EXPLICIT SET tag (0x31),
+    // not the IMPLICIT [0] tag (0xA0) used in the SignerInfo encoding.
+    const authAttrsDer = Buffer.from(
+      forge.asn1.toDer(authAttrsNode).getBytes(),
+      "binary",
+    );
+    // Re-tag from CONTEXT_SPECIFIC [0] (0xA0) to SET (0x31)
+    authAttrsDer[0] = 0x31;
+
+    // Get the signature bytes
+    const signatureBytes = Buffer.from(
+      encryptedDigestNode.value as string,
+      "binary",
+    );
+
+    // Get the signing certificate's public key as PEM
+    const signingCertForge = forge.pki.certificateFromAsn1(certsAsn1[0]);
+    const certPem = forge.pki.certificateToPem(signingCertForge);
+
+    // Verify using Node.js built-in crypto
+    const verifier = createVerify("SHA256");
+    verifier.update(authAttrsDer);
+    return verifier.verify(certPem, signatureBytes);
+  } catch {
+    return false;
+  }
 }
 
 /**
