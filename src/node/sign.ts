@@ -427,6 +427,52 @@ export async function verifyCertificateChain(
 }
 
 /**
+ * Fixes the ZIP EOCD comment_length for an externally signed MCPB file.
+ *
+ * External signing tools (GaraSign, SignServer, Venafi, etc.) append a
+ * PKCS#7 signature block after the ZIP EOCD without updating comment_length.
+ * Strict ZIP parsers like adm-zip (used by Claude Desktop) reject these files.
+ * This function sets comment_length to encompass the trailing signature bytes,
+ * making the file a spec-valid ZIP while preserving the signature intact.
+ *
+ * @param mcpbPath Path to the signed MCPB file to fix
+ */
+export function fixSignatureMcpbFile(mcpbPath: string): void {
+  const fileContent = readFileSync(mcpbPath);
+
+  // Verify this file has a signature block
+  const { pkcs7Signature } = extractSignatureBlock(fileContent);
+  if (!pkcs7Signature) {
+    throw new Error("File is not signed — nothing to fix");
+  }
+
+  // Find the EOCD record
+  const eocdOffset = findEocdOffset(fileContent);
+  if (eocdOffset === -1) {
+    throw new Error("No ZIP end-of-central-directory record found");
+  }
+
+  const currentCommentLength = fileContent.readUInt16LE(eocdOffset + 20);
+  const actualTrailing = fileContent.length - (eocdOffset + 22);
+
+  if (currentCommentLength === actualTrailing) {
+    console.log("EOCD comment_length already correct — no fix needed");
+    return;
+  }
+
+  if (actualTrailing > 65535) {
+    throw new Error(
+      `Signature block too large for ZIP comment field (${actualTrailing} > 65535)`,
+    );
+  }
+
+  // Apply the fix — same approach as signMcpbFile() from PR #204
+  const updatedContent = Buffer.from(fileContent);
+  updatedContent.writeUInt16LE(actualTrailing, eocdOffset + 20);
+  writeFileSync(mcpbPath, updatedContent);
+}
+
+/**
  * Removes signature from a MCPB file
  */
 export function unsignMcpbFile(mcpbPath: string): void {

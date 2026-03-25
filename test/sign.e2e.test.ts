@@ -14,6 +14,8 @@ import forge from "node-forge";
 import * as path from "path";
 
 import {
+  extractSignatureBlock,
+  fixSignatureMcpbFile,
   signMcpbFile,
   unsignMcpbFile,
   verifyMcpbFile,
@@ -510,6 +512,85 @@ describe("MCPB Signing E2E Tests", () => {
       (signedEocdOffset + eocdMinSize + originalCommentLength);
     expect(signedCommentLength).toBe(dataAfterEocd);
     expect(signedCommentLength).toBeGreaterThan(0);
+
+    // Clean up
+    fs.unlinkSync(testFile);
+  });
+
+  it("should fix externally-signed bundle with incorrect EOCD comment_length", () => {
+    // Simulate an external signer (e.g. GaraSign): sign normally, then
+    // reset comment_length to 0 as if the signer didn't update the EOCD
+    const testFile = path.join(TEST_DIR, "test-fix-external.mcpb");
+    fs.copyFileSync(TEST_MCPB, testFile);
+    signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+
+    // Read signed file and zero out comment_length to simulate external signer
+    const signedContent = fs.readFileSync(testFile);
+    let eocdOffset = -1;
+    for (let i = signedContent.length - 22; i >= 0; i--) {
+      if (signedContent.readUInt32LE(i) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    expect(eocdOffset).toBeGreaterThanOrEqual(0);
+    const brokenContent = Buffer.from(signedContent);
+    brokenContent.writeUInt16LE(0, eocdOffset + 20); // Zero out comment_length
+    fs.writeFileSync(testFile, brokenContent);
+
+    // Verify it's broken (comment_length doesn't match trailing bytes)
+    const beforeFix = fs.readFileSync(testFile);
+    expect(beforeFix.readUInt16LE(eocdOffset + 20)).toBe(0);
+
+    // Fix the signature
+    fixSignatureMcpbFile(testFile);
+
+    // Verify comment_length is now correct
+    const afterFix = fs.readFileSync(testFile);
+    const actualTrailing = afterFix.length - (eocdOffset + 22);
+    expect(afterFix.readUInt16LE(eocdOffset + 20)).toBe(actualTrailing);
+    expect(actualTrailing).toBeGreaterThan(0);
+
+    // Verify signature block is still intact
+    const { pkcs7Signature } = extractSignatureBlock(afterFix);
+    expect(pkcs7Signature).toBeDefined();
+
+    // Clean up
+    fs.unlinkSync(testFile);
+  });
+
+  it("should no-op on bundle already fixed by mcpb sign", () => {
+    // Sign normally (mcpb sign already fixes EOCD)
+    const testFile = path.join(TEST_DIR, "test-fix-noop.mcpb");
+    fs.copyFileSync(TEST_MCPB, testFile);
+    signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+
+    // Record file content before fix attempt
+    const beforeContent = fs.readFileSync(testFile);
+
+    // fix-signature should be a no-op (logs "already correct")
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    fixSignatureMcpbFile(testFile);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "EOCD comment_length already correct — no fix needed",
+    );
+    consoleSpy.mockRestore();
+
+    // File should be unchanged
+    const afterContent = fs.readFileSync(testFile);
+    expect(afterContent.equals(beforeContent)).toBe(true);
+
+    // Clean up
+    fs.unlinkSync(testFile);
+  });
+
+  it("should throw on unsigned file", () => {
+    const testFile = path.join(TEST_DIR, "test-fix-unsigned.mcpb");
+    fs.copyFileSync(TEST_MCPB, testFile);
+
+    expect(() => fixSignatureMcpbFile(testFile)).toThrow(
+      "File is not signed",
+    );
 
     // Clean up
     fs.unlinkSync(testFile);

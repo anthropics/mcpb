@@ -6,7 +6,12 @@ import { existsSync, readFileSync, statSync } from "fs";
 import { basename, dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { signMcpbFile, unsignMcpbFile, verifyMcpbFile } from "../node/sign.js";
+import {
+  fixSignatureMcpbFile,
+  signMcpbFile,
+  unsignMcpbFile,
+  verifyMcpbFile,
+} from "../node/sign.js";
 import { cleanMcpb, validateManifest } from "../node/validate.js";
 import { initExtension } from "./init.js";
 import { packExtension } from "./pack.js";
@@ -350,6 +355,34 @@ program
     } catch (error) {
       console.log(
         `ERROR: Failed to remove signature: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      process.exit(1);
+    }
+  });
+
+// Fix-signature command (for externally signed bundles)
+program
+  .command("fix-signature <mcpb-file>")
+  .description(
+    "Fix ZIP EOCD comment_length for externally signed MCPB bundles (e.g. GaraSign, SignServer)",
+  )
+  .action((mcpbFile: string) => {
+    try {
+      const mcpbPath = resolve(mcpbFile);
+
+      if (!existsSync(mcpbPath)) {
+        console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
+        process.exit(1);
+      }
+
+      console.log(`Fixing signature for ${basename(mcpbPath)}...`);
+      fixSignatureMcpbFile(mcpbPath);
+      console.log(
+        `Signature fixed — bundle is now installable in Claude Desktop`,
+      );
+    } catch (error) {
+      console.error(
+        `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
       process.exit(1);
     }
