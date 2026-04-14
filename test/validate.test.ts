@@ -350,6 +350,68 @@ describe("Enhanced Validation", () => {
     });
   });
 
+  describe("version validation", () => {
+    it("should reject non-semver calver version", () => {
+      const dir = join(fixturesDir, "version-calver");
+      fs.mkdirSync(join(dir, "server"), { recursive: true });
+      fs.writeFileSync(join(dir, "server", "index.js"), "// fixture");
+      createManifest(dir, { version: "2024.03.31.01" });
+
+      try {
+        execSync(`node ${cliPath} validate ${dir}`, { encoding: "utf-8" });
+        fail("Expected validation to fail");
+      } catch (e) {
+        const error = e as ExecSyncError;
+        expect(error.status).toBe(1);
+        expect(error.stdout.toString()).toContain("not valid semver");
+      }
+    });
+
+    it("should reject non-numeric version string", () => {
+      const dir = join(fixturesDir, "version-string");
+      fs.mkdirSync(join(dir, "server"), { recursive: true });
+      fs.writeFileSync(join(dir, "server", "index.js"), "// fixture");
+      createManifest(dir, { version: "latest" });
+
+      try {
+        execSync(`node ${cliPath} validate ${dir}`, { encoding: "utf-8" });
+        fail("Expected validation to fail");
+      } catch (e) {
+        const error = e as ExecSyncError;
+        expect(error.status).toBe(1);
+        expect(error.stdout.toString()).toContain("not valid semver");
+      }
+    });
+
+    it("should accept standard semver version", () => {
+      const dir = join(fixturesDir, "version-semver");
+      fs.mkdirSync(join(dir, "server"), { recursive: true });
+      fs.writeFileSync(join(dir, "server", "index.js"), "// fixture");
+      createManifest(dir, { version: "1.0.0" });
+
+      const result = execSync(`node ${cliPath} validate ${dir}`, {
+        encoding: "utf-8",
+      });
+
+      expect(result).toContain("Manifest schema validation passes!");
+      expect(result).not.toContain("not valid semver");
+    });
+
+    it("should accept semver with prerelease and build metadata", () => {
+      const dir = join(fixturesDir, "version-prerelease");
+      fs.mkdirSync(join(dir, "server"), { recursive: true });
+      fs.writeFileSync(join(dir, "server", "index.js"), "// fixture");
+      createManifest(dir, { version: "2.1.0-beta.1+build.123" });
+
+      const result = execSync(`node ${cliPath} validate ${dir}`, {
+        encoding: "utf-8",
+      });
+
+      expect(result).toContain("Manifest schema validation passes!");
+      expect(result).not.toContain("not valid semver");
+    });
+  });
+
   describe("happy path", () => {
     it("should pass with all files present and correct types", () => {
       const dir = join(fixturesDir, "happy-path");
