@@ -1,0 +1,12 @@
+{
+  "name": "linear-node",
+  "version": "1.0.0",
+  "description": "Linear MCP server bundle for issue tracking and project management",
+  "type": "module",
+  "main": "server/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@linear/sdk": "^37.0.0",
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  }
+}

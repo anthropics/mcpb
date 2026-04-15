@@ -1,0 +1,79 @@
+{
+  "manifest_version": "0.2",
+  "name": "linear",
+  "display_name": "Linear",
+  "version": "1.0.0",
+  "description": "Manage Linear issues, projects, and teams from Claude",
+  "long_description": "This extension connects Claude to your Linear workspace, enabling issue creation, updates, search, and comment management through a standardized MCP interface. It uses the Linear SDK for reliable API interaction and supports common workflows like creating bug reports, searching for issues, and updating statuses.",
+  "author": {
+    "name": "Anthropic",
+    "url": "https://www.claude.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/mcpb"
+  },
+  "homepage": "https://linear.app",
+  "documentation": "https://developers.linear.app/docs",
+  "support": "https://github.com/anthropics/mcpb/issues",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "LINEAR_API_KEY": "${user_config.linear_api_key}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "create_issue",
+      "description": "Create a new issue in Linear"
+    },
+    {
+      "name": "update_issue",
+      "description": "Update an existing Linear issue"
+    },
+    {
+      "name": "search_issues",
+      "description": "Search for issues with flexible filtering"
+    },
+    {
+      "name": "get_issue",
+      "description": "Get details of a specific issue by ID"
+    },
+    {
+      "name": "list_teams",
+      "description": "List all teams in the workspace"
+    },
+    {
+      "name": "list_projects",
+      "description": "List projects with optional team filtering"
+    },
+    {
+      "name": "add_comment",
+      "description": "Add a comment to an issue"
+    }
+  ],
+  "keywords": ["linear", "issue-tracking", "project-management", "productivity"],
+  "license": "MIT",
+  "user_config": {
+    "linear_api_key": {
+      "type": "string",
+      "title": "Linear API Key",
+      "description": "Your Linear personal API key (Settings > API > Personal API keys)",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  },
+  "privacy_policies": []
+}
