@@ -13,6 +13,21 @@ import type { McpbSignatureInfoSchema } from "../shared/common.js";
 const SIGNATURE_HEADER = "MCPB_SIG_V1";
 const SIGNATURE_FOOTER = "MCPB_SIG_END";
 
+/**
+ * Maximum signature block size in bytes. The ZIP EOCD comment length is set to
+ * this value during prepare-for-signing so that the final signed file remains a
+ * valid ZIP archive. The signature block (MCPB_SIG_V1 + length + signature +
+ * padding + MCPB_SIG_END) is padded with zeros to exactly this size.
+ *
+ * Matches Microsoft's Azure MCP Server pipeline (Stage-McpbForSigning.ps1).
+ * Current enterprise signatures are ~4KB; 16384 provides ample headroom.
+ */
+export const MAX_SIG_BLOCK_SIZE = 16384;
+
+/** Overhead bytes in signature block: MCPB_SIG_V1 (11) + length (4) + MCPB_SIG_END (12) */
+const SIG_BLOCK_OVERHEAD =
+  Buffer.byteLength(SIGNATURE_HEADER) + 4 + Buffer.byteLength(SIGNATURE_FOOTER);
+
 const execFileAsync = promisify(execFile);
 
 /**
@@ -424,6 +439,130 @@ export async function verifyCertificateChain(
       }
     }
   }
+}
+
+/**
+ * Prepares an unsigned MCPB file for external/enterprise signing.
+ *
+ * Sets the ZIP EOCD comment_length to MAX_SIG_BLOCK_SIZE so that after the
+ * signature block is appended (and padded to this exact size), the file remains
+ * a valid ZIP. The external signer (GaraSign, ESRP, SignServer, etc.) signs
+ * this prepared content, so `mcpb verify` works because the "original content"
+ * extracted during verification matches what was signed.
+ *
+ * Based on Microsoft's Azure MCP Server pipeline (Stage-McpbForSigning.ps1).
+ *
+ * @param mcpbPath Path to the unsigned MCPB file
+ * @param outputPath Optional output path (defaults to overwriting input)
+ */
+export function prepareForExternalSigning(
+  mcpbPath: string,
+  outputPath?: string,
+): void {
+  const content = Buffer.from(readFileSync(mcpbPath));
+
+  // Reject if already signed
+  const footerBytes = Buffer.from(SIGNATURE_FOOTER, "utf-8");
+  if (content.length >= footerBytes.length) {
+    const tail = content.slice(content.length - footerBytes.length);
+    if (tail.equals(footerBytes)) {
+      throw new Error("MCPB file is already signed. Use 'mcpb unsign' first.");
+    }
+  }
+
+  // Find EOCD
+  const eocdOffset = findEocdOffset(content);
+  if (eocdOffset === -1) {
+    throw new Error("ZIP End of Central Directory not found — not a valid MCPB file.");
+  }
+
+  // Reject if already prepared
+  const currentCommentLength = content.readUInt16LE(eocdOffset + 20);
+  if (currentCommentLength === MAX_SIG_BLOCK_SIZE) {
+    throw new Error("MCPB file is already prepared for external signing.");
+  }
+
+  // Set EOCD comment_length to MAX_SIG_BLOCK_SIZE
+  content.writeUInt16LE(MAX_SIG_BLOCK_SIZE, eocdOffset + 20);
+
+  writeFileSync(outputPath || mcpbPath, content);
+}
+
+/**
+ * Applies a detached PKCS#7 signature to a prepared MCPB file.
+ *
+ * The MCPB must have been prepared with `prepareForExternalSigning()` first,
+ * which sets the EOCD comment_length to MAX_SIG_BLOCK_SIZE. The signature
+ * block is padded with zeros to exactly MAX_SIG_BLOCK_SIZE so the resulting
+ * file is a valid ZIP with comment_length matching the actual trailing data.
+ *
+ * Based on Microsoft's Azure MCP Server pipeline (Apply-McpbSignatures.ps1).
+ *
+ * @param mcpbPath Path to the prepared MCPB file
+ * @param signaturePath Path to the detached PKCS#7 signature file (.p7s, DER format)
+ * @param outputPath Optional output path (defaults to overwriting input)
+ */
+export function applyExternalSignature(
+  mcpbPath: string,
+  signaturePath: string,
+  outputPath?: string,
+): void {
+  const mcpbContent = readFileSync(mcpbPath);
+  const signatureBytes = readFileSync(signaturePath);
+
+  // Reject if already signed
+  const footerBytes = Buffer.from(SIGNATURE_FOOTER, "utf-8");
+  if (mcpbContent.length >= footerBytes.length) {
+    const tail = mcpbContent.slice(mcpbContent.length - footerBytes.length);
+    if (tail.equals(footerBytes)) {
+      throw new Error(
+        "MCPB file is already signed. Use 'mcpb unsign' to remove the existing signature first.",
+      );
+    }
+  }
+
+  // Verify the bundle was prepared (EOCD comment_length == MAX_SIG_BLOCK_SIZE)
+  const eocdOffset = findEocdOffset(mcpbContent);
+  if (eocdOffset === -1) {
+    throw new Error("ZIP End of Central Directory not found — not a valid MCPB file.");
+  }
+
+  const commentLength = mcpbContent.readUInt16LE(eocdOffset + 20);
+  if (commentLength !== MAX_SIG_BLOCK_SIZE) {
+    throw new Error(
+      `MCPB file was not prepared for external signing (comment_length is ${commentLength}, expected ${MAX_SIG_BLOCK_SIZE}). ` +
+        "Run 'mcpb prepare-for-signing' first.",
+    );
+  }
+
+  // Reject oversized signatures
+  if (signatureBytes.length + SIG_BLOCK_OVERHEAD > MAX_SIG_BLOCK_SIZE) {
+    throw new Error(
+      `Signature is too large (${signatureBytes.length} bytes). ` +
+        `Maximum signature size is ${MAX_SIG_BLOCK_SIZE - SIG_BLOCK_OVERHEAD} bytes.`,
+    );
+  }
+
+  // Build padded signature block
+  const headerBuf = Buffer.from(SIGNATURE_HEADER, "utf-8");
+  const footerBuf = Buffer.from(SIGNATURE_FOOTER, "utf-8");
+  const lengthBuf = Buffer.alloc(4);
+  lengthBuf.writeUInt32LE(signatureBytes.length, 0);
+
+  const paddingSize =
+    MAX_SIG_BLOCK_SIZE - (headerBuf.length + 4 + signatureBytes.length + footerBuf.length);
+  const paddingBuf = Buffer.alloc(paddingSize, 0);
+
+  const signedContent = Buffer.concat([
+    mcpbContent,
+    headerBuf,
+    lengthBuf,
+    signatureBytes,
+    paddingBuf,
+    footerBuf,
+  ]);
+
+  writeFileSync(outputPath || mcpbPath, signedContent);
 }
 
 /**

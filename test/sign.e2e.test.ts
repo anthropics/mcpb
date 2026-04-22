@@ -14,6 +14,9 @@ import forge from "node-forge";
 import * as path from "path";
 
 import {
+  applyExternalSignature,
+  MAX_SIG_BLOCK_SIZE,
+  prepareForExternalSigning,
   signMcpbFile,
   unsignMcpbFile,
   verifyMcpbFile,
@@ -513,5 +516,288 @@ describe("MCPB Signing E2E Tests", () => {
 
     // Clean up
     fs.unlinkSync(testFile);
+  });
+});
+
+/**
+ * Helper: create a detached PKCS#7 signature using node-forge.
+ * Simulates what an enterprise HSM (GaraSign, ESRP, etc.) produces.
+ */
+function createDetachedSignature(
+  content: Buffer,
+  certPath: string,
+  keyPath: string,
+): Buffer {
+  const certPem = fs.readFileSync(certPath, "utf-8");
+  const keyPem = fs.readFileSync(keyPath, "utf-8");
+
+  const cert = forge.pki.certificateFromPem(certPem);
+  const key = forge.pki.privateKeyFromPem(keyPem);
+
+  const p7 = forge.pkcs7.createSignedData();
+  p7.content = forge.util.createBuffer(content);
+  p7.addCertificate(cert);
+  p7.addSigner({
+    key,
+    certificate: cert,
+    digestAlgorithm: forge.pki.oids.sha256,
+    authenticatedAttributes: [
+      { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
+      { type: forge.pki.oids.messageDigest },
+      { type: forge.pki.oids.signingTime },
+    ],
+  });
+  p7.sign({ detached: true });
+
+  const asn1 = forge.asn1.toDer(p7.toAsn1());
+  return Buffer.from(asn1.getBytes(), "binary");
+}
+
+describe("External Signing E2E Tests", () => {
+  const EXT_TEST_DIR = path.join(__dirname, "test-output-external");
+
+  beforeAll(() => {
+    if (!fs.existsSync(EXT_TEST_DIR)) {
+      fs.mkdirSync(EXT_TEST_DIR, { recursive: true });
+    }
+    // Ensure the shared test-output dir exists for certs and test MCPB
+    if (!fs.existsSync(TEST_DIR)) {
+      fs.mkdirSync(TEST_DIR, { recursive: true });
+    }
+    // Generate certs and test MCPB if not already present
+    if (!fs.existsSync(SELF_SIGNED_CERT)) {
+      generateSelfSignedCert();
+    }
+    if (!fs.existsSync(TEST_MCPB)) {
+      createTestDxt();
+    }
+  });
+
+  afterAll(() => {
+    try {
+      fs.rmSync(EXT_TEST_DIR, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  it("should complete prepare → sign → apply roundtrip", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "roundtrip.mcpb");
+    const sigFile = path.join(EXT_TEST_DIR, "roundtrip.p7s");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    // Step 1: Prepare
+    prepareForExternalSigning(mcpbFile);
+
+    // Verify EOCD comment_length was set
+    const prepared = fs.readFileSync(mcpbFile);
+    let eocdOffset = -1;
+    for (let i = prepared.length - 22; i >= 0; i--) {
+      if (prepared.readUInt32LE(i) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    expect(eocdOffset).toBeGreaterThanOrEqual(0);
+    expect(prepared.readUInt16LE(eocdOffset + 20)).toBe(MAX_SIG_BLOCK_SIZE);
+
+    // Step 2: Create detached signature (simulates enterprise HSM)
+    const sigBytes = createDetachedSignature(
+      prepared,
+      SELF_SIGNED_CERT,
+      SELF_SIGNED_KEY,
+    );
+    fs.writeFileSync(sigFile, sigBytes);
+
+    // Step 3: Apply signature
+    applyExternalSignature(mcpbFile, sigFile);
+
+    // Verify result
+    const signed = fs.readFileSync(mcpbFile);
+
+    // File should end with MCPB_SIG_END
+    const footer = signed
+      .slice(signed.length - Buffer.byteLength("MCPB_SIG_END"))
+      .toString("utf-8");
+    expect(footer).toBe("MCPB_SIG_END");
+
+    // Total appended block should be exactly MAX_SIG_BLOCK_SIZE
+    const appendedSize = signed.length - prepared.length;
+    expect(appendedSize).toBe(MAX_SIG_BLOCK_SIZE);
+
+    // EOCD comment_length should still be MAX_SIG_BLOCK_SIZE
+    let signedEocdOffset = -1;
+    for (let i = prepared.length - 22; i >= 0; i--) {
+      if (signed.readUInt32LE(i) === 0x06054b50) {
+        signedEocdOffset = i;
+        break;
+      }
+    }
+    expect(signedEocdOffset).toBeGreaterThanOrEqual(0);
+    expect(signed.readUInt16LE(signedEocdOffset + 20)).toBe(MAX_SIG_BLOCK_SIZE);
+
+    // adm-zip validation: file_size == eocd_offset + 22 + comment_length
+    expect(signed.length).toBe(signedEocdOffset + 22 + MAX_SIG_BLOCK_SIZE);
+  });
+
+  it("should reject already-signed bundles in prepare", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "already-signed.mcpb");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    // Sign it normally
+    signMcpbFile(mcpbFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+
+    // Prepare should reject
+    expect(() => prepareForExternalSigning(mcpbFile)).toThrow(
+      "already signed",
+    );
+  });
+
+  it("should reject already-prepared bundles in prepare", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "already-prepared.mcpb");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    // Prepare once
+    prepareForExternalSigning(mcpbFile);
+
+    // Prepare again should reject
+    expect(() => prepareForExternalSigning(mcpbFile)).toThrow(
+      "already prepared",
+    );
+  });
+
+  it("should reject unprepared bundles in apply-signature", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "unprepared.mcpb");
+    const sigFile = path.join(EXT_TEST_DIR, "dummy.p7s");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+    fs.writeFileSync(sigFile, Buffer.alloc(100)); // dummy signature
+
+    expect(() => applyExternalSignature(mcpbFile, sigFile)).toThrow(
+      "not prepared for external signing",
+    );
+  });
+
+  it("should reject oversized signatures", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "oversized.mcpb");
+    const sigFile = path.join(EXT_TEST_DIR, "oversized.p7s");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    // Prepare
+    prepareForExternalSigning(mcpbFile);
+
+    // Create a signature larger than MAX_SIG_BLOCK_SIZE
+    fs.writeFileSync(sigFile, Buffer.alloc(MAX_SIG_BLOCK_SIZE));
+
+    expect(() => applyExternalSignature(mcpbFile, sigFile)).toThrow(
+      "too large",
+    );
+  });
+
+  it("should produce correct padding", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "padding.mcpb");
+    const sigFile = path.join(EXT_TEST_DIR, "padding.p7s");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    prepareForExternalSigning(mcpbFile);
+    const preparedSize = fs.statSync(mcpbFile).size;
+
+    // Create detached signature
+    const prepared = fs.readFileSync(mcpbFile);
+    const sigBytes = createDetachedSignature(
+      prepared,
+      SELF_SIGNED_CERT,
+      SELF_SIGNED_KEY,
+    );
+    fs.writeFileSync(sigFile, sigBytes);
+
+    applyExternalSignature(mcpbFile, sigFile);
+
+    const signed = fs.readFileSync(mcpbFile);
+    const sigBlock = signed.slice(preparedSize);
+
+    // Total block size must be exactly MAX_SIG_BLOCK_SIZE
+    expect(sigBlock.length).toBe(MAX_SIG_BLOCK_SIZE);
+
+    // Parse the block: header (11) + length (4) + sig (N) + padding + footer (12)
+    const header = sigBlock.slice(0, 11).toString("utf-8");
+    expect(header).toBe("MCPB_SIG_V1");
+
+    const sigLen = sigBlock.readUInt32LE(11);
+    expect(sigLen).toBe(sigBytes.length);
+
+    const extractedSig = sigBlock.slice(15, 15 + sigLen);
+    expect(extractedSig.equals(sigBytes)).toBe(true);
+
+    // Padding should be all zeros
+    const paddingStart = 15 + sigLen;
+    const paddingEnd = sigBlock.length - 12; // before MCPB_SIG_END
+    const padding = sigBlock.slice(paddingStart, paddingEnd);
+    expect(padding.every((b) => b === 0)).toBe(true);
+
+    const endMarker = sigBlock.slice(sigBlock.length - 12).toString("utf-8");
+    expect(endMarker).toBe("MCPB_SIG_END");
+  });
+
+  it("should satisfy adm-zip strict validation", () => {
+    const mcpbFile = path.join(EXT_TEST_DIR, "admzip.mcpb");
+    const sigFile = path.join(EXT_TEST_DIR, "admzip.p7s");
+    fs.copyFileSync(TEST_MCPB, mcpbFile);
+
+    prepareForExternalSigning(mcpbFile);
+    const prepared = fs.readFileSync(mcpbFile);
+    const sigBytes = createDetachedSignature(
+      prepared,
+      SELF_SIGNED_CERT,
+      SELF_SIGNED_KEY,
+    );
+    fs.writeFileSync(sigFile, sigBytes);
+    applyExternalSignature(mcpbFile, sigFile);
+
+    const signed = fs.readFileSync(mcpbFile);
+
+    // Find EOCD in signed file
+    let eocdOffset = -1;
+    for (let i = signed.length - 22; i >= 0; i--) {
+      if (signed.readUInt32LE(i) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    expect(eocdOffset).toBeGreaterThanOrEqual(0);
+
+    const commentLength = signed.readUInt16LE(eocdOffset + 20);
+
+    // This is the exact check adm-zip performs:
+    // data.length - Constants.ENDHDR !== commentLength
+    // where ENDHDR starts at eocdOffset, and is 22 bytes long
+    expect(signed.length).toBe(eocdOffset + 22 + commentLength);
+  });
+
+  it("should write to output path when specified", () => {
+    const inputFile = path.join(EXT_TEST_DIR, "output-input.mcpb");
+    const outputFile = path.join(EXT_TEST_DIR, "output-prepared.mcpb");
+    fs.copyFileSync(TEST_MCPB, inputFile);
+
+    // Prepare with output path — input should not be modified
+    const originalContent = fs.readFileSync(inputFile);
+    prepareForExternalSigning(inputFile, outputFile);
+
+    // Input unchanged
+    const afterContent = fs.readFileSync(inputFile);
+    expect(afterContent.equals(originalContent)).toBe(true);
+
+    // Output was created and has updated EOCD
+    expect(fs.existsSync(outputFile)).toBe(true);
+    const preparedContent = fs.readFileSync(outputFile);
+    let eocdOffset = -1;
+    for (let i = preparedContent.length - 22; i >= 0; i--) {
+      if (preparedContent.readUInt32LE(i) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    expect(preparedContent.readUInt16LE(eocdOffset + 20)).toBe(
+      MAX_SIG_BLOCK_SIZE,
+    );
   });
 });

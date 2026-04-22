@@ -6,7 +6,14 @@ import { existsSync, readFileSync, statSync } from "fs";
 import { basename, dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { signMcpbFile, unsignMcpbFile, verifyMcpbFile } from "../node/sign.js";
+import {
+  applyExternalSignature,
+  MAX_SIG_BLOCK_SIZE,
+  prepareForExternalSigning,
+  signMcpbFile,
+  unsignMcpbFile,
+  verifyMcpbFile,
+} from "../node/sign.js";
 import { cleanMcpb, validateManifest } from "../node/validate.js";
 import { initExtension } from "./init.js";
 import { packExtension } from "./pack.js";
@@ -365,6 +372,92 @@ program
       process.exit(1);
     }
   });
+
+// Prepare-for-signing command (external/enterprise signing workflow)
+program
+  .command("prepare-for-signing <mcpb-file>")
+  .description(
+    "Prepare an MCPB file for external signing (GaraSign, ESRP, SignServer, etc.)",
+  )
+  .option("-o, --output <path>", "Output path (default: overwrite input)")
+  .action(
+    (mcpbFile: string, options: { output?: string }) => {
+      try {
+        const mcpbPath = resolve(mcpbFile);
+
+        if (!existsSync(mcpbPath)) {
+          console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
+          process.exit(1);
+        }
+
+        prepareForExternalSigning(mcpbPath, options.output);
+
+        const target = options.output
+          ? basename(options.output)
+          : basename(mcpbPath);
+        console.log(
+          `Prepared ${target} for external signing (EOCD comment_length set to ${MAX_SIG_BLOCK_SIZE})`,
+        );
+        console.log(
+          `\nNext steps:\n` +
+            `  1. Sign the prepared file with your HSM/signing tool (detached PKCS#7, DER format)\n` +
+            `  2. Run: mcpb apply-signature ${mcpbFile} --signature <signature.p7s>`,
+        );
+      } catch (error) {
+        console.error(
+          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+        process.exit(1);
+      }
+    },
+  );
+
+// Apply-signature command (external/enterprise signing workflow)
+program
+  .command("apply-signature <mcpb-file>")
+  .description(
+    "Apply a detached PKCS#7 signature to a prepared MCPB file",
+  )
+  .requiredOption(
+    "-s, --signature <path>",
+    "Path to detached PKCS#7 signature file (.p7s, DER format)",
+  )
+  .option("-o, --output <path>", "Output path (default: overwrite input)")
+  .action(
+    (mcpbFile: string, options: { signature: string; output?: string }) => {
+      try {
+        const mcpbPath = resolve(mcpbFile);
+        const sigPath = resolve(options.signature);
+
+        if (!existsSync(mcpbPath)) {
+          console.error(`ERROR: MCPB file not found: ${mcpbFile}`);
+          process.exit(1);
+        }
+
+        if (!existsSync(sigPath)) {
+          console.error(
+            `ERROR: Signature file not found: ${options.signature}`,
+          );
+          process.exit(1);
+        }
+
+        const sigSize = statSync(sigPath).size;
+        applyExternalSignature(mcpbPath, sigPath, options.output);
+
+        const target = options.output
+          ? basename(options.output)
+          : basename(mcpbPath);
+        console.log(
+          `Applied signature to ${target} (${sigSize} byte PKCS#7, padded to ${MAX_SIG_BLOCK_SIZE})`,
+        );
+      } catch (error) {
+        console.error(
+          `ERROR: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+        process.exit(1);
+      }
+    },
+  );
 
 // Parse command line arguments
 program.parse();
