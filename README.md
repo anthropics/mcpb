@@ -109,7 +109,7 @@ bundle.mcpb (ZIP file)
 
 ### Bundling Dependencies
 
-**UV Runtime (Experimental - v0.4+):**
+**UV Runtime (v0.4+):**
 
 - Use `server.type = "uv"` in manifest
 - Include `pyproject.toml` with dependencies (no bundled packages needed)

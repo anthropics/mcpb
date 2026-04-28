@@ -33,17 +33,6 @@ class ChromeControlServer {
     this.setupHandlers();
   }
 
-  // Helper methods
-  escapeForAppleScript(str) {
-    if (typeof str !== "string") return str;
-    // Basic AppleScript string escaping
-    return str
-      .replace(/\\/g, "\\\\") // Escape backslashes first
-      .replace(/"/g, '\\"') // Then escape double quotes
-      .replace(/\n/g, "\\n") // Escape newlines
-      .replace(/\r/g, "\\r"); // Escape carriage returns
-  }
-
   async checkChromeAvailable() {
     try {
       const script = 'tell application "Google Chrome" to return "available"';
@@ -82,12 +71,28 @@ class ChromeControlServer {
     }
   }
 
+  // Coerce tab_id to a safe numeric value before interpolating into
+  // AppleScript. inputSchema type:"number" is advisory — runtime may receive
+  // a string, which would otherwise be injected into the osascript template.
+  toSafeTabId(tabId) {
+    if (tabId === null || tabId === undefined) return null;
+    const n = Number.parseInt(tabId, 10);
+    if (Number.isNaN(n)) {
+      throw new Error("tab_id must be a number");
+    }
+    return n;
+  }
+
   async findTabById(tabId) {
+    const safeTabId = this.toSafeTabId(tabId);
+    if (safeTabId === null) {
+      return { w: null, t: null, found: false };
+    }
     const script = `
       tell application "Google Chrome"
         repeat with w in windows
           repeat with t in tabs of w
-            if (id of t as string) is "${tabId}" then
+            if (id of t as string) is "${safeTabId}" then
               return {w, t, true}
             end if
           end repeat
@@ -103,7 +108,8 @@ class ChromeControlServer {
     operation,
     successMessage = "Operation completed",
   ) {
-    if (!tabId) {
+    const safeTabId = this.toSafeTabId(tabId);
+    if (safeTabId === null) {
       // No tab ID, execute on active tab
       return this.executeAppleScript(operation.activeScript);
     }
@@ -112,7 +118,7 @@ class ChromeControlServer {
       tell application "Google Chrome"
         repeat with w in windows
           repeat with t in tabs of w
-            if (id of t as string) is "${tabId}" then
+            if (id of t as string) is "${safeTabId}" then
               ${operation.tabScript}
               return "${successMessage}"
             end if
@@ -272,10 +278,23 @@ class ChromeControlServer {
               throw new Error("URL is required and must be a string");
             }
 
-            const escapedUrl = this.escapeForAppleScript(url);
+            try {
+              new URL(url);
+            } catch (error) {
+              return {
+                content: [
+                  {
+                    type: "text",
+                    text: `Error: url is not a valid url - ${error.message}`,
+                  },
+                ],
+                isError: true,
+              };
+            }
+
             const script = new_tab
-              ? `tell application "Google Chrome" to open location "${escapedUrl}"`
-              : `tell application "Google Chrome" to set URL of active tab of front window to "${escapedUrl}"`;
+              ? `tell application "Google Chrome" to open location ${JSON.stringify(url)}`
+              : `tell application "Google Chrome" to set URL of active tab of front window to ${JSON.stringify(url)}`;
 
             await this.executeAppleScript(script);
             return {
@@ -551,6 +570,7 @@ class ChromeControlServer {
                 "JavaScript code is required and must be a string",
               );
             }
+            const safeTabId = this.toSafeTabId(tab_id);
 
             // Wrap the code to capture console.log outputs
             const wrappedCode = `
@@ -626,15 +646,14 @@ class ChromeControlServer {
               })();
             `;
 
-            const escapedCode = this.escapeForAppleScript(wrappedCode);
-
-            const script = tab_id
-              ? `
+            const script =
+              safeTabId != null
+                ? `
               tell application "Google Chrome"
                 repeat with w in windows
                   repeat with t in tabs of w
-                    if (id of t as string) is "${tab_id}" then
-                      set result to execute t javascript "${escapedCode}"
+                    if (id of t as string) is "${safeTabId}" then
+                      set result to execute t javascript ${JSON.stringify(wrappedCode)}
                       return result
                     end if
                   end repeat
@@ -642,9 +661,9 @@ class ChromeControlServer {
                 return "Tab not found"
               end tell
             `
-              : `
+                : `
               tell application "Google Chrome"
-                execute active tab of front window javascript "${escapedCode}"
+                execute active tab of front window javascript ${JSON.stringify(wrappedCode)}
               end tell
             `;
 
@@ -695,14 +714,16 @@ class ChromeControlServer {
 
           case "get_page_content": {
             const { tab_id } = args;
+            const safeTabId = this.toSafeTabId(tab_id);
 
             const jsCode = "document.body.innerText";
-            const script = tab_id
-              ? `
+            const script =
+              safeTabId != null
+                ? `
               tell application "Google Chrome"
                 repeat with w in windows
                   repeat with t in tabs of w
-                    if (id of t as string) is "${tab_id}" then
+                    if (id of t as string) is "${safeTabId}" then
                       set pageContent to execute t javascript "${jsCode}"
                       return pageContent
                     end if
@@ -711,7 +732,7 @@ class ChromeControlServer {
                 return "Tab not found"
               end tell
             `
-              : `
+                : `
               tell application "Google Chrome"
                 execute active tab of front window javascript "${jsCode}"
               end tell

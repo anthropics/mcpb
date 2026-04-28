@@ -90,8 +90,20 @@ export function signMcpbFile(
   // Create signature block with PKCS#7 data
   const signatureBlock = createSignatureBlock(pkcs7Signature);
 
+  // Update ZIP EOCD comment_length to include signature block
+  // This ensures strict ZIP parsers accept the signed file
+  const updatedContent = Buffer.from(mcpbContent);
+  const eocdOffset = findEocdOffset(updatedContent);
+  if (eocdOffset !== -1) {
+    const currentCommentLength = updatedContent.readUInt16LE(eocdOffset + 20);
+    updatedContent.writeUInt16LE(
+      currentCommentLength + signatureBlock.length,
+      eocdOffset + 20,
+    );
+  }
+
   // Append signature block to MCPB file
-  const signedContent = Buffer.concat([mcpbContent, signatureBlock]);
+  const signedContent = Buffer.concat([updatedContent, signatureBlock]);
   writeFileSync(mcpbPath, signedContent);
 }
 
@@ -344,6 +356,20 @@ function verifyPkcs7DetachedSignature(
   } catch {
     return false;
   }
+}
+
+/*
+ * Finds the offset of the ZIP End of Central Directory record
+ * by scanning backwards for the EOCD magic bytes (0x06054b50)
+ */
+function findEocdOffset(buffer: Buffer): number {
+  // EOCD is at least 22 bytes, scan backwards from the end
+  for (let i = buffer.length - 22; i >= 0; i--) {
+    if (buffer.readUInt32LE(i) === 0x06054b50) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**

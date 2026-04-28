@@ -88,6 +88,8 @@ typings/
 # Claude files
 .claude.json
 .claude/
+CLAUDE.md
+PROJECT_STATUS.md
 
 # Vite
 .vite/
@@ -106,5 +108,9 @@ self-signed-key.pem
 *.mcpb
 invalid-json.json
 **/server/lib/**
+
+# Rust example build artifacts
+examples/calculator-rust/target/
+examples/calculator-rust/server/
 
 .yarn/install-state.gz

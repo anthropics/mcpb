@@ -1,0 +1,36 @@
+{
+  "$schema": "../../dist/mcpb-manifest.schema.json",
+  "manifest_version": "0.3",
+  "name": "calculator-rust",
+  "display_name": "Calculator (Rust Binary)",
+  "version": "1.0.0",
+  "description": "A simple calculator MCP server compiled from Rust",
+  "long_description": "Demonstrates packaging a compiled Rust binary as an MCP Bundle using the binary server type. The server provides sum and sub tools for basic arithmetic. Based on the official Rust MCP SDK calculator example.",
+  "author": {
+    "name": "Model Context Protocol"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "server/mcp-calculator",
+    "mcp_config": {
+      "command": "${__dirname}/server/mcp-calculator",
+      "args": [],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "sum",
+      "description": "Calculate the sum of two numbers"
+    },
+    {
+      "name": "sub",
+      "description": "Calculate the difference of two numbers"
+    }
+  ],
+  "keywords": ["calculator", "rust", "binary", "example"],
+  "license": "Apache-2.0",
+  "compatibility": {
+    "platforms": ["darwin", "linux"]
+  }
+}

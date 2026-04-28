@@ -117,7 +117,9 @@ export async function getMcpConfigForManifest(
 
       result.command = platformConfig.command || result.command;
       result.args = platformConfig.args || result.args;
-      result.env = platformConfig.env || result.env;
+      result.env = platformConfig.env
+        ? { ...result.env, ...platformConfig.env }
+        : result.env;
     }
   }
 

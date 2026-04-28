@@ -292,7 +292,8 @@ MCPB uses PKCS#7 (Cryptographic Message Syntax) for digital signatures:
 ```
 [Original MCPB ZIP content]
 MCPB_SIG_V1
-[Base64-encoded PKCS#7 signature]
+[4-byte little-endian length prefix]
+[DER-encoded PKCS#7 signature]
 MCPB_SIG_END
 ```
 

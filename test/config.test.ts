@@ -269,6 +269,54 @@ describe("getMcpConfigForManifest", () => {
     expect(result?.args).toEqual(["server.js", "/user/path1", "/user/path2"]);
   });
 
+  it("should merge platform override env with base env instead of replacing", async () => {
+    const manifest: McpbManifestAny = {
+      ...baseManifest,
+      user_config: {
+        data_directory: {
+          type: "directory",
+          title: "Data Directory",
+          description: "Where data lives",
+          required: true,
+        },
+      },
+      server: {
+        type: "node",
+        entry_point: "server.js",
+        mcp_config: {
+          command: "node",
+          args: ["server.js"],
+          env: {
+            DATA_DIR: "${user_config.data_directory}",
+            EXISTING_VAR: "keep-me",
+          },
+          platform_overrides: {
+            [process.platform]: {
+              env: {
+                PATH: "/usr/local/bin:${HOME}/.local/bin",
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const result = await getMcpConfigForManifest({
+      manifest,
+      extensionPath: "/ext/path",
+      systemDirs: { ...mockSystemDirs, HOME: "/home/user" },
+      userConfig: { data_directory: "/custom/data" },
+      pathSeparator: "/",
+      logger: mockLogger,
+    });
+
+    // Base env vars should be preserved after platform override merge
+    expect(result?.env?.DATA_DIR).toBe("/custom/data");
+    expect(result?.env?.EXISTING_VAR).toBe("keep-me");
+    // Platform override env should also be present
+    expect(result?.env?.PATH).toBe("/usr/local/bin:/home/user/.local/bin");
+  });
+
   it("should convert boolean user config values to strings", async () => {
     const manifest: McpbManifestAny = {
       ...baseManifest,

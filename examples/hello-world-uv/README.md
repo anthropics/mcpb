@@ -1,6 +1,4 @@
-# Hello World UV Runtime Example (Experimental)
-
-> **Note:** UV runtime support is experimental and may change in future versions.
+# Hello World UV Runtime Example
 
 This example demonstrates a minimal MCP server using **UV runtime**.
 
@@ -28,7 +26,7 @@ hello-world-uv/
 **UV Runtime** (this example):
 - `server.type = "uv"`
 - No bundled dependencies
-- No `mcp_config` needed
+- `mcp_config` uses `uv run` to auto-resolve deps from `pyproject.toml`
 - Small bundle size (~2 KB)
 - Works on any platform
 

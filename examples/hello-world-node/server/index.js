@@ -64,7 +64,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start the server
-const transport = new StdioServerTransport();
-server.connect(transport);
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error("Hello World MCP server running...");
+}
 
-console.error("Hello World MCP server running...");
+main().catch((error) => {
+  console.error("Fatal error in main():", error);
+  process.exit(1);
+});

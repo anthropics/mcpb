@@ -1,28 +1,28 @@
 {
-  "$schema": "../../dist/mcpb-manifest.schema.json",
-  "manifest_version": "0.1",
+  "manifest_version": "0.4",
   "name": "file-manager-python",
   "display_name": "Python File Manager MCP",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Python MCP server for file operations",
-  "long_description": "This extension provides file management capabilities through a Python MCP server. It demonstrates Python-based MCP Bundle development, including file operations, directory management, and proper MCP protocol implementation.",
+  "long_description": "This extension provides file management capabilities through a Python MCP server. It demonstrates Python-based MCP Bundle development using UV runtime, including file operations, directory management, and proper MCP protocol implementation.",
   "author": {
     "name": "Anthropic",
     "email": "support@anthropic.com",
     "url": "https://github.com/anthropics"
   },
   "server": {
-    "type": "python",
+    "type": "uv",
     "entry_point": "server/main.py",
     "mcp_config": {
-      "command": "python",
+      "command": "uv",
       "args": [
-        "${__dirname}/server/main.py",
+        "run",
+        "--directory", "${__dirname}",
+        "server/main.py",
         "--workspace=${user_config.workspace_directory}"
       ],
       "env": {
-        "DEBUG": "${user_config.debug_mode}",
-        "PYTHONPATH": "${__dirname}/server/lib"
+        "DEBUG": "${user_config.debug_mode}"
       }
     }
   },
@@ -62,8 +62,7 @@
     "claude_desktop": ">=0.10.0",
     "platforms": ["darwin", "win32", "linux"],
     "runtimes": {
-      "python": ">=3.8.0 <4"
+      "python": ">=3.10.0 <4"
     }
-  },
-  "privacy_policies": []
+  }
 }

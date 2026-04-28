@@ -22,6 +22,7 @@ interface PackOptions {
   extensionPath: string;
   outputPath?: string;
   silent?: boolean;
+  manifestPath?: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -50,6 +51,7 @@ export async function packExtension({
   extensionPath,
   outputPath,
   silent,
+  manifestPath: customManifestPath,
 }: PackOptions): Promise<boolean> {
   const resolvedPath = resolve(extensionPath);
   const logger = getLogger({ silent });
@@ -60,9 +62,18 @@ export async function packExtension({
     return false;
   }
 
-  // Check if manifest exists
-  const manifestPath = join(resolvedPath, "manifest.json");
+  // Resolve manifest path
+  const manifestPath = customManifestPath
+    ? resolve(customManifestPath)
+    : join(resolvedPath, "manifest.json");
+
   if (!existsSync(manifestPath)) {
+    if (customManifestPath) {
+      // When --manifest is explicitly provided, error immediately
+      logger.error(`ERROR: Manifest file not found: ${customManifestPath}`);
+      return false;
+    }
+
     logger.log(`No manifest.json found in ${extensionPath}`);
     const shouldInit = await confirm({
       message: "Would you like to create a manifest.json file?",
@@ -83,7 +94,11 @@ export async function packExtension({
 
   // Validate manifest first
   logger.log("Validating manifest...");
-  if (!validateManifest(manifestPath)) {
+  if (
+    !validateManifest(manifestPath, {
+      projectDir: resolvedPath,
+    })
+  ) {
     logger.error("ERROR: Cannot pack extension with invalid manifest");
     return false;
   }
@@ -134,6 +149,15 @@ export async function packExtension({
       {},
       mcpbIgnorePatterns,
     );
+
+    // When using a custom manifest path, inject the manifest into the bundle
+    if (customManifestPath) {
+      const manifestStat = statSync(manifestPath);
+      files["manifest.json"] = {
+        data: readFileSync(manifestPath),
+        mode: manifestStat.mode,
+      };
+    }
 
     // Print package header
     logger.log(`\n📦  ${manifest.name}@${manifest.version}`);
@@ -202,15 +226,22 @@ export async function packExtension({
     const zipFiles: Zippable = {};
 
     const isUnix = process.platform !== "win32";
+    const isBinaryType = manifest.server?.type === "binary";
+    const binaryEntryPoint = isBinaryType ? manifest.server.entry_point : null;
 
     for (const [filePath, fileData] of Object.entries(files)) {
       if (isUnix) {
+        let mode = fileData.mode & 0o777;
+        // Ensure binary entry points are always executable in the ZIP,
+        // regardless of filesystem permissions. Windows-built ZIPs store
+        // 644 because Windows has no Unix execute bit — CD spawns binary
+        // entry points directly, so they must have +x to avoid EACCES.
+        if (binaryEntryPoint && filePath === binaryEntryPoint) {
+          mode = mode | 0o111;
+        }
         // Set external file attributes to preserve Unix permissions
         // The mode needs to be shifted to the upper 16 bits for ZIP format
-        zipFiles[filePath] = [
-          fileData.data,
-          { os: 3, attrs: (fileData.mode & 0o777) << 16 },
-        ];
+        zipFiles[filePath] = [fileData.data, { os: 3, attrs: mode << 16 }];
       } else {
         // On Windows, use default ZIP attributes (no Unix permissions)
         zipFiles[filePath] = fileData.data;

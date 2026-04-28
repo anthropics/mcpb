@@ -2,7 +2,7 @@ import { existsSync, readFileSync, statSync } from "fs";
 import * as fs from "fs/promises";
 import { DestroyerOfModules } from "galactus";
 import * as os from "os";
-import { dirname, isAbsolute, join, resolve } from "path";
+import { dirname, extname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
 
 import { unpackExtension } from "../cli/unpack.js";
@@ -11,6 +11,7 @@ import {
   MANIFEST_SCHEMAS_LOOSE,
 } from "../shared/constants.js";
 import { getManifestVersionFromRawData } from "../shared/manifestVersionResolve.js";
+import { getAllFilesWithCount, readMcpbIgnorePatterns } from "./files.js";
 
 /**
  * Check if a buffer contains a valid PNG file signature
@@ -108,7 +109,191 @@ function validateIcon(
   };
 }
 
-export function validateManifest(inputPath: string): boolean {
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Expected file extensions by server type
+const NODE_EXTENSIONS = new Set([".js", ".mjs", ".cjs"]);
+const PYTHON_EXTENSIONS = new Set([".py"]);
+const SCRIPT_EXTENSIONS = new Set([".js", ".mjs", ".cjs", ".py"]);
+
+/**
+ * Validate that the server entry_point file exists and matches the server type
+ */
+function validateEntryPoint(
+  manifest: { server: { type: string; entry_point: string } },
+  baseDir: string,
+): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const { type, entry_point } = manifest.server;
+  const entryPath = join(baseDir, entry_point);
+
+  if (!existsSync(entryPath)) {
+    errors.push(`Entry point file not found: ${entry_point}`);
+    return { valid: false, errors, warnings };
+  }
+
+  const ext = extname(entry_point).toLowerCase();
+
+  if (type === "node" && !NODE_EXTENSIONS.has(ext)) {
+    warnings.push(
+      `Unusual entry point extension "${ext}" for server type "node". Expected: .js, .mjs, or .cjs`,
+    );
+  } else if (
+    (type === "python" || type === "uv") &&
+    !PYTHON_EXTENSIONS.has(ext)
+  ) {
+    warnings.push(
+      `Unusual entry point extension "${ext}" for server type "${type}". Expected: .py`,
+    );
+  } else if (type === "binary" && SCRIPT_EXTENSIONS.has(ext)) {
+    warnings.push(
+      `Entry point has script extension "${ext}" but server type is "binary". Did you mean type "node" or "python"?`,
+    );
+  }
+
+  // For binary type on Unix, check executable bit
+  if (type === "binary" && process.platform !== "win32") {
+    const stat = statSync(entryPath);
+    if (!(stat.mode & 0o111)) {
+      errors.push(
+        `Binary entry point is not executable: ${entry_point}. Run: chmod +x ${entry_point}`,
+      );
+    }
+  }
+
+  return { valid: errors.length === 0, errors, warnings };
+}
+
+// Valid variable patterns from src/shared/config.ts replaceVariables()
+const VALID_VARIABLE_PATTERN =
+  /^\$\{(__dirname|pathSeparator|\/|user_config\..+)\}$/;
+
+/**
+ * Validate that ${...} variables in mcp_config are recognized
+ */
+function validateCommandVariables(manifest: {
+  server: {
+    mcp_config: {
+      command?: string;
+      args?: string[];
+      env?: Record<string, string>;
+      platform_overrides?: Record<
+        string,
+        {
+          command?: string;
+          args?: string[];
+          env?: Record<string, string>;
+        }
+      >;
+    };
+  };
+}): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  function checkString(value: string, context: string): void {
+    const variablePattern = /\$\{([^}]+)\}/g;
+    let match;
+    while ((match = variablePattern.exec(value)) !== null) {
+      const fullVar = match[0];
+      if (!VALID_VARIABLE_PATTERN.test(fullVar)) {
+        errors.push(
+          `Invalid variable "${fullVar}" in ${context}. Valid variables: \${__dirname}, \${pathSeparator}, \${/}, \${user_config.<key>}`,
+        );
+      }
+    }
+  }
+
+  function checkConfig(
+    config: { command?: string; args?: string[]; env?: Record<string, string> },
+    prefix: string,
+  ): void {
+    if (config.command) checkString(config.command, `${prefix}command`);
+    if (config.args) {
+      config.args.forEach((arg, i) => checkString(arg, `${prefix}args[${i}]`));
+    }
+    if (config.env) {
+      for (const [key, val] of Object.entries(config.env)) {
+        checkString(val, `${prefix}env.${key}`);
+      }
+    }
+  }
+
+  const { mcp_config } = manifest.server;
+  checkConfig(mcp_config, "mcp_config.");
+
+  if (mcp_config.platform_overrides) {
+    for (const [platform, override] of Object.entries(
+      mcp_config.platform_overrides,
+    )) {
+      checkConfig(override, `mcp_config.platform_overrides.${platform}.`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors, warnings };
+}
+
+// Sensitive file patterns not already covered by EXCLUDE_PATTERNS in files.ts
+const SENSITIVE_PATTERNS = [
+  /(^|\/)credentials\.json$/i,
+  /(^|\/)secrets\./i,
+  /\.pem$/i,
+  /\.key$/i,
+  /\.p12$/i,
+  /\.pfx$/i,
+  /\.jks$/i,
+  /(^|\/)\.aws\//,
+  /(^|\/)\.ssh\//,
+  /(^|\/)id_rsa/,
+  /(^|\/)id_ed25519/,
+  /(^|\/)id_ecdsa/,
+  /\.keystore$/i,
+  /(^|\/)token\.json$/i,
+];
+
+/**
+ * Check if the file list that would be bundled contains sensitive files
+ */
+function validateSensitiveFiles(baseDir: string): ValidationResult {
+  const warnings: string[] = [];
+
+  try {
+    const mcpbIgnorePatterns = readMcpbIgnorePatterns(baseDir);
+    const { files } = getAllFilesWithCount(
+      baseDir,
+      baseDir,
+      {},
+      mcpbIgnorePatterns,
+    );
+
+    for (const filePath of Object.keys(files)) {
+      for (const pattern of SENSITIVE_PATTERNS) {
+        if (pattern.test(filePath)) {
+          warnings.push(
+            `Potentially sensitive file will be included in bundle: ${filePath}`,
+          );
+          break;
+        }
+      }
+    }
+  } catch {
+    // If we can't read the directory, skip this check silently —
+    // pack will fail with a clearer error later
+  }
+
+  // Sensitive files are always warnings, never errors — a .pem might be a legitimate TLS cert
+  return { valid: true, errors: [], warnings };
+}
+
+export function validateManifest(
+  inputPath: string,
+  options?: { projectDir?: string },
+): boolean {
   try {
     const resolvedPath = resolve(inputPath);
     let manifestPath = resolvedPath;
@@ -131,17 +316,23 @@ export function validateManifest(inputPath: string): boolean {
     if (result.success) {
       console.log("Manifest schema validation passes!");
 
-      // Validate icon if present
+      const manifestDir = dirname(manifestPath);
+      // projectDir is where source files live — defaults to the manifest's directory
+      const projectDir = options?.projectDir
+        ? resolve(options.projectDir)
+        : manifestDir;
+      let hasErrors = false;
+
+      // Validate icon if present (always relative to manifest directory)
       if (manifestData.icon) {
-        const baseDir = dirname(manifestPath);
-        const iconValidation = validateIcon(manifestData.icon, baseDir);
+        const iconValidation = validateIcon(manifestData.icon, manifestDir);
 
         if (iconValidation.errors.length > 0) {
           console.log("\nERROR: Icon validation failed:\n");
           iconValidation.errors.forEach((error) => {
             console.log(`  - ${error}`);
           });
-          return false;
+          hasErrors = true;
         }
 
         if (iconValidation.warnings.length > 0) {
@@ -152,7 +343,48 @@ export function validateManifest(inputPath: string): boolean {
         }
       }
 
-      return true;
+      // Validate entry point (relative to project directory)
+      const entryPointValidation = validateEntryPoint(manifestData, projectDir);
+      if (entryPointValidation.errors.length > 0) {
+        console.log("\nERROR: Entry point validation failed:\n");
+        entryPointValidation.errors.forEach((error) => {
+          console.log(`  - ${error}`);
+        });
+        hasErrors = true;
+      }
+      if (entryPointValidation.warnings.length > 0) {
+        console.log("\nEntry point warnings:\n");
+        entryPointValidation.warnings.forEach((warning) => {
+          console.log(`  - ${warning}`);
+        });
+      }
+
+      // Validate command variables
+      const variableValidation = validateCommandVariables(manifestData);
+      if (variableValidation.errors.length > 0) {
+        console.log("\nERROR: Command variable validation failed:\n");
+        variableValidation.errors.forEach((error) => {
+          console.log(`  - ${error}`);
+        });
+        hasErrors = true;
+      }
+      if (variableValidation.warnings.length > 0) {
+        console.log("\nCommand variable warnings:\n");
+        variableValidation.warnings.forEach((warning) => {
+          console.log(`  - ${warning}`);
+        });
+      }
+
+      // Check for sensitive files (relative to project directory)
+      const sensitiveValidation = validateSensitiveFiles(projectDir);
+      if (sensitiveValidation.warnings.length > 0) {
+        console.log("\nSensitive file warnings:\n");
+        sensitiveValidation.warnings.forEach((warning) => {
+          console.log(`  - ${warning}`);
+        });
+      }
+
+      return !hasErrors;
     } else {
       console.log("ERROR: Manifest validation failed:\n");
       result.error.issues.forEach((issue) => {

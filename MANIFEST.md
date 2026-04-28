@@ -403,11 +403,9 @@ Four server types are supported:
 - **`node`**: Node.js server with bundled dependencies
 - **`python`**: Python server with bundled dependencies
 - **`binary`**: Compiled executable
-- **`uv`**: Python server using UV runtime (experimental, v0.4+)
+- **`uv`**: Python server using UV runtime (v0.4+)
 
-### UV Runtime (Experimental, v0.4+)
-
-> **Note:** UV runtime support is experimental and may change in future versions.
+### UV Runtime (v0.4+)
 
 The `uv` server type enables cross-platform Python extensions without bundling dependencies. Instead, dependencies are declared in `pyproject.toml` and installed by the host application using UV.
 

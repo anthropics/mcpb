@@ -93,6 +93,10 @@ describe("Icon Validation", () => {
       "Not a PNG file",
     );
 
+    // Create entry point file referenced by test manifests
+    fs.mkdirSync(join(testFixturesDir, "server"), { recursive: true });
+    fs.writeFileSync(join(testFixturesDir, "server", "index.js"), "// fixture");
+
     // Create test manifests
     createTestManifest("valid-local-icon.json", {
       icon: "valid-icon.png",

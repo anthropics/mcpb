@@ -14,11 +14,12 @@ But, the MCP servers themselves are not robust secure production ready servers a
 
 ## Examples Included
 
-| Example               | Type    | Demonstrates                             |
-| --------------------- | ------- | ---------------------------------------- |
-| `hello-world-node`    | Node.js | Basic MCP server with simple time tool   |
-| `chrome-applescript`  | Node.js | Browser automation via AppleScript       |
-| `file-manager-python` | Python  | File system operations and path handling |
+| Example               | Type    | Demonstrates                                |
+| --------------------- | ------- | ------------------------------------------- |
+| `hello-world-node`    | Node.js | Basic MCP server with simple time tool      |
+| `chrome-applescript`  | Node.js | Browser automation via AppleScript          |
+| `file-manager-python` | Python  | File system operations and path handling    |
+| `calculator-rust`     | Binary  | Compiled Rust binary as MCP Bundle          |
 
 ## Usage
 

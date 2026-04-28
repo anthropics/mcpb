@@ -1,5 +1,4 @@
 // v0.4: Adds UV runtime support for Python extensions
-// NOTE: This schema version is experimental and subject to change.
 import * as z from "zod";
 
 export const MANIFEST_VERSION = "0.4";

@@ -469,4 +469,50 @@ describe("MCPB Signing E2E Tests", () => {
   it("should remove signatures", async () => {
     await testSignatureRemoval();
   });
+
+  it("should update EOCD comment_length after signing", async () => {
+    const testFile = path.join(TEST_DIR, "test-eocd.mcpb");
+    fs.copyFileSync(TEST_MCPB, testFile);
+
+    // Read original EOCD comment_length
+    const originalContent = fs.readFileSync(testFile);
+    let eocdOffset = -1;
+    for (let i = originalContent.length - 22; i >= 0; i--) {
+      if (originalContent.readUInt32LE(i) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    expect(eocdOffset).toBeGreaterThanOrEqual(0);
+    const originalCommentLength = originalContent.readUInt16LE(eocdOffset + 20);
+    expect(originalCommentLength).toBe(0); // Fresh ZIP has no comment
+
+    // Sign the file
+    signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+
+    // Read signed file and verify EOCD comment_length was updated
+    const signedContent = fs.readFileSync(testFile);
+    let signedEocdOffset = -1;
+    for (let i = signedContent.length - 22; i >= 0; i--) {
+      if (signedContent.readUInt32LE(i) === 0x06054b50) {
+        signedEocdOffset = i;
+        break;
+      }
+    }
+    expect(signedEocdOffset).toBeGreaterThanOrEqual(0);
+    const signedCommentLength = signedContent.readUInt16LE(
+      signedEocdOffset + 20,
+    );
+
+    // Comment length should equal everything after the EOCD record's original end
+    const eocdMinSize = 22; // minimum EOCD size (no comment)
+    const dataAfterEocd =
+      signedContent.length -
+      (signedEocdOffset + eocdMinSize + originalCommentLength);
+    expect(signedCommentLength).toBe(dataAfterEocd);
+    expect(signedCommentLength).toBeGreaterThan(0);
+
+    // Clean up
+    fs.unlinkSync(testFile);
+  });
 });

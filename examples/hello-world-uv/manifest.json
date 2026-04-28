@@ -10,7 +10,11 @@
   "icon": "icon.png",
   "server": {
     "type": "uv",
-    "entry_point": "src/server.py"
+    "entry_point": "src/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--directory", "${__dirname}", "src/server.py"]
+    }
   },
   "compatibility": {
     "platforms": ["darwin", "linux", "win32"],
