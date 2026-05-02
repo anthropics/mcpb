@@ -280,7 +280,7 @@ For tools and prompts, the descriptions are also localizable.
 
 - if a client wants to show tool or prompt descriptions in their UI, the client should look for the locale-specific description override in the corresponding per-locale file.
 - clients should only look for tools/prompts present in the manifest.json, i.e. prompts and tools that only exist in the per-locale file should be ignored.
-- Clients should apply locale fallbacks if the client/user locale is not represented by the server. For example, if the user is in the `es-UY` locale but the server does not include that per-locale file, the client should look for an approrpiate fallback, e.g. `es-MX` or `es-ES`, or fall back to the values in the manifest.
+- Clients should apply locale fallbacks if the client/user locale is not represented by the server. For example, if the user is in the `es-UY` locale but the server does not include that per-locale file, the client should look for an appropriate fallback, e.g. `es-MX` or `es-ES`, or fall back to the values in the manifest.
 
 ### Icons
 
