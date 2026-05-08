@@ -33,11 +33,20 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
     .optional(),
 });
 
-export const McpbManifestServerSchema = z.strictObject({
-  type: z.enum(["python", "node", "binary", "uv"]),
+const BaseServerSchema = z.strictObject({
   entry_point: z.string(),
   mcp_config: McpbManifestMcpConfigSchema,
 });
+
+export const McpbManifestServerSchema = z.discriminatedUnion("type", [
+  BaseServerSchema.extend({ type: z.literal("python") }),
+  BaseServerSchema.extend({ type: z.literal("node") }),
+  BaseServerSchema.extend({ type: z.literal("binary") }),
+  BaseServerSchema.extend({
+    type: z.literal("uv"),
+    mcp_config: McpbManifestMcpConfigSchema.optional(),
+  }),
+]);
 
 export const McpbManifestCompatibilitySchema = z.strictObject({
   claude_desktop: z.string().optional(),
