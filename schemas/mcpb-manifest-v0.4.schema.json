@@ -2,7 +2,8 @@
   "type": "object",
   "properties": {
     "$schema": {
-      "type": "string"
+      "type": "string",
+      "description": "JSON Schema URI for this manifest file"
     },
     "dxt_version": {
       "type": "string",
@@ -11,36 +12,46 @@
     },
     "manifest_version": {
       "type": "string",
-      "const": "0.4"
+      "const": "0.4",
+      "description": "Specification version this extension conforms to"
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Machine-readable name used for CLI and APIs"
     },
     "display_name": {
-      "type": "string"
+      "type": "string",
+      "description": "Human-friendly name for UI display. This field is localizable."
     },
     "version": {
-      "type": "string"
+      "type": "string",
+      "description": "Semantic version of the extension (semver)"
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "description": "Brief description of what the extension does. This field is localizable."
     },
     "long_description": {
-      "type": "string"
+      "type": "string",
+      "description": "Detailed description for extension stores; supports markdown. This field is localizable."
     },
     "author": {
       "type": "object",
+      "description": "Author information",
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "Author's name"
         },
         "email": {
           "type": "string",
-          "format": "email"
+          "format": "email",
+          "description": "Author's email address"
         },
         "url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Author's website URL"
         }
       },
       "required": [
@@ -50,13 +61,16 @@
     },
     "repository": {
       "type": "object",
+      "description": "Source code repository information",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "Repository type (e.g. \"git\")"
         },
         "url": {
           "type": "string",
-          "format": "uri"
+          "format": "uri",
+          "description": "Repository URL"
         }
       },
       "required": [
@@ -67,34 +81,42 @@
     },
     "homepage": {
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "Extension homepage URL"
     },
     "documentation": {
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "Documentation URL"
     },
     "support": {
       "type": "string",
-      "format": "uri"
+      "format": "uri",
+      "description": "Support or issues URL"
     },
     "icon": {
-      "type": "string"
+      "type": "string",
+      "description": "Path to a PNG icon file, either relative in the package or an https:// URL"
     },
     "icons": {
       "type": "array",
+      "description": "Array of icon descriptors for light/dark or size-specific assets",
       "items": {
         "type": "object",
         "properties": {
           "src": {
-            "type": "string"
+            "type": "string",
+            "description": "Path to the icon file, either relative in the package or an https:// URL"
           },
           "size": {
             "type": "string",
-            "pattern": "^\\d+x\\d+$"
+            "pattern": "^\\d+x\\d+$",
+            "description": "Icon dimensions in WIDTHxHEIGHT format (e.g. \"128x128\")"
           },
           "theme": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Theme variant for this icon (e.g. \"light\", \"dark\", \"high-contrast\")"
           }
         },
         "required": [
@@ -106,20 +128,24 @@
     },
     "screenshots": {
       "type": "array",
+      "description": "Array of screenshot paths",
       "items": {
         "type": "string"
       }
     },
     "localization": {
       "type": "object",
+      "description": "Location of translated strings for user-facing fields",
       "properties": {
         "resources": {
           "type": "string",
-          "pattern": "\\$\\{locale\\}"
+          "pattern": "\\$\\{locale\\}",
+          "description": "Path to per-locale resource files containing a ${locale} placeholder, resolved relative to the server install directory"
         },
         "default_locale": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+          "pattern": "^[A-Za-z0-9]{2,8}(?:-[A-Za-z0-9]{1,8})*$",
+          "description": "Default BCP 47 locale identifier (e.g. \"en-US\")"
         }
       },
       "required": [
@@ -130,6 +156,7 @@
     },
     "server": {
       "type": "object",
+      "description": "Server configuration defining how to run the MCP server",
       "properties": {
         "type": {
           "type": "string",
@@ -138,31 +165,38 @@
             "node",
             "binary",
             "uv"
-          ]
+          ],
+          "description": "Server runtime type: \"node\" (Node.js), \"python\" (Python with bundled deps), \"binary\" (compiled executable), or \"uv\" (Python via UV runtime)"
         },
         "entry_point": {
-          "type": "string"
+          "type": "string",
+          "description": "Path to the main server file relative to the extension root"
         },
         "mcp_config": {
           "type": "object",
+          "description": "MCP server execution configuration used by the host application to launch the server",
           "properties": {
             "command": {
-              "type": "string"
+              "type": "string",
+              "description": "Command to run the server (supports variable substitution, e.g. ${__dirname})"
             },
             "args": {
               "type": "array",
+              "description": "Arguments passed to the command (supports variable substitution)",
               "items": {
                 "type": "string"
               }
             },
             "env": {
               "type": "object",
+              "description": "Environment variables set when running the server (supports variable substitution)",
               "additionalProperties": {
                 "type": "string"
               }
             },
             "platform_overrides": {
               "type": "object",
+              "description": "Platform-specific overrides for command, args, or env keyed by platform name (e.g. \"win32\", \"darwin\", \"linux\")",
               "additionalProperties": {
                 "type": "object",
                 "properties": {
@@ -195,14 +229,17 @@
     },
     "tools": {
       "type": "array",
+      "description": "Array of tools the extension provides. This field is localizable.",
       "items": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Tool name"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Tool description. This field is localizable."
           }
         },
         "required": [
@@ -212,27 +249,33 @@
       }
     },
     "tools_generated": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the server generates additional tools at runtime (default: false)"
     },
     "prompts": {
       "type": "array",
+      "description": "Array of prompts the extension provides. This field is localizable.",
       "items": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Prompt name"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Prompt description. This field is localizable."
           },
           "arguments": {
             "type": "array",
+            "description": "Names of arguments accepted by this prompt",
             "items": {
               "type": "string"
             }
           },
           "text": {
-            "type": "string"
+            "type": "string",
+            "description": "Prompt text; may reference arguments via ${arguments.NAME}"
           }
         },
         "required": [
@@ -243,19 +286,23 @@
       }
     },
     "prompts_generated": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the server generates additional prompts at runtime (default: false)"
     },
     "keywords": {
       "type": "array",
+      "description": "Search keywords for the extension. This field is localizable.",
       "items": {
         "type": "string"
       }
     },
     "license": {
-      "type": "string"
+      "type": "string",
+      "description": "License identifier (e.g. \"MIT\", \"Apache-2.0\")"
     },
     "privacy_policies": {
       "type": "array",
+      "description": "URLs to privacy policies for external services that handle user data. Required when the extension connects to external services that process user data.",
       "items": {
         "type": "string",
         "format": "uri"
@@ -263,12 +310,15 @@
     },
     "compatibility": {
       "type": "object",
+      "description": "Compatibility requirements for the extension (client app versions, platforms, and runtime versions)",
       "properties": {
         "claude_desktop": {
-          "type": "string"
+          "type": "string",
+          "description": "Semver constraint for the required Claude Desktop version (e.g. \">=1.0.0\")"
         },
         "platforms": {
           "type": "array",
+          "description": "Supported platforms; omit to support all platforms",
           "items": {
             "type": "string",
             "enum": [
@@ -280,12 +330,15 @@
         },
         "runtimes": {
           "type": "object",
+          "description": "Runtime version requirements; only specify the runtime(s) your extension uses",
           "properties": {
             "python": {
-              "type": "string"
+              "type": "string",
+              "description": "Semver constraint for the required Python version (e.g. \">=3.8\")"
             },
             "node": {
-              "type": "string"
+              "type": "string",
+              "description": "Semver constraint for the required Node.js version (e.g. \">=16.0.0\")"
             }
           },
           "additionalProperties": false
@@ -295,6 +348,7 @@
     },
     "user_config": {
       "type": "object",
+      "description": "User-configurable options presented to end users through the host application's UI",
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -306,16 +360,20 @@
               "boolean",
               "directory",
               "file"
-            ]
+            ],
+            "description": "Data type of the configuration option"
           },
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "Display name shown in the UI"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Help text explaining the configuration option"
           },
           "required": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether this field must be provided by the user (default: false)"
           },
           "default": {
             "anyOf": [
@@ -334,19 +392,24 @@
                   "type": "string"
                 }
               }
-            ]
+            ],
+            "description": "Default value for this configuration option; supports variable substitution (e.g. ${HOME})"
           },
           "multiple": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "For directory/file types, whether multiple selections are allowed (default: false)"
           },
           "sensitive": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "For string types, whether to mask input and store securely (default: false)"
           },
           "min": {
-            "type": "number"
+            "type": "number",
+            "description": "Minimum value for number types"
           },
           "max": {
-            "type": "number"
+            "type": "number",
+            "description": "Maximum value for number types"
           }
         },
         "required": [
@@ -359,6 +422,7 @@
     },
     "_meta": {
       "type": "object",
+      "description": "Platform-specific client integration metadata keyed by reverse-DNS namespace (e.g. \"com.microsoft.windows\"). Enables tighter OS/app store integration.",
       "additionalProperties": {
         "type": "object",
         "additionalProperties": {}
