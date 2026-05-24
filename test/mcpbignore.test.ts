@@ -309,4 +309,102 @@ coverage/`;
       expect(shouldExclude("debug.log", additionalPatterns)).toBe(true);
     });
   });
+
+  // Regression tests for #241: the default exclude patterns used to be broad
+  // enough to drop real runtime code from the bundle.
+  describe("Default exclude patterns (issue #241)", () => {
+    it("should still exclude source map files by default", () => {
+      expect(shouldExclude("dist/index.js.map")).toBe(true);
+      expect(shouldExclude("dist/index.cjs.map")).toBe(true);
+      expect(shouldExclude("dist/index.mjs.map")).toBe(true);
+      expect(shouldExclude("dist/styles.css.map")).toBe(true);
+      expect(shouldExclude("dist/index.ts.map")).toBe(true);
+    });
+
+    it("should not exclude directories whose name ends in .map", () => {
+      // es-iterator-helpers ships directories such as Iterator.prototype.map/
+      // whose contents are real runtime code, not source maps.
+      expect(
+        shouldExclude(
+          "node_modules/es-iterator-helpers/Iterator.prototype.map",
+        ),
+      ).toBe(false);
+      expect(
+        shouldExclude(
+          "node_modules/es-iterator-helpers/Iterator.prototype.map/index.js",
+        ),
+      ).toBe(false);
+      expect(
+        shouldExclude(
+          "node_modules/es-iterator-helpers/Iterator.prototype.flatMap/index.js",
+        ),
+      ).toBe(false);
+    });
+
+    it("should not exclude a file that merely ends in .map", () => {
+      // A bare "*.map" matched these; only true source maps should be dropped.
+      expect(shouldExclude("data/world.map")).toBe(false);
+      expect(shouldExclude("src/site.map")).toBe(false);
+    });
+
+    it("should not exclude node_modules/.bin by default", () => {
+      // Some packages reference node_modules/.bin shims at module-load time.
+      expect(shouldExclude("node_modules/.bin")).toBe(false);
+      expect(shouldExclude("node_modules/.bin/retire")).toBe(false);
+    });
+
+    it("should still exclude node_modules/.cache by default", () => {
+      expect(shouldExclude("node_modules/.cache")).toBe(true);
+      expect(shouldExclude("node_modules/.cache/some-file")).toBe(true);
+    });
+  });
+
+  describe("getAllFiles default exclusions (issue #241)", () => {
+    let tempDir: string;
+
+    beforeEach(() => {
+      tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcpb-241-"));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    it("should keep .map-suffixed directories while dropping source maps", () => {
+      const pkgDir = path.join(
+        tempDir,
+        "node_modules",
+        "es-iterator-helpers",
+        "Iterator.prototype.map",
+      );
+      fs.mkdirSync(pkgDir, { recursive: true });
+      fs.writeFileSync(path.join(pkgDir, "index.js"), "module.exports = {};");
+
+      // A real source map sitting next to compiled output should still go away.
+      const distDir = path.join(tempDir, "dist");
+      fs.mkdirSync(distDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, "index.js"), "export default 1;");
+      fs.writeFileSync(path.join(distDir, "index.js.map"), "{}");
+
+      const files = getAllFiles(tempDir, tempDir, {}, []);
+      const fileNames = Object.keys(files);
+
+      expect(fileNames).toContain(
+        "node_modules/es-iterator-helpers/Iterator.prototype.map/index.js",
+      );
+      expect(fileNames).toContain("dist/index.js");
+      expect(fileNames).not.toContain("dist/index.js.map");
+    });
+
+    it("should keep node_modules/.bin shims", () => {
+      const binDir = path.join(tempDir, "node_modules", ".bin");
+      fs.mkdirSync(binDir, { recursive: true });
+      fs.writeFileSync(path.join(binDir, "retire"), "#!/usr/bin/env node\n");
+
+      const files = getAllFiles(tempDir, tempDir, {}, []);
+      const fileNames = Object.keys(files);
+
+      expect(fileNames).toContain("node_modules/.bin/retire");
+    });
+  });
 });

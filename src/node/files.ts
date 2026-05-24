@@ -24,8 +24,14 @@ export const EXCLUDE_PATTERNS = [
   ".babelrc",
   ".pnp.*",
   "node_modules/.cache",
-  "node_modules/.bin",
-  "*.map",
+  // Match only source map files. A bare "*.map" also matches directories whose
+  // name ends in ".map" (for example es-iterator-helpers ships
+  // Iterator.prototype.map/), silently dropping their runtime code. See #241.
+  "*.js.map",
+  "*.cjs.map",
+  "*.mjs.map",
+  "*.css.map",
+  "*.ts.map",
   ".env.local",
   ".env.*.local",
   "npm-debug.log*",
