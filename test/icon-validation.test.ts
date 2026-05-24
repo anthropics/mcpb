@@ -87,6 +87,61 @@ describe("Icon Validation", () => {
     ]);
     fs.writeFileSync(join(testFixturesDir, "valid-icon.png"), validPngBuffer);
 
+    // Create a valid PNG file declaring the recommended 512x512 dimensions.
+    // Only the signature and the IHDR width/height are read by validation, so
+    // a minimal chunk layout is enough to exercise the size check.
+    const recommendedSizePngBuffer = Buffer.from([
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a, // PNG signature
+      0x00,
+      0x00,
+      0x00,
+      0x0d,
+      0x49,
+      0x48,
+      0x44,
+      0x52, // IHDR chunk
+      0x00,
+      0x00,
+      0x02,
+      0x00,
+      0x00,
+      0x00,
+      0x02,
+      0x00, // 512x512 dimensions
+      0x08,
+      0x06,
+      0x00,
+      0x00,
+      0x00,
+      0x1f,
+      0x15,
+      0xc4,
+      0x89, // IHDR data + CRC
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x49,
+      0x45,
+      0x4e,
+      0x44, // IEND chunk
+      0xae,
+      0x42,
+      0x60,
+      0x82,
+    ]);
+    fs.writeFileSync(
+      join(testFixturesDir, "recommended-size-icon.png"),
+      recommendedSizePngBuffer,
+    );
+
     // Create an invalid (non-PNG) file
     fs.writeFileSync(
       join(testFixturesDir, "invalid-icon.jpg"),
@@ -100,6 +155,10 @@ describe("Icon Validation", () => {
     // Create test manifests
     createTestManifest("valid-local-icon.json", {
       icon: "valid-icon.png",
+    });
+
+    createTestManifest("recommended-size-icon.json", {
+      icon: "recommended-size-icon.png",
     });
 
     createTestManifest("invalid-remote-url.json", {
@@ -161,14 +220,28 @@ describe("Icon Validation", () => {
   }
 
   describe("Valid icon configurations", () => {
-    it("should pass validation with a valid local PNG icon", () => {
+    it("should recommend the standard size for a PNG that is not 512x512", () => {
       const manifestPath = join(testFixturesDir, "valid-local-icon.json");
       const result = execSync(`node ${cliPath} validate ${manifestPath}`, {
         encoding: "utf-8",
       });
 
       expect(result).toContain("Manifest schema validation passes!");
-      expect(result).toContain("Icon validation passed");
+      expect(result).toContain("Icon validation warnings");
+      expect(result).toContain("Icon is 1×1 pixels");
+      expect(result).toContain("Recommended size is 512×512 pixels");
+      expect(result).not.toContain("ERROR");
+    });
+
+    it("should not recommend a size when the PNG is already 512x512", () => {
+      const manifestPath = join(testFixturesDir, "recommended-size-icon.json");
+      const result = execSync(`node ${cliPath} validate ${manifestPath}`, {
+        encoding: "utf-8",
+      });
+
+      expect(result).toContain("Manifest schema validation passes!");
+      expect(result).not.toContain("Recommended size");
+      expect(result).not.toContain("ERROR");
     });
 
     it("should pass validation when no icon is specified", () => {
@@ -326,7 +399,7 @@ describe("Icon Validation", () => {
       });
 
       expect(result).toContain("Manifest schema validation passes!");
-      expect(result).toContain("Icon validation passed");
+      expect(result).not.toContain("ERROR");
     });
   });
 });

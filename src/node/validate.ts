@@ -13,6 +13,8 @@ import {
 import { getManifestVersionFromRawData } from "../shared/manifestVersionResolve.js";
 import { getAllFilesWithCount, readMcpbIgnorePatterns } from "./files.js";
 
+const RECOMMENDED_ICON_SIZE = 512;
+
 /**
  * Check if a buffer contains a valid PNG file signature
  */
@@ -29,6 +31,33 @@ function isPNG(buffer: Buffer): boolean {
     buffer[6] === 0x1a &&
     buffer[7] === 0x0a
   );
+}
+
+/**
+ * Read the pixel dimensions of a PNG from its IHDR chunk.
+ *
+ * The IHDR chunk is required by the spec to be the first chunk and to
+ * immediately follow the 8-byte signature: a 4-byte length, the "IHDR" type,
+ * then the 4-byte big-endian width and height. Returns null if the buffer is
+ * too short or the IHDR chunk is not where the spec requires it to be.
+ */
+function getPNGDimensions(
+  buffer: Buffer,
+): { width: number; height: number } | null {
+  // 8 (signature) + 4 (length) + 4 (type) + 4 (width) + 4 (height) = 24
+  if (buffer.length < 24) {
+    return null;
+  }
+
+  // Bytes 12-15 must spell "IHDR" for the width/height offsets to be valid.
+  if (buffer.toString("ascii", 12, 16) !== "IHDR") {
+    return null;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  };
 }
 
 /**
@@ -89,10 +118,19 @@ function validateIcon(
             `Icon file must be PNG format. The file at "${iconPath}" does not appear to be a valid PNG file.`,
           );
         } else {
-          // File exists and is a valid PNG - add recommendation
-          warnings.push(
-            "Icon validation passed. Recommended size is 512×512 pixels for best display in Claude Desktop.",
-          );
+          // File exists and is a valid PNG. Only recommend a different size
+          // when the icon is not already at the recommended dimensions.
+          const dimensions = getPNGDimensions(buffer);
+          if (
+            dimensions &&
+            (dimensions.width !== RECOMMENDED_ICON_SIZE ||
+              dimensions.height !== RECOMMENDED_ICON_SIZE)
+          ) {
+            warnings.push(
+              `Icon is ${dimensions.width}×${dimensions.height} pixels. ` +
+                `Recommended size is ${RECOMMENDED_ICON_SIZE}×${RECOMMENDED_ICON_SIZE} pixels for best display in Claude Desktop.`,
+            );
+          }
         }
       } catch (error) {
         errors.push(
