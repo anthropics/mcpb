@@ -4,6 +4,7 @@ import { DestroyerOfModules } from "galactus";
 import * as os from "os";
 import { dirname, extname, isAbsolute, join, resolve } from "path";
 import prettyBytes from "pretty-bytes";
+import semver from "semver";
 
 import { unpackExtension } from "../cli/unpack.js";
 import {
@@ -238,6 +239,25 @@ function validateCommandVariables(manifest: {
   return { valid: errors.length === 0, errors, warnings };
 }
 
+/**
+ * Validate that the version field is a valid semantic version.
+ * Non-semver versions cause fatal crashes in Claude Desktop.
+ */
+function validateVersion(version: string): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!semver.valid(version)) {
+    errors.push(
+      `Version "${version}" is not valid semver. ` +
+        `Expected format: MAJOR.MINOR.PATCH (e.g., "1.0.0", "2.1.0-beta.1"). ` +
+        `Non-semver versions cause fatal crashes in Claude Desktop.`,
+    );
+  }
+
+  return { valid: errors.length === 0, errors, warnings };
+}
+
 // Sensitive file patterns not already covered by EXCLUDE_PATTERNS in files.ts
 const SENSITIVE_PATTERNS = [
   /(^|\/)credentials\.json$/i,
@@ -322,6 +342,16 @@ export function validateManifest(
         ? resolve(options.projectDir)
         : manifestDir;
       let hasErrors = false;
+
+      // Validate version format (non-semver crashes Claude Desktop)
+      const versionValidation = validateVersion(manifestData.version);
+      if (versionValidation.errors.length > 0) {
+        console.log("\nERROR: Version validation failed:\n");
+        versionValidation.errors.forEach((error) => {
+          console.log(`  - ${error}`);
+        });
+        hasErrors = true;
+      }
 
       // Validate icon if present (always relative to manifest directory)
       if (manifestData.icon) {
