@@ -225,27 +225,15 @@ export async function packExtension({
     // Create zip with preserved file permissions
     const zipFiles: Zippable = {};
 
-    const isUnix = process.platform !== "win32";
     const isBinaryType = manifest.server?.type === "binary";
     const binaryEntryPoint = isBinaryType ? manifest.server.entry_point : null;
 
     for (const [filePath, fileData] of Object.entries(files)) {
-      if (isUnix) {
-        let mode = fileData.mode & 0o777;
-        // Ensure binary entry points are always executable in the ZIP,
-        // regardless of filesystem permissions. Windows-built ZIPs store
-        // 644 because Windows has no Unix execute bit — CD spawns binary
-        // entry points directly, so they must have +x to avoid EACCES.
-        if (binaryEntryPoint && filePath === binaryEntryPoint) {
-          mode = mode | 0o111;
-        }
-        // Set external file attributes to preserve Unix permissions
-        // The mode needs to be shifted to the upper 16 bits for ZIP format
-        zipFiles[filePath] = [fileData.data, { os: 3, attrs: mode << 16 }];
-      } else {
-        // On Windows, use default ZIP attributes (no Unix permissions)
-        zipFiles[filePath] = fileData.data;
+      let mode = fileData.mode & 0o777;
+      if (binaryEntryPoint && filePath === binaryEntryPoint) {
+        mode = mode | 0o111;
       }
+      zipFiles[filePath] = [fileData.data, { os: 3, attrs: mode << 16 }];
     }
 
     const zipData = zipSync(zipFiles, {

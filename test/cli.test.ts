@@ -11,6 +11,48 @@ interface ExecSyncError extends Error {
   signal: string | null;
 }
 
+function readZipMode(zipPath: string, targetPath: string): number | undefined {
+  const zipBuffer = fs.readFileSync(zipPath);
+  let eocdOffset = -1;
+
+  for (let i = zipBuffer.length - 22; i >= 0; i--) {
+    if (zipBuffer.readUInt32LE(i) === 0x06054b50) {
+      eocdOffset = i;
+      break;
+    }
+  }
+
+  if (eocdOffset === -1) {
+    throw new Error("End of central directory record not found");
+  }
+
+  const centralDirOffset = zipBuffer.readUInt32LE(eocdOffset + 16);
+  const centralDirEntries = zipBuffer.readUInt16LE(eocdOffset + 8);
+  let offset = centralDirOffset;
+
+  for (let i = 0; i < centralDirEntries; i++) {
+    if (zipBuffer.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error(`Invalid central directory record at ${offset}`);
+    }
+
+    const externalAttrs = zipBuffer.readUInt32LE(offset + 38);
+    const filenameLength = zipBuffer.readUInt16LE(offset + 28);
+    const extraFieldLength = zipBuffer.readUInt16LE(offset + 30);
+    const commentLength = zipBuffer.readUInt16LE(offset + 32);
+    const filename = zipBuffer.toString(
+      "utf8",
+      offset + 46,
+      offset + 46 + filenameLength,
+    );
+
+    if (filename === targetPath) {
+      return (externalAttrs >> 16) & 0o777;
+    }
+
+    offset += 46 + filenameLength + extraFieldLength + commentLength;
+  }
+}
+
 describe("DXT CLI", () => {
   const cliPath = join(__dirname, "../dist/cli/cli.js");
   const validManifestPath = join(__dirname, "valid-manifest.json");
@@ -340,6 +382,60 @@ describe("DXT CLI", () => {
         }
       } finally {
         fs.rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
+    it("should write Unix permission attributes when packing on any platform", () => {
+      const tempBinDir = join(__dirname, "temp-binary-zip-attrs-test");
+      const packedFilePath = join(__dirname, "test-binary-zip-attrs.dxt");
+
+      try {
+        fs.mkdirSync(join(tempBinDir, "server"), { recursive: true });
+        fs.writeFileSync(
+          join(tempBinDir, "manifest.json"),
+          JSON.stringify({
+            manifest_version: DEFAULT_MANIFEST_VERSION,
+            name: "Test Binary Zip Attrs",
+            version: "1.0.0",
+            description: "A test extension with zip mode attrs",
+            author: {
+              name: "MCPB",
+            },
+            server: {
+              type: "binary",
+              entry_point: "server/myserver",
+              mcp_config: {
+                command: "${__dirname}/server/myserver",
+              },
+            },
+          }),
+        );
+        fs.writeFileSync(
+          join(tempBinDir, "server", "myserver"),
+          "#!/bin/sh\necho binary",
+        );
+        fs.writeFileSync(join(tempBinDir, "config.json"), "{}");
+
+        execSync(`node ${cliPath} pack ${tempBinDir} ${packedFilePath}`, {
+          encoding: "utf-8",
+        });
+
+        const entryMode = fs.statSync(
+          join(tempBinDir, "server", "myserver"),
+        ).mode;
+        const configMode = fs.statSync(join(tempBinDir, "config.json")).mode;
+
+        expect(readZipMode(packedFilePath, "server/myserver")).toBe(
+          (entryMode & 0o777) | 0o111,
+        );
+        expect(readZipMode(packedFilePath, "config.json")).toBe(
+          configMode & 0o777,
+        );
+      } finally {
+        fs.rmSync(tempBinDir, { recursive: true, force: true });
+        if (fs.existsSync(packedFilePath)) {
+          fs.unlinkSync(packedFilePath);
+        }
       }
     });
 
