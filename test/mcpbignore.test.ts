@@ -212,6 +212,34 @@ coverage/`;
       expect(fileNames).not.toContain("logs/debug.log");
       expect(fileNames).not.toContain("debug.log");
     });
+
+    it("should not drop runtime files from .map directories or node_modules/.bin", () => {
+      const nodeModulesDir = path.join(testStructure, "node_modules");
+      const iteratorMapDir = path.join(
+        nodeModulesDir,
+        "es-iterator-helpers",
+        "Iterator.prototype.map",
+      );
+      const binDir = path.join(nodeModulesDir, ".bin");
+
+      fs.mkdirSync(iteratorMapDir, { recursive: true });
+      fs.mkdirSync(binDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(iteratorMapDir, "index.js"),
+        "module.exports = {}",
+      );
+      fs.writeFileSync(path.join(binDir, "retire"), "#!/usr/bin/env node");
+      fs.writeFileSync(path.join(nodeModulesDir, "bundle.js.map"), "{}");
+
+      const files = getAllFiles(testStructure, testStructure, {}, []);
+      const fileNames = Object.keys(files);
+
+      expect(fileNames).toContain(
+        "node_modules/es-iterator-helpers/Iterator.prototype.map/index.js",
+      );
+      expect(fileNames).toContain("node_modules/.bin/retire");
+      expect(fileNames).not.toContain("node_modules/bundle.js.map");
+    });
   });
 
   describe("Pattern matching edge cases", () => {
