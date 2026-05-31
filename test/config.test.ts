@@ -349,6 +349,73 @@ describe("getMcpConfigForManifest", () => {
 
     expect(result?.args).toEqual(["server.js", "--verbose=true"]);
   });
+
+  it("should replace system variables inside user config defaults", async () => {
+    const manifest: McpbManifestAny = {
+      ...baseManifest,
+      user_config: {
+        server_path: {
+          type: "file",
+          title: "Server Path",
+          description: "Path to the server binary",
+          default: "${HOME}/bin/server",
+        },
+      },
+      server: {
+        type: "binary",
+        entry_point: "${user_config.server_path}",
+        mcp_config: {
+          command: "${user_config.server_path}",
+        },
+      },
+    };
+
+    const result = await getMcpConfigForManifest({
+      manifest,
+      extensionPath: "/ext/path",
+      systemDirs: { ...mockSystemDirs, HOME: "/home/user" },
+      userConfig: {},
+      pathSeparator: "/",
+      logger: mockLogger,
+    });
+
+    expect(result?.command).toBe("/home/user/bin/server");
+  });
+
+  it("should substitute missing optional user config values with empty strings", async () => {
+    const manifest: McpbManifestAny = {
+      ...baseManifest,
+      user_config: {
+        azure_tenant_id: {
+          type: "string",
+          title: "Entra Tenant ID",
+          description: "Optional tenant id",
+        },
+      },
+      server: {
+        type: "node",
+        entry_point: "server.js",
+        mcp_config: {
+          command: "node",
+          args: ["server.js"],
+          env: {
+            AZURE_TENANT_ID: "${user_config.azure_tenant_id}",
+          },
+        },
+      },
+    };
+
+    const result = await getMcpConfigForManifest({
+      manifest,
+      extensionPath: "/ext/path",
+      systemDirs: mockSystemDirs,
+      userConfig: {},
+      pathSeparator: "/",
+      logger: mockLogger,
+    });
+
+    expect(result?.env?.AZURE_TENANT_ID).toBe("");
+  });
 });
 
 describe("hasRequiredConfigMissing", () => {

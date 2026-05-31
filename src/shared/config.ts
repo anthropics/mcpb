@@ -144,9 +144,7 @@ export async function getMcpConfigForManifest(
   // First, add defaults from manifest
   if (manifest.user_config) {
     for (const [key, configOption] of Object.entries(manifest.user_config)) {
-      if (configOption.default !== undefined) {
-        mergedConfig[key] = configOption.default;
-      }
+      mergedConfig[key] = configOption.default ?? "";
     }
   }
 
@@ -159,16 +157,17 @@ export async function getMcpConfigForManifest(
   for (const [key, value] of Object.entries(mergedConfig)) {
     // Convert user config to the format expected by variable substitution
     const userConfigKey = `user_config.${key}`;
+    const substitutedValue = replaceVariables(value ?? "", variables);
 
-    if (Array.isArray(value)) {
+    if (Array.isArray(substitutedValue)) {
       // Keep arrays as arrays for proper expansion
-      variables[userConfigKey] = value.map(String);
-    } else if (typeof value === "boolean") {
+      variables[userConfigKey] = substitutedValue.map(String);
+    } else if (typeof substitutedValue === "boolean") {
       // Convert booleans to "true"/"false" strings as per spec
-      variables[userConfigKey] = value ? "true" : "false";
+      variables[userConfigKey] = substitutedValue ? "true" : "false";
     } else {
       // Convert other types to strings
-      variables[userConfigKey] = String(value);
+      variables[userConfigKey] = String(substitutedValue);
     }
   }
 
