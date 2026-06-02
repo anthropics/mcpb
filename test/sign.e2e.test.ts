@@ -341,8 +341,13 @@ async function testSelfSignedSigning() {
   // Verify the signature
   const result = await verifyMcpbFile(testFile);
 
-  // Self-signed certs may not be trusted by OS, so we accept either status
-  expect(["self-signed", "unsigned"]).toContain(result.status);
+  // A validly self-signed file must be detected as "self-signed" (not
+  // "unsigned"). This guards against the regression where verification relied
+  // on node-forge's pkcs7.verify() — which is unimplemented and throws — making
+  // every signed file appear unsigned, and left the "self-signed" status
+  // unreachable behind the OS trust-store check.
+  expect(result.status).toBe("self-signed");
+  expect(result.publisher).toBe("Test MCPB Publisher");
 
   // Clean up
   fs.unlinkSync(testFile);
@@ -427,6 +432,39 @@ async function testSignatureRemoval() {
   fs.unlinkSync(testFile);
 }
 
+/**
+ * Test a signed file whose EOCD comment_length was NOT bumped after signing
+ * (as produced by signers predating the comment_length bump). The stored
+ * content equals the signed content, so verification must match it directly —
+ * and must not underflow the comment_length reversal.
+ */
+async function testSignedFileWithUnbumpedComment() {
+  const testFile = path.join(TEST_DIR, "test-unbumped.dxt");
+  fs.copyFileSync(TEST_MCPB, testFile);
+  signMcpbFile(testFile, SELF_SIGNED_CERT, SELF_SIGNED_KEY);
+
+  // Zero the EOCD comment_length in the stored (pre-signature) content to mimic
+  // a signer that did not bump it. The signature was computed over the original
+  // content (comment_length 0), so this is the form such a signer would store.
+  const buf = fs.readFileSync(testFile);
+  const headerIndex = buf.indexOf(Buffer.from("MCPB_SIG_V1", "utf-8"));
+  let eocd = -1;
+  for (let i = headerIndex - 22; i >= 0; i--) {
+    if (buf.readUInt32LE(i) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  expect(eocd).toBeGreaterThanOrEqual(0);
+  buf.writeUInt16LE(0, eocd + 20);
+  fs.writeFileSync(testFile, buf);
+
+  const result = await verifyMcpbFile(testFile);
+  expect(result.status).toBe("self-signed");
+
+  fs.unlinkSync(testFile);
+}
+
 describe("MCPB Signing E2E Tests", () => {
   beforeAll(() => {
     // Ensure test directory exists
@@ -467,6 +505,10 @@ describe("MCPB Signing E2E Tests", () => {
 
   it("should remove signatures", async () => {
     await testSignatureRemoval();
+  });
+
+  it("should verify a signed file whose EOCD comment_length was not bumped", async () => {
+    await testSignedFileWithUnbumpedComment();
   });
 
   it("should update EOCD comment_length after signing", async () => {

@@ -137,16 +137,13 @@ export async function verifyMcpbFile(
       return { status: "unsigned" };
     }
 
-    // Now we know it's PkcsSignedData. The types are incorrect, so we'll
-    // fix them there
+    // node-forge's TS types omit `rawCapture`, which holds the parsed signer
+    // fields we need for manual signature verification (see below).
     const p7 = p7Message as unknown as forge.pkcs7.PkcsSignedData & {
-      signerInfos: Array<{
-        authenticatedAttributes: Array<{
-          type: string;
-          value: unknown;
-        }>;
-      }>;
-      verify: (options?: { authenticatedAttributes?: boolean }) => boolean;
+      rawCapture: {
+        authenticatedAttributes?: forge.asn1.Asn1[];
+        signature?: string;
+      };
     };
 
     // Extract certificates from PKCS#7
@@ -158,36 +155,98 @@ export async function verifyMcpbFile(
     // Get the signing certificate (first one)
     const signingCert = certificates[0];
 
-    // Verify PKCS#7 signature
-    const contentBuf = forge.util.createBuffer(originalContent);
-
-    try {
-      p7.verify({ authenticatedAttributes: true });
-
-      // Also verify the content matches
-      const signerInfos = p7.signerInfos;
-      const signerInfo = signerInfos?.[0];
-      if (signerInfo) {
-        const md = forge.md.sha256.create();
-        md.update(contentBuf.getBytes());
-        const digest = md.digest().getBytes();
-
-        // Find the message digest attribute
-        let messageDigest = null;
-        for (const attr of signerInfo.authenticatedAttributes) {
-          if (attr.type === forge.pki.oids.messageDigest) {
-            messageDigest = attr.value;
-            break;
-          }
-        }
-
-        if (!messageDigest || messageDigest !== digest) {
-          return { status: "unsigned" };
-        }
-      }
-    } catch (error) {
+    // Manually verify the PKCS#7 detached signature.
+    //
+    // node-forge does not implement `PkcsSignedData.verify()` — it throws
+    // "PKCS#7 signature verification not yet implemented" — so calling it would
+    // make every signed file report as unsigned. Instead we verify the signer
+    // ourselves: (1) the signed `messageDigest` attribute must equal SHA-256 of
+    // the content, and (2) the signature must validate over the DER-encoded
+    // authenticated attributes (re-tagged as a SET OF, as PKCS#7 requires).
+    const { authenticatedAttributes, signature: signerSignature } =
+      p7.rawCapture;
+    if (!authenticatedAttributes || !signerSignature) {
       return { status: "unsigned" };
     }
+
+    // (1) content digest must match the signed messageDigest attribute.
+    let signedMessageDigest: string | null = null;
+    for (const attr of authenticatedAttributes) {
+      const attrSeq = attr.value as forge.asn1.Asn1[];
+      const attrOid = forge.asn1.derToOid(attrSeq[0].value as string);
+      if (attrOid === forge.pki.oids.messageDigest) {
+        signedMessageDigest = (attrSeq[1].value as forge.asn1.Asn1[])[0]
+          .value as string;
+        break;
+      }
+    }
+    if (signedMessageDigest === null) {
+      return { status: "unsigned" };
+    }
+
+    // The signature covers the bytes before the signature block. Depending on
+    // the version that produced the file, `signMcpbFile()` may have bumped the
+    // ZIP EOCD comment_length by the signature-block length *after* signing
+    // (added in #204) — so the stored bytes can differ from the signed bytes by
+    // those two bytes. Accept a digest match against either the stored content
+    // or the comment_length-reversed content.
+    const sha256 = (buf: Buffer): string =>
+      forge.md.sha256
+        .create()
+        .update(buf.toString("binary"))
+        .digest()
+        .getBytes();
+
+    const candidates: Buffer[] = [originalContent];
+    const eocdOffset = findEocdOffset(originalContent);
+    if (eocdOffset !== -1) {
+      const sigBlockLength = fileContent.length - originalContent.length;
+      const patchedCommentLength = originalContent.readUInt16LE(
+        eocdOffset + 20,
+      );
+      if (patchedCommentLength >= sigBlockLength) {
+        const reversed = Buffer.from(originalContent);
+        reversed.writeUInt16LE(
+          patchedCommentLength - sigBlockLength,
+          eocdOffset + 20,
+        );
+        candidates.push(reversed);
+      }
+    }
+
+    const contentMatches = candidates.some(
+      (buf) => sha256(buf) === signedMessageDigest,
+    );
+    if (!contentMatches) {
+      return { status: "unsigned" };
+    }
+
+    // (2) signature must validate over the authenticated attributes
+    const attrSet = forge.asn1.create(
+      forge.asn1.Class.UNIVERSAL,
+      forge.asn1.Type.SET,
+      true,
+      authenticatedAttributes,
+    );
+    const attrMd = forge.md.sha256.create();
+    attrMd.update(forge.asn1.toDer(attrSet).getBytes());
+
+    let signatureValid = false;
+    try {
+      signatureValid = (
+        signingCert.publicKey as forge.pki.rsa.PublicKey
+      ).verify(attrMd.digest().getBytes(), signerSignature);
+    } catch {
+      signatureValid = false;
+    }
+    if (!signatureValid) {
+      return { status: "unsigned" };
+    }
+
+    // The signature is cryptographically valid. Determine the trust level.
+    const isSelfSigned =
+      signingCert.issuer.getField("CN")?.value ===
+      signingCert.subject.getField("CN")?.value;
 
     // Convert forge certificate to PEM for OS verification
     const certPem = forge.pki.certificateToPem(signingCert);
@@ -201,18 +260,14 @@ export async function verifyMcpbFile(
       intermediatePems,
     );
 
-    if (!chainValid) {
-      // Signature is valid but certificate is not trusted
+    // A valid signature whose chain is neither OS-trusted nor self-signed is
+    // reported as unsigned, since we cannot attest to the publisher identity.
+    if (!chainValid && !isSelfSigned) {
       return { status: "unsigned" };
     }
 
-    // Extract certificate info
-    const isSelfSigned =
-      signingCert.issuer.getField("CN")?.value ===
-      signingCert.subject.getField("CN")?.value;
-
     return {
-      status: isSelfSigned ? "self-signed" : "signed",
+      status: chainValid ? "signed" : "self-signed",
       publisher: signingCert.subject.getField("CN")?.value || "Unknown",
       issuer: signingCert.issuer.getField("CN")?.value || "Unknown",
       valid_from: signingCert.validity.notBefore.toISOString(),
