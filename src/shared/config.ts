@@ -115,12 +115,21 @@ export async function getMcpConfigForManifest(
     if (process.platform in baseConfig.platform_overrides) {
       const platformConfig = baseConfig.platform_overrides[process.platform];
 
-      result.command = platformConfig.command || result.command;
-      result.args = platformConfig.args || result.args;
+      // Use explicit presence checks so a deliberate empty-string command (or
+      // empty args) override is honoured rather than falling back to the base.
+      result.command =
+        platformConfig.command !== undefined
+          ? platformConfig.command
+          : result.command;
+      result.args =
+        platformConfig.args !== undefined ? platformConfig.args : result.args;
       result.env = platformConfig.env
         ? { ...result.env, ...platformConfig.env }
         : result.env;
     }
+    // platform_overrides is a build-time directive; it must not leak into the
+    // resolved runtime mcp_config handed to the host.
+    delete result.platform_overrides;
   }
 
   // Check if required configuration is missing
