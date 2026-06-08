@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-import { v0_2, v0_3 } from "../src/schemas/index.js";
+import { v0_2, v0_3, v0_4 } from "../src/schemas/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
@@ -333,6 +333,41 @@ describe("McpbManifestSchema", () => {
       };
       const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("0.4 uv server mcp_config", () => {
+    const base = {
+      manifest_version: "0.4",
+      name: "uv-extension",
+      version: "1.0.0",
+      description: "UV extension",
+      author: { name: "Test Author" },
+      compatibility: { claude_desktop: "0.1.0" },
+    };
+
+    it("accepts a uv server with no mcp_config (host manages execution)", () => {
+      const manifest = {
+        ...base,
+        server: { type: "uv", entry_point: "main.py" },
+      };
+      const result = v0_4.McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+    });
+
+    it("still requires mcp_config for non-uv server types", () => {
+      const manifest = {
+        ...base,
+        server: { type: "node", entry_point: "server.js" },
+      };
+      const result = v0_4.McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const errors = result.error.issues.map((issue) =>
+          issue.path.join("."),
+        );
+        expect(errors).toContain("server.mcp_config");
+      }
     });
   });
 });

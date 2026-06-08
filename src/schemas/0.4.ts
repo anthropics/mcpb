@@ -33,11 +33,23 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
     .optional(),
 });
 
-export const McpbManifestServerSchema = z.strictObject({
-  type: z.enum(["python", "node", "binary", "uv"]),
-  entry_point: z.string(),
-  mcp_config: McpbManifestMcpConfigSchema,
-});
+export const McpbManifestServerSchema = z
+  .strictObject({
+    type: z.enum(["python", "node", "binary", "uv"]),
+    entry_point: z.string(),
+    mcp_config: McpbManifestMcpConfigSchema.optional(),
+  })
+  .superRefine((server, ctx) => {
+    // mcp_config is optional only for the "uv" server type (the host manages
+    // execution — see MANIFEST.md). All other server types require it.
+    if (server.type !== "uv" && server.mcp_config === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mcp_config"],
+        message: "Required",
+      });
+    }
+  });
 
 export const McpbManifestCompatibilitySchema = z.strictObject({
   claude_desktop: z.string().optional(),
