@@ -29,6 +29,28 @@ describe("replaceVariables", () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it("should not log the array value when warning (no secret leakage)", () => {
+    const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+    replaceVariables("token=${user_config.api_keys}", {
+      "user_config.api_keys": ["super-secret-1", "super-secret-2"],
+    });
+    expect(consoleWarnSpy).toHaveBeenCalled();
+    // The warning must reference the key but never the sensitive values.
+    // Serialize each argument (including objects) so a value logged inside an
+    // object — e.g. console.warn(msg, { replacement }) — is also inspected.
+    const logged = consoleWarnSpy.mock.calls
+      .map((call) =>
+        call
+          .map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg)))
+          .join(" "),
+      )
+      .join(" ");
+    expect(logged).toContain("user_config.api_keys");
+    expect(logged).not.toContain("super-secret-1");
+    expect(logged).not.toContain("super-secret-2");
+    consoleWarnSpy.mockRestore();
+  });
+
   it("should replace variables in objects", () => {
     const result = replaceVariables(
       { message: "Hello ${name}!" },

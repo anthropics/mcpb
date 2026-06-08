@@ -29,9 +29,11 @@ export function replaceVariables(
       // Check if this pattern actually exists in the string
       if (result.match(pattern)) {
         if (Array.isArray(replacement)) {
+          // Log the key only — never the value. user_config options can be
+          // sensitive (API keys, passwords), so the substituted value and the
+          // replacement array must not be written to the console.
           console.warn(
-            `Cannot replace ${key} with array value in string context: "${value}"`,
-            { key, replacement },
+            `Cannot replace "${key}" with an array value in string context`,
           );
         } else {
           result = result.replace(pattern, replacement);
