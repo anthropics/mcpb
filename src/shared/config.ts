@@ -24,7 +24,12 @@ export function replaceVariables(
 
     // Replace all variables in the string
     for (const [key, replacement] of Object.entries(variables)) {
-      const pattern = new RegExp(`\\$\\{${key}\\}`, "g");
+      // Escape regex metacharacters in the key before building the pattern.
+      // Keys contain "." (e.g. "user_config.cs_password") and the manifest
+      // schema allows arbitrary user_config key names, so an unescaped key
+      // would over-match (any char for ".") or throw/ReDoS on a metacharacter.
+      const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = new RegExp(`\\$\\{${escapedKey}\\}`, "g");
 
       // Check if this pattern actually exists in the string
       if (result.match(pattern)) {
