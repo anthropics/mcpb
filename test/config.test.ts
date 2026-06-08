@@ -75,6 +75,26 @@ describe("replaceVariables", () => {
     const result = replaceVariables("Hello ${unknown}!", {});
     expect(result).toBe("Hello ${unknown}!");
   });
+
+  it("should treat '.' in the key as a literal, not a regex wildcard", () => {
+    // The "." must match only a literal dot. A template with a different
+    // character in that position must NOT be substituted.
+    const result = replaceVariables("${user_config_cs_password}", {
+      "user_config.cs_password": "SECRET",
+    });
+    expect(result).toBe("${user_config_cs_password}");
+  });
+
+  it("should not throw on keys containing regex metacharacters", () => {
+    // A user_config key with a metacharacter (e.g. "[") must not crash regex
+    // construction; it should match its own literal placeholder.
+    expect(() =>
+      replaceVariables("x ${a[b} y", { "a[b": "VALUE" }),
+    ).not.toThrow();
+    expect(replaceVariables("x ${a[b} y", { "a[b": "VALUE" })).toBe(
+      "x VALUE y",
+    );
+  });
 });
 
 describe("getMcpConfigForManifest", () => {
