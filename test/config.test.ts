@@ -29,6 +29,15 @@ describe("replaceVariables", () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it("should insert values containing $ patterns literally", () => {
+    // `$&`, `$$`, `$1` etc. are special in String.prototype.replace's
+    // replacement string — secrets containing them must be inserted verbatim.
+    const result = replaceVariables("${user_config.password}", {
+      "user_config.password": "pa$&ss$$wo$1rd",
+    });
+    expect(result).toBe("pa$&ss$$wo$1rd");
+  });
+
   it("should replace variables in objects", () => {
     const result = replaceVariables(
       { message: "Hello ${name}!" },

@@ -34,7 +34,11 @@ export function replaceVariables(
             { key, replacement },
           );
         } else {
-          result = result.replace(pattern, replacement);
+          // Use a replacement function so that `$` sequences in the value
+          // (e.g. `$&`, `$$`, `$1`) are inserted literally rather than being
+          // interpreted as String.prototype.replace special patterns. This
+          // matters for secrets such as passwords that may contain `$`.
+          result = result.replace(pattern, () => replacement);
         }
       }
     }
