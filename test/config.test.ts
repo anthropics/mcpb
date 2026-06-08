@@ -200,6 +200,70 @@ describe("getMcpConfigForManifest", () => {
 
     expect(result?.command).toBe("platform-command");
     expect(result?.args).toEqual(["platform-specific"]);
+    // platform_overrides must not leak into the resolved runtime config.
+    expect(result?.platform_overrides).toBeUndefined();
+  });
+
+  it("should not leak platform_overrides into the resolved config", async () => {
+    const manifest: McpbManifestAny = {
+      ...baseManifest,
+      server: {
+        type: "node",
+        entry_point: "server.js",
+        mcp_config: {
+          command: "default-command",
+          args: ["default"],
+          platform_overrides: {
+            // An override for a platform that is NOT the current one.
+            [process.platform === "win32" ? "darwin" : "win32"]: {
+              command: "other-platform-command",
+            },
+          },
+        },
+      },
+    };
+
+    const result = await getMcpConfigForManifest({
+      manifest,
+      extensionPath: "/ext/path",
+      systemDirs: mockSystemDirs,
+      userConfig: {},
+      pathSeparator: "/",
+      logger: mockLogger,
+    });
+
+    expect(result?.command).toBe("default-command");
+    expect(result?.platform_overrides).toBeUndefined();
+  });
+
+  it("should honour an empty-string command platform override", async () => {
+    const manifest: McpbManifestAny = {
+      ...baseManifest,
+      server: {
+        type: "node",
+        entry_point: "server.js",
+        mcp_config: {
+          command: "default-command",
+          args: ["default"],
+          platform_overrides: {
+            [process.platform]: {
+              command: "",
+            },
+          },
+        },
+      },
+    };
+
+    const result = await getMcpConfigForManifest({
+      manifest,
+      extensionPath: "/ext/path",
+      systemDirs: mockSystemDirs,
+      userConfig: {},
+      pathSeparator: "/",
+      logger: mockLogger,
+    });
+
+    expect(result?.command).toBe("");
   });
 
   it("should handle user config variable replacement with defaults", async () => {
