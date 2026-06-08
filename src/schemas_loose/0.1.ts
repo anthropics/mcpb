@@ -2,22 +2,28 @@ import * as z from "zod";
 
 export const MANIFEST_VERSION = "0.1";
 
-export const McpServerConfigSchema = z.object({
-  command: z.string(),
-  args: z.array(z.string()).optional(),
-  env: z.record(z.string(), z.string()).optional(),
-});
+export const McpServerConfigSchema = z
+  .object({
+    command: z.string(),
+    args: z.array(z.string()).optional(),
+    env: z.record(z.string(), z.string()).optional(),
+  })
+  .passthrough();
 
-export const McpbManifestAuthorSchema = z.object({
-  name: z.string(),
-  email: z.string().email().optional(),
-  url: z.string().url().optional(),
-});
+export const McpbManifestAuthorSchema = z
+  .object({
+    name: z.string(),
+    email: z.string().email().optional(),
+    url: z.string().url().optional(),
+  })
+  .passthrough();
 
-export const McpbManifestRepositorySchema = z.object({
-  type: z.string(),
-  url: z.string().url(),
-});
+export const McpbManifestRepositorySchema = z
+  .object({
+    type: z.string(),
+    url: z.string().url(),
+  })
+  .passthrough();
 
 export const McpbManifestPlatformOverrideSchema =
   McpServerConfigSchema.partial();
@@ -28,11 +34,13 @@ export const McpbManifestMcpConfigSchema = McpServerConfigSchema.extend({
     .optional(),
 });
 
-export const McpbManifestServerSchema = z.object({
-  type: z.enum(["python", "node", "binary"]),
-  entry_point: z.string(),
-  mcp_config: McpbManifestMcpConfigSchema,
-});
+export const McpbManifestServerSchema = z
+  .object({
+    type: z.enum(["python", "node", "binary"]),
+    entry_point: z.string(),
+    mcp_config: McpbManifestMcpConfigSchema,
+  })
+  .passthrough();
 
 export const McpbManifestCompatibilitySchema = z
   .object({
@@ -47,31 +55,37 @@ export const McpbManifestCompatibilitySchema = z
   })
   .passthrough();
 
-export const McpbManifestToolSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-});
+export const McpbManifestToolSchema = z
+  .object({
+    name: z.string(),
+    description: z.string().optional(),
+  })
+  .passthrough();
 
-export const McpbManifestPromptSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  arguments: z.array(z.string()).optional(),
-  text: z.string(),
-});
+export const McpbManifestPromptSchema = z
+  .object({
+    name: z.string(),
+    description: z.string().optional(),
+    arguments: z.array(z.string()).optional(),
+    text: z.string(),
+  })
+  .passthrough();
 
-export const McpbUserConfigurationOptionSchema = z.object({
-  type: z.enum(["string", "number", "boolean", "directory", "file"]),
-  title: z.string(),
-  description: z.string(),
-  required: z.boolean().optional(),
-  default: z
-    .union([z.string(), z.number(), z.boolean(), z.array(z.string())])
-    .optional(),
-  multiple: z.boolean().optional(),
-  sensitive: z.boolean().optional(),
-  min: z.number().optional(),
-  max: z.number().optional(),
-});
+export const McpbUserConfigurationOptionSchema = z
+  .object({
+    type: z.enum(["string", "number", "boolean", "directory", "file"]),
+    title: z.string(),
+    description: z.string(),
+    required: z.boolean().optional(),
+    default: z
+      .union([z.string(), z.number(), z.boolean(), z.array(z.string())])
+      .optional(),
+    multiple: z.boolean().optional(),
+    sensitive: z.boolean().optional(),
+    min: z.number().optional(),
+    max: z.number().optional(),
+  })
+  .passthrough();
 
 export const McpbManifestSchema = z
   .object({

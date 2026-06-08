@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 import { v0_2, v0_3 } from "../src/schemas/index.js";
+import { v0_4 as loose0_4 } from "../src/schemas_loose/index.js";
 
 describe("McpbManifestSchema", () => {
   it("should validate a valid manifest", () => {
@@ -333,6 +334,46 @@ describe("McpbManifestSchema", () => {
       };
       const result = v0_3.McpbManifestSchema.safeParse(manifest);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("loose schema preserves unknown nested keys (cleanMcpb)", () => {
+    it("keeps unknown keys nested inside author, server, and mcp_config", () => {
+      const manifest = {
+        manifest_version: "0.4",
+        name: "ext",
+        version: "1.0.0",
+        description: "desc",
+        author: { name: "A", twitter: "@a" },
+        server: {
+          type: "node",
+          entry_point: "server.js",
+          custom_server_field: "keep-me",
+          mcp_config: {
+            command: "node",
+            args: ["server.js"],
+            extra_exec_opt: "keep-me-too",
+          },
+        },
+        top_level_unknown: "kept",
+      };
+
+      const result = loose0_4.McpbManifestSchema.safeParse(manifest);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const data = result.data as unknown as {
+          top_level_unknown: unknown;
+          author: { twitter: unknown };
+          server: {
+            custom_server_field: unknown;
+            mcp_config: { extra_exec_opt: unknown };
+          };
+        };
+        expect(data.top_level_unknown).toBe("kept");
+        expect(data.author.twitter).toBe("@a");
+        expect(data.server.custom_server_field).toBe("keep-me");
+        expect(data.server.mcp_config.extra_exec_opt).toBe("keep-me-too");
+      }
     });
   });
 });
