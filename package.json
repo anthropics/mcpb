@@ -2,6 +2,14 @@
   "name": "@anthropic-ai/mcpb",
   "description": "Tools for building MCP Bundles",
   "version": "2.1.2",
+  "homepage": "https://github.com/modelcontextprotocol/mcpb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/modelcontextprotocol/mcpb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/modelcontextprotocol/mcpb/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
