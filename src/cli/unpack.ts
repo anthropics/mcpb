@@ -93,6 +93,14 @@ export async function unpackExtension({
 
     for (const relativePath in decompressed) {
       if (Object.prototype.hasOwnProperty.call(decompressed, relativePath)) {
+        // Skip explicit directory entries (keys ending in "/"). ZIP archives
+        // produced by most tooling (e.g. `zip -r`) include these with empty
+        // data; writing to a path with a trailing slash fails and would abort
+        // the whole unpack. Needed parent directories are created below.
+        if (relativePath.endsWith("/")) {
+          continue;
+        }
+
         const data = decompressed[relativePath];
         const fullPath = join(finalOutputDir, relativePath);
 
