@@ -341,8 +341,7 @@ async function testSelfSignedSigning() {
   // Verify the signature
   const result = await verifyMcpbFile(testFile);
 
-  // Self-signed certs may not be trusted by OS, so we accept either status
-  expect(["self-signed", "unsigned"]).toContain(result.status);
+  expect(result.status).toBe("self-signed");
 
   // Clean up
   fs.unlinkSync(testFile);
