@@ -1,4 +1,10 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+} from "fs";
 import ignore from "ignore";
 import { join, relative, sep } from "path";
 
@@ -76,11 +82,30 @@ export function shouldExclude(
   return buildIgnoreChecker(additionalPatterns).ignores(filePath);
 }
 
+/**
+ * Returns the real path of a directory if it is safe to recurse into, or
+ * undefined if doing so would revisit a directory already on the current
+ * traversal path (i.e. a symlink cycle).
+ */
+function checkForSymlinkCycle(
+  dirPath: string,
+  relativePath: string,
+  visitedRealPaths: Set<string>,
+): string | undefined {
+  const realPath = realpathSync(dirPath);
+  if (visitedRealPaths.has(realPath)) {
+    console.warn(`Warning: Symlink cycle detected, skipping: ${relativePath}`);
+    return undefined;
+  }
+  return realPath;
+}
+
 export function getAllFiles(
   dirPath: string,
   baseDir: string = dirPath,
   fileList: Record<string, Uint8Array> = {},
   additionalPatterns: string[] = [],
+  visitedRealPaths: Set<string> = new Set([realpathSync(dirPath)]),
 ): Record<string, Uint8Array> {
   const files = readdirSync(dirPath);
 
@@ -97,7 +122,23 @@ export function getAllFiles(
     const stat = statSync(filePath);
 
     if (stat.isDirectory()) {
-      getAllFiles(filePath, baseDir, fileList, additionalPatterns);
+      const realPath = checkForSymlinkCycle(
+        filePath,
+        relativePath,
+        visitedRealPaths,
+      );
+      if (realPath === undefined) {
+        continue;
+      }
+      visitedRealPaths.add(realPath);
+      getAllFiles(
+        filePath,
+        baseDir,
+        fileList,
+        additionalPatterns,
+        visitedRealPaths,
+      );
+      visitedRealPaths.delete(realPath);
     } else {
       // Use forward slashes in zip file paths
       const zipPath = relativePath.split(sep).join("/");
@@ -123,6 +164,7 @@ export function getAllFilesWithCount(
   fileList: Record<string, FileWithPermissions> = {},
   additionalPatterns: string[] = [],
   ignoredCount = 0,
+  visitedRealPaths: Set<string> = new Set([realpathSync(dirPath)]),
 ): GetAllFilesResult {
   const files = readdirSync(dirPath);
 
@@ -140,14 +182,25 @@ export function getAllFilesWithCount(
     const stat = statSync(filePath);
 
     if (stat.isDirectory()) {
+      const realPath = checkForSymlinkCycle(
+        filePath,
+        relativePath,
+        visitedRealPaths,
+      );
+      if (realPath === undefined) {
+        continue;
+      }
+      visitedRealPaths.add(realPath);
       const result = getAllFilesWithCount(
         filePath,
         baseDir,
         fileList,
         additionalPatterns,
         ignoredCount,
+        visitedRealPaths,
       );
       ignoredCount = result.ignoredCount;
+      visitedRealPaths.delete(realPath);
     } else {
       // Use forward slashes in zip file paths
       const zipPath = relativePath.split(sep).join("/");
